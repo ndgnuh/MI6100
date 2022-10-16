@@ -1,0 +1,336 @@
+#LyX 2.3 created this file. For more info see http://www.lyx.org/
+\lyxformat 544
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass report
+\begin_preamble
+\usepackage{mlmodern}
+\usepackage[fontsize=14pt]{scrextend}
+\usepackage[a4paper,top=3.5cm,left=3cm,right=2cm,bottom=2cm]{geometry}
+\usepackage{setspace}\onehalfspacing
+\end_preamble
+\use_default_options true
+\maintain_unincluded_children false
+\language vietnamese
+\language_package default
+\inputencoding auto
+\fontencoding T5
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\use_microtype true
+\use_dash_ligatures true
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 0
+\use_minted 0
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\leftmargin 1in
+\topmargin 1in
+\rightmargin 1in
+\bottommargin 1in
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\is_math_indent 0
+\math_numbering_side default
+\quotes_style english
+\dynamic_quotes 0
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+Đối sánh ảnh sử dụng phương pháp của David Lowe
+\end_layout
+
+\begin_layout Chapter
+Yêu cầu
+\end_layout
+
+\begin_layout Standard
+Các yêu cầu của báo cáo:
+\end_layout
+
+\begin_layout Itemize
+Ảnh là gì
+\end_layout
+
+\begin_layout Itemize
+Đặc trưng của ảnh
+\end_layout
+
+\begin_layout Itemize
+Thế nào là đối sánh ảnh
+\end_layout
+
+\begin_layout Itemize
+Các phương pháp đối sánh hiện có
+\end_layout
+
+\begin_layout Itemize
+Phân loại các phương pháp
+\end_layout
+
+\begin_layout Chapter
+Đại cương về ảnh
+\end_layout
+
+\begin_layout Section
+Ảnh và biểu diễn ảnh
+\end_layout
+
+\begin_layout Standard
+Ảnh nói chung là một biểu diễn thị giác của một sự vật sự việc nào đó.
+ Trong ngữ cảnh của xử lý ảnh số, xử lý tín hiệu, ảnh (số) là sự phân bố
+ màu sắc thu được từ việc số hoá các tín hiệu thu được từ các bộ cảm biến.
+ Thông thường, từ 
+\begin_inset Quotes eld
+\end_inset
+
+tín hiệu
+\begin_inset Quotes erd
+\end_inset
+
+ được dùng để chỉ các tín hiệu ánh sáng mà con người nhìn được (theo nghĩa
+ bức ảnh phổ thông).
+ Tuy nhiên, từ 
+\begin_inset Quotes eld
+\end_inset
+
+tín hiệu
+\begin_inset Quotes erd
+\end_inset
+
+ cũng có thể bao gồm các tín hiệu mà con người không nhìn thấy được để hỗ
+ trợ con người trong việc thu thập và xử lý tri thức (ví dụ: sóng hồng ngoại,
+ sóng âm thanh).
+ Trong khuôn khổ của báo cáo này, từ 
+\begin_inset Quotes eld
+\end_inset
+
+ảnh thực
+\begin_inset Quotes erd
+\end_inset
+
+ sẽ được dùng để chỉ bức ảnh thực sự (phần tín hiệu chưa rời rạc hoá); và
+ từ 
+\begin_inset Quotes eld
+\end_inset
+
+ảnh
+\begin_inset Quotes erd
+\end_inset
+
+ sẽ được sử dụng với nghĩa 
+\begin_inset Quotes eld
+\end_inset
+
+ảnh số
+\begin_inset Quotes erd
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsection
+Biểu diễn không gian
+\end_layout
+
+\begin_layout Standard
+Một bức ảnh được biểu diễn theo phương pháp không gian có dạng phân phối
+ của chiếu xạ
+\begin_inset Foot
+status collapsed
+
+\begin_layout Plain Layout
+Nguyên gốc: Irradiance–physics the flux of radiant energy per unit area
+ (normal to the direction of flow of radiant energy through a medium)
+\end_layout
+
+\end_inset
+
+ trên một mặt phẳng.
+ Như vậy, biểu diễn không gian của ảnh là ánh xạ 
+\begin_inset Formula $E\left(\mathbf{x}\right)$
+\end_inset
+
+, trong đó 
+\begin_inset Formula $\mathbf{x}$
+\end_inset
+
+ là véc tơ toạ độ không gian.
+ Vì máy tính không thể biểu diễn được sự liên tục, những toạ độ này là các
+ toạ độ nguyên, và ảnh sẽ giống như một mảng số.
+ Mỗi phần tử trên mảng số này được gọi là một 
+\emph on
+pixel
+\emph default
+ hay 
+\emph on
+điểm ảnh
+\emph default
+.
+ Một điểm ảnh biểu diễn một vùng trong ảnh thực.
+\end_layout
+
+\begin_layout Standard
+Trong đa số trường hợp, những điểm ảnh được xếp trên một lưới vuông, những
+ điểm ảnh được đánh số với ngữ nghĩa giống với cách đánh chỉ số ma trận
+ (cite: BerndJahne-2.2).
+ Chỉ số đầu tiên 
+\begin_inset Formula $m$
+\end_inset
+
+ đánh dấu toạ độ của hàng, chỉ số thứ hai đánh dấu toạ độ của cột.
+ Nếu bức ảnh có 
+\begin_inset Formula $M\times N$
+\end_inset
+
+ điểm ảnh thì 
+\begin_inset Formula $m\in\left\{ 0,\ldots,M-1\right\} $
+\end_inset
+
+ và 
+\begin_inset Formula $n\in\left\{ 0,\ldots,N-1\right\} $
+\end_inset
+
+.
+ Ngoài ra, chỉ số hàng chạy từ trên xuống dưới thay vì từ dưới lên trên
+ như các loại đồ thị.
+ 
+\end_layout
+
+\begin_layout Standard
+Lượng hoá giá trị pixel?
+\end_layout
+
+\begin_layout Subsection
+Biểu diễn dạng sóng
+\end_layout
+
+\begin_layout Standard
+Theo phần trên, một bức ảnh được biểu diễn như một tập những điểm ảnh riêng
+ biệt.
+ Chúng ta có thể biểu diễn ảnh như tổ hợp của những ảnh cơ sở–những bức
+ ảnh mà chỉ có một điểm ảnh có giá trị một, các điểm ảnh còn lại có giá
+ trị không
+\begin_inset Formula 
+\[
+^{m,n}\mathbf{P}\colon^{m,n}p_{m',n'}=\begin{cases}
+1 & m=m'\land n=n',\\
+0 & \text{các trường hợp khác}.
+\end{cases}
+\]
+
+\end_inset
+
+Khi đó, một bức ảnh bất kỳ có thể được biểu diễn bằng hợp của những cơ sở
+ ảnh
+\begin_inset Formula 
+\[
+\mathbf{G}=\sum_{m=0}^{M-1}\sum_{n=0}^{N}g_{m,n}{}^{m,n}\mathbf{P},
+\]
+
+\end_inset
+
+trong đó 
+\begin_inset Formula $g_{m,n}$
+\end_inset
+
+ là giá trị xám tại vị trí 
+\begin_inset Formula $m,n$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Section
+Đặc trưng của ảnh
+\end_layout
+
+\begin_layout Chapter
+Đối sánh ảnh
+\end_layout
+
+\begin_layout Section
+Đặt vấn đề
+\end_layout
+
+\begin_layout Subsection
+Các phương pháp hiện có
+\end_layout
+
+\begin_layout Chapter
+Phương pháp của David Lowe
+\end_layout
+
+\begin_layout Section
+Nội dung
+\end_layout
+
+\begin_layout Section
+Thử nghiệm
+\end_layout
+
+\begin_layout Section
+Kết quả và nhận xét
+\end_layout
+
+\begin_layout Section
+Kết luận
+\end_layout
+
+\begin_layout Section
+Tài liệu tham khảo
+\end_layout
+
+\end_body
+\end_document

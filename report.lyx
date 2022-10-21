@@ -308,14 +308,90 @@ trong đó
 Các phương pháp hiện có
 \end_layout
 
+\begin_layout Itemize
+Đối sánh ảnh sử dụng histogram
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Ưu điểm: đơn giản
+\end_layout
+
+\begin_layout Itemize
+Nhược điểm: false positive (ảnh hai vật thể khác nhau nhưng cùng phân phối
+ màu), false negative (ảnh một vật thể nhưng làm thay đổi độ sáng ở một
+ phần ảnh)
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Đối sánh ảnh sử dụng các góc làm keypoint
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Harris detector: sử dụng intensity shift
+\end_layout
+
+\begin_layout Itemize
+Ưu điểm: rotation invariant
+\end_layout
+
+\begin_layout Itemize
+Nhược điểm scale variant
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Đối sánh ảnh sử dụng SIFT:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Ưu điểm: rotation invariant và scale invariant
+\end_layout
+
+\begin_layout Itemize
+Nhược điểm: ?
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Đối sánh ảnh sử dụng các đặc trưng trích từ mạng học sâu
+\end_layout
+
 \begin_layout Chapter
-Phương pháp của David Lowe
+Phương pháp của SIFT
 \end_layout
 
 \begin_layout Section
 Nội dung
 \end_layout
 
+\begin_layout Standard
+Ý tưởng của SIFT:
+\end_layout
+
+\begin_layout Enumerate
+Sử dụng diffientation of gaussian (DoG) để xét ảnh trên nhiều scale khác
+ nhau, làm cho phương pháp scale-invariant
+\end_layout
+
+\begin_layout Enumerate
+So sánh một điểm ảnh với lân cận của nó
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Lân cận: điểm xung quanh của cùng scale, điểm xung quanh + chính nó của
+ scale phía trước và phía sau
+\end_layout
+
+\begin_layout Itemize
+Nếu scale 
+\end_layout
+
+\end_deeper
 \begin_layout Section
 Thử nghiệm
 \end_layout

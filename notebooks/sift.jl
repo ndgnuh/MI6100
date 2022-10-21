@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.13
+# v0.19.12
 
 using Markdown
 using InteractiveUtils
@@ -27,140 +27,67 @@ begin
 	using OffsetArrays
 end
 
+# ╔═╡ c8c71b3e-343e-4e9f-b44b-ce7b203faa39
+TableOfContents()
+
+# ╔═╡ 92685aab-2c03-451d-a7ed-ef2896023ea4
+md"# Input"
+
 # ╔═╡ 153288b8-3622-4b9c-a4d6-9b8d25accc20
 @bind image_name PlutoUI.Select((@. first(splitext(TestImages.remotefiles))), default="lighthouse")
 
 # ╔═╡ bb892b57-5302-446f-bca9-a3c74c32c772
 image = testimage(image_name)
 
-# ╔═╡ 30a77f5b-2fd1-4bec-b357-5ec7fa4fd314
+# ╔═╡ 1d783473-dddc-43aa-8126-a8c8ad6ef9a3
+md"# Scale space detection"
+
+# ╔═╡ 89c22646-6a92-4be5-8060-f059b54187f4
 function get_num_octaves(image)
-    convert(Int, log(minimum(size(image))) / log(2) - 1 |> round)
+	convert(Int, log(image |> size |> minimum) / log(2) - 1 |> floor)
 end
 
-# ╔═╡ e0f48e95-2be1-4eec-8359-fc1e0ec5dd4d
-function gen_base_image(image, sigma, assumed_blur)
-	# w, h = size(image)
-	image = imresize(image; ratio=2, methods=LinearInterpolation)
-	sigma_diff = sqrt(max(sigma^2 - (2 * assumed_blur)^2, 0.1))
-	print(sigma_diff)
-	imfilter(image, Kernel.reflect(Kernel.gaussian(sigma_diff)))
-end
+# ╔═╡ 32ad1d8f-299d-4a2c-80ea-cdee9b48a694
+function gen_scale_space_images(image::T, σ=1, num_samples=3) where T
+	num_octaves = get_num_octaves(image)
+	kernel = Kernel.gaussian(σ)
 
-# ╔═╡ dbb0fed9-b48e-4aab-b755-6ad10089327a
-function gen_gauss_kernels(sigma, num_intervals)
-	num_images_per_octave = num_intervals + 3
-	k = 2^(1/num_intervals)
-	kernels = zeros(num_images_per_octave)
-	kernels[begin] = sigma
-	for i in 1:num_images_per_octave-1
-		sigma_prev = k^(i - 1) * sigma
-		sigma_total = k * sigma_prev
-		kernels[i+1] = sqrt(sigma_total^2 - sigma_prev^2)
-	end
-	kernels
-end
-
-# ╔═╡ 2b79b938-1ed4-4b15-9992-63c7cdaa9f06
-md"""
-~~~python
-def generateGaussianImages(image, num_octaves, gaussian_kernels):
-    \"""Generate scale-space pyramid of Gaussian images
-    \"""
-    logger.debug('Generating Gaussian images...')
-    gaussian_images = []
-
-    for octave_index in range(num_octaves):
-        gaussian_images_in_octave = []
-        gaussian_images_in_octave.append(image)  # first image in octave already has the correct blur
-        for gaussian_kernel in gaussian_kernels[1:]:
-            image = GaussianBlur(image, (0, 0), sigmaX=gaussian_kernel, sigmaY=gaussian_kernel)
-            gaussian_images_in_octave.append(image)
-        gaussian_images.append(gaussian_images_in_octave)
-        octave_base = gaussian_images_in_octave[-3]
-        image = resize(octave_base, (int(octave_base.shape[1] / 2), int(octave_base.shape[0] / 2)), interpolation=INTER_NEAREST)
-    return array(gaussian_images, dtype=object)
-~~~
-"""
-
-# ╔═╡ de3dc48e-d5e9-4d15-87fa-7d9d3cdee8d5
-function gen_gaussian_image(image, num_octaves, gaussian_kernels)
-	gimages = []
-	for i in 1:gaussian_kernels
-		goctave = [image]
-		for kern in gaussian_kernels
-			image = imfilter(image, )
-		end
+	# Compute first octave
+	first_octave = T[]
+	sizehint!(first_octave, num_samples)
+	for i in 1:num_samples
+		image = imfilter(image, kernel)
+		push!(first_octave, image)
 	end
 	
+	# Compute other octaves
+	rest_octaves = [
+		begin
+			step = 2^n
+			[image[begin:step:end, begin:step:end] for image in first_octave]
+		end
+		for n in 2:num_octaves
+	]
+
+	octaves = [first_octave, rest_octaves...]
+	dogs = [diff(octave) for octave in octaves]
 end
 
-# ╔═╡ a65dd65d-8570-4661-9fb1-b9f7dcc8dd22
-kf = KernelFactors.gaussian(9)
+# ╔═╡ eea3220b-cb8e-4a79-9db5-0746e0382af7
+dogs = gen_scale_space_images(image)
 
-# ╔═╡ 073871ae-79f7-464f-afce-45352a60a34a
-kf * kf' == Kernel.gaussian(9)
+# ╔═╡ 07592b32-5737-42ce-a4bf-5c70b98c8ba1
+broadcast(x -> broadcast(size, x), dogs)
 
-# ╔═╡ 8123a3dc-783f-4519-be04-7b3e3a2df68a
-begin
-	sigma = 1.6
-	num_intervals = 3
-	assumed_blur = 0.5
-	base_image = gen_base_image(image, sigma, assumed_blur);
-	num_octaves = get_num_octaves(base_image)
-	gaussian_kernels = gen_gauss_kernels(num_octaves, num_intervals)
-end
-
-# ╔═╡ 6423b972-49e0-45d2-abaa-d774412649e5
-[load("/tmp/lighthouse2.png") base_image]
-
-# ╔═╡ da15e5c6-dba9-4766-8c86-76be3729c868
-all(base_image .≈ load("/tmp/lighthouse2.png"))
-
-# ╔═╡ c4e4aad4-8e6f-4f4d-8f82-2b73d2362e00
-begin
-	function Gaussian(x, σ)
-		1 / sqrt(2π * σ) * exp(-x^2/2/σ^2)
-	end
-	function Gaussian(x, y, σx, σy=σx)
-		Gaussian(x, σx) * Gaussian(y, σy)
-	end
-end
-
-# ╔═╡ 8942f99d-6431-4d59-a48c-258ad2514080
-function gen_gaussian_kernel(ksize, σx, σy=σx)
-	@assert ksize % 2 == 1 "Kernel size must be odd"
-	offset = -div(ksize, 2)-1
-	k = OffsetArray(zeros(ksize, ksize), (offset, offset))
-	for I in CartesianIndices(k)
-		k[I] = Gaussian(I[1], I[2], σx, σy)
-	end
-	k
-end
-
-# ╔═╡ 10b6f8a8-a286-4568-919b-f004b174cf31
-Kernel.gaussian(1.2489995996796799)
-
-# ╔═╡ 132c6d51-ae70-414e-931c-665045c50cfb
-
-
-# ╔═╡ 4ba007f1-98b1-4f02-b296-021b68fb8080
-k= gen_gaussian_kernel(9, 1.2489995996796799)
-
-# ╔═╡ 96d3b2e1-92b7-47f8-826e-167910d01fe6
-idx = CartesianIndices(k)
-
-# ╔═╡ 119fa966-5d5e-4abe-9e15-494d97535400
-idx[1][1]
-
-# ╔═╡ 1d8c9812-cfd4-4c32-a82b-7a78a0fc38de
-vec(idx)
-
-# ╔═╡ e18584f7-95f3-43e0-ba2f-5d9b669fbd58
-KernelFactors.gaussian(num_octaves, 3)
+# ╔═╡ da1b98f9-753d-4219-9270-c6ae9c1f7d47
+md"# Local extrema detection"
 
 # ╔═╡ e0da518e-ede1-4eea-8373-7533836d89a4
+function detect_local_extrema(dogs)
+end
 
+# ╔═╡ a2519f70-34bc-4056-9f64-c6a9aad3e2dc
+detect_local_extrema(dogs)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -174,17 +101,6 @@ Interpolations = "a98d9a8b-a2ab-59e6-89dd-64a1c18fca59"
 OffsetArrays = "6fe1bfb0-de20-5000-8ca7-80f57d26f881"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 TestImages = "5e47fb64-e119-507b-a336-dd2b206d9990"
-
-[compat]
-FileIO = "~1.16.0"
-ImageCore = "~0.9.4"
-ImageFiltering = "~0.7.2"
-ImageShow = "~0.3.6"
-ImageTransformations = "~0.9.5"
-Interpolations = "~0.14.6"
-OffsetArrays = "~1.12.8"
-PlutoUI = "~0.7.48"
-TestImages = "~1.7.1"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
@@ -225,9 +141,9 @@ version = "6.0.23"
 
 [[deps.ArrayInterfaceCore]]
 deps = ["LinearAlgebra", "SparseArrays", "SuiteSparse"]
-git-tree-sha1 = "e6cba4aadba7e8a7574ab2ba2fcfb307b4c4b02a"
+git-tree-sha1 = "e9f7992287edfc27b3cbe0046c544bace004ca5b"
 uuid = "30b0a656-2188-435a-8636-2ec0e6a096e2"
-version = "0.1.23"
+version = "0.1.22"
 
 [[deps.Artifacts]]
 uuid = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
@@ -608,11 +524,6 @@ version = "0.3.18"
 [[deps.Logging]]
 uuid = "56ddb016-857b-54e1-b83d-db4d58db5568"
 
-[[deps.MIMEs]]
-git-tree-sha1 = "65f28ad4b594aebe22157d6fac869786a255b7eb"
-uuid = "6c6e2e6c-3030-632d-7369-2d6c69616d65"
-version = "0.1.4"
-
 [[deps.MKL_jll]]
 deps = ["Artifacts", "IntelOpenMP_jll", "JLLWrappers", "LazyArtifacts", "Libdl", "Pkg"]
 git-tree-sha1 = "2ce8695e1e699b68702c03402672a69f54b8aca9"
@@ -731,10 +642,10 @@ uuid = "eebad327-c553-4316-9ea0-9fa01ccd7688"
 version = "0.3.2"
 
 [[deps.PlutoUI]]
-deps = ["AbstractPlutoDingetjes", "Base64", "ColorTypes", "Dates", "FixedPointNumbers", "Hyperscript", "HypertextLiteral", "IOCapture", "InteractiveUtils", "JSON", "Logging", "MIMEs", "Markdown", "Random", "Reexport", "URIs", "UUIDs"]
-git-tree-sha1 = "efc140104e6d0ae3e7e30d56c98c4a927154d684"
+deps = ["AbstractPlutoDingetjes", "Base64", "ColorTypes", "Dates", "Hyperscript", "HypertextLiteral", "IOCapture", "InteractiveUtils", "JSON", "Logging", "Markdown", "Random", "Reexport", "UUIDs"]
+git-tree-sha1 = "6e33d318cf8843dade925e35162992145b4eb12f"
 uuid = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
-version = "0.7.48"
+version = "0.7.44"
 
 [[deps.Preferences]]
 deps = ["TOML"]
@@ -895,9 +806,9 @@ uuid = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [[deps.TestImages]]
 deps = ["AxisArrays", "ColorTypes", "FileIO", "ImageIO", "ImageMagick", "OffsetArrays", "Pkg", "StringDistances"]
-git-tree-sha1 = "03492434a1bdde3026288939fc31b5660407b624"
+git-tree-sha1 = "3cbfd92ae1688129914450ff962acfc9ced42520"
 uuid = "5e47fb64-e119-507b-a336-dd2b206d9990"
-version = "1.7.1"
+version = "1.7.0"
 
 [[deps.TiffImages]]
 deps = ["ColorTypes", "DataStructures", "DocStringExtensions", "FileIO", "FixedPointNumbers", "IndirectArrays", "Inflate", "Mmap", "OffsetArrays", "PkgVersion", "ProgressMeter", "UUIDs"]
@@ -915,11 +826,6 @@ version = "0.4.1"
 git-tree-sha1 = "6bac775f2d42a611cdfcd1fb217ee719630c4175"
 uuid = "410a4b4d-49e4-4fbc-ab6d-cb71b17b3775"
 version = "0.1.6"
-
-[[deps.URIs]]
-git-tree-sha1 = "e59ecc5a41b000fa94423a578d29290c7266fc10"
-uuid = "5c2747f8-b7ea-4ff2-ba2e-563bfd36b1d4"
-version = "1.4.0"
 
 [[deps.UUIDs]]
 deps = ["Random", "SHA"]
@@ -975,27 +881,17 @@ version = "17.4.0+0"
 
 # ╔═╡ Cell order:
 # ╠═aff807a0-5124-11ed-1675-b74542d32634
+# ╠═c8c71b3e-343e-4e9f-b44b-ce7b203faa39
+# ╠═92685aab-2c03-451d-a7ed-ef2896023ea4
 # ╠═153288b8-3622-4b9c-a4d6-9b8d25accc20
 # ╠═bb892b57-5302-446f-bca9-a3c74c32c772
-# ╠═30a77f5b-2fd1-4bec-b357-5ec7fa4fd314
-# ╠═e0f48e95-2be1-4eec-8359-fc1e0ec5dd4d
-# ╠═dbb0fed9-b48e-4aab-b755-6ad10089327a
-# ╟─2b79b938-1ed4-4b15-9992-63c7cdaa9f06
-# ╠═de3dc48e-d5e9-4d15-87fa-7d9d3cdee8d5
-# ╠═a65dd65d-8570-4661-9fb1-b9f7dcc8dd22
-# ╠═073871ae-79f7-464f-afce-45352a60a34a
-# ╠═8123a3dc-783f-4519-be04-7b3e3a2df68a
-# ╠═6423b972-49e0-45d2-abaa-d774412649e5
-# ╠═da15e5c6-dba9-4766-8c86-76be3729c868
-# ╠═c4e4aad4-8e6f-4f4d-8f82-2b73d2362e00
-# ╠═8942f99d-6431-4d59-a48c-258ad2514080
-# ╠═10b6f8a8-a286-4568-919b-f004b174cf31
-# ╠═96d3b2e1-92b7-47f8-826e-167910d01fe6
-# ╠═119fa966-5d5e-4abe-9e15-494d97535400
-# ╠═1d8c9812-cfd4-4c32-a82b-7a78a0fc38de
-# ╠═132c6d51-ae70-414e-931c-665045c50cfb
-# ╠═4ba007f1-98b1-4f02-b296-021b68fb8080
-# ╠═e18584f7-95f3-43e0-ba2f-5d9b669fbd58
+# ╟─1d783473-dddc-43aa-8126-a8c8ad6ef9a3
+# ╠═89c22646-6a92-4be5-8060-f059b54187f4
+# ╠═32ad1d8f-299d-4a2c-80ea-cdee9b48a694
+# ╠═eea3220b-cb8e-4a79-9db5-0746e0382af7
+# ╠═07592b32-5737-42ce-a4bf-5c70b98c8ba1
+# ╟─da1b98f9-753d-4219-9270-c6ae9c1f7d47
 # ╠═e0da518e-ede1-4eea-8373-7533836d89a4
+# ╠═a2519f70-34bc-4056-9f64-c6a9aad3e2dc
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

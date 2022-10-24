@@ -361,7 +361,7 @@ Nhược điểm: ?
 \end_layout
 
 \begin_layout Chapter
-Phương pháp của SIFT
+Phương pháp SIFT
 \end_layout
 
 \begin_layout Section
@@ -377,6 +377,16 @@ Sử dụng diffientation of gaussian (DoG) để xét ảnh trên nhiều scale
  nhau, làm cho phương pháp scale-invariant
 \end_layout
 
+\begin_deeper
+\begin_layout Itemize
+tính nhiều mẫu mỗi octave
+\end_layout
+
+\begin_layout Itemize
+mỗi octave được tính bằng cách lấy chỉ số của octave trước
+\end_layout
+
+\end_deeper
 \begin_layout Enumerate
 So sánh một điểm ảnh với lân cận của nó
 \end_layout
@@ -388,7 +398,21 @@ Lân cận: điểm xung quanh của cùng scale, điểm xung quanh + chính n�
 \end_layout
 
 \begin_layout Itemize
-Nếu scale 
+Dánh dấu cực trị
+\end_layout
+
+\end_deeper
+\begin_layout Enumerate
+(?)
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Lọc các cực trị với contrast thấp?
+\end_layout
+
+\begin_layout Itemize
+Gán hướng, tính toán đặc trưng?
 \end_layout
 
 \end_deeper
@@ -406,6 +430,18 @@ Kết luận
 
 \begin_layout Section
 Tài liệu tham khảo
+\end_layout
+
+\begin_layout Section*
+Note
+\end_layout
+
+\begin_layout Itemize
+Tư tưởng phương pháp
+\end_layout
+
+\begin_layout Itemize
+Viết thuật toán
 \end_layout
 
 \end_body

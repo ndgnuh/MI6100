@@ -33,17 +33,8 @@ end
 # ╔═╡ c7a1474c-701a-4243-9a0c-3d69d60c63e8
 using Base.Iterators
 
-# ╔═╡ adcd3dca-878d-422f-9fb2-3004f7fec702
-using PaddedViews
-
-# ╔═╡ 483bc2c2-248d-48aa-8ba3-1c9f5c747e1f
-using Base.Threads
-
-# ╔═╡ c034f315-93fb-4b27-b274-6b2cb132e667
-using Profile
-
-# ╔═╡ 7b812cb5-95b1-403e-b613-5bfd116ae797
-using ProfileCanvas
+# ╔═╡ cbbbc0d5-d318-4386-9547-261add4f2722
+using ImageDraw
 
 # ╔═╡ c8c71b3e-343e-4e9f-b44b-ce7b203faa39
 TableOfContents()
@@ -53,6 +44,12 @@ md"# Input"
 
 # ╔═╡ 153288b8-3622-4b9c-a4d6-9b8d25accc20
 @bind image_name PlutoUI.Select((@. first(splitext(TestImages.remotefiles))), default="lighthouse")
+
+# ╔═╡ 26db3bbf-37f5-41c5-8c4d-0aeee24c36b1
+readdir()
+
+# ╔═╡ e4658d31-2858-4f66-a168-b2cfcb914e6b
+download("https://raw.githubusercontent.com/rmislam/PythonSIFT/master/box.png", "../samples/box.png")
 
 # ╔═╡ 0320abdb-f8d2-456f-a59a-7238dc11bf39
 @bind image_file FilePicker()
@@ -72,15 +69,6 @@ end
 
 # ╔═╡ 0a603cf2-f83c-47b7-9d75-abafada7beee
 md"# Overall"
-
-# ╔═╡ 026d1ac7-ecbb-4cc8-bb3e-403a9ff628d3
-to_gray(image) = @. gray(Gray(image))
-
-# ╔═╡ 12399059-2f00-45f9-aff4-e75f48ea8ab3
-to_gray(image)
-
-# ╔═╡ 5de0b8f6-18ff-4cfb-93e4-ad94d765e630
-imfilter(to_gray(image),  convert.(N0f8, Kernel.gaussian(1.2)))
 
 # ╔═╡ 1d783473-dddc-43aa-8126-a8c8ad6ef9a3
 md"# Scale space"
@@ -105,34 +93,6 @@ end
 	dog_images = nothing
 	
 end
-
-# ╔═╡ 33c84d54-4026-4ce9-957d-50a0034ed6c1
-function run_sift(image::Matrix, sift = SIFT())::SIFTResult
-	grayed = to_gray(image)
-	result = SIFTResult(sift=sift)
-	@set! result.num_scales = num_scales = get_num_octaves(grayed)
-	k = 2^(1/num_scales)
-	@set! result.scales = [sift.σ * (k^(n-1)) for n in 1:result.num_scales]
-	FType = (eltype(grayed))
-	@set! result.gauss_kernels = [
-		begin
-			k = Kernel.gaussian(k)
-		end for k in result.scales]
-	result
-	@set! result.gauss_images = [
-		gen_single_octave(grayed, kernel, sift.num_samples) for
-		kernel in result.gauss_kernels
-	]
-end
-
-# ╔═╡ 4e1cf4ca-cbc7-4570-a350-4f47076bcc8c
-result = let 
-	@code_warntype run_sift(image)
-	result = run_sift(image)
-end
-
-# ╔═╡ 7ca26e58-2b2e-4d36-8cc4-1331a212d685
-
 
 # ╔═╡ 89c22646-6a92-4be5-8060-f059b54187f4
 begin
@@ -196,6 +156,11 @@ begin
 		return result
 	end
 
+	function rescale_keypoints(x, y, i)
+		scale = 2^(i - 1)
+		x * scale, y * scale
+	end
+
 	function detect_scale_extremas(
 		dogs, 
 		scales,
@@ -204,7 +169,7 @@ begin
 		image_border_width=5,
 	)
 		threshold = floor(0.5 * contrast_threshold / num_intervals * 255)
-		keypoints = NTuple{, 3}[]
+		keypoints = Tuple{Int, Int, Int, Float32}[]
 
 		for ((i, σi), samples) in zip(enumerate(scales), dogs), idx in 2:(num_intervals-1)
 			h, w = size(samples |> first)
@@ -214,6 +179,7 @@ begin
 					is_extrema(<, samples, idx, x, y, threshold))
 
 				if is_ex
+					x, y = rescale_keypoints(x, y, i)
 					push!(keypoints, (x, y, i, σi))
 				end
 			end
@@ -222,149 +188,89 @@ begin
 	end
 end
 
+# ╔═╡ 33c84d54-4026-4ce9-957d-50a0034ed6c1
+function run_sift(image::Matrix, sift = SIFT())::SIFTResult
+	grayed = to_gray(image)
+	result = SIFTResult(sift=sift)
+	@set! result.num_scales = num_scales = get_num_octaves(grayed)
+	k = 2^(1/num_scales)
+	@set! result.scales = [sift.σ * (k^(n-1)) for n in 1:result.num_scales]
+	FType = (eltype(grayed))
+	@set! result.gauss_kernels = [
+		begin
+			k = Kernel.gaussian(k)
+		end for k in result.scales]
+	result
+	@set! result.gauss_images = [
+		gen_single_octave(grayed, kernel, sift.num_samples) for
+		kernel in result.gauss_kernels
+	]
+end
+
 # ╔═╡ 1ba24b1d-e421-4d6b-9f8e-234ffa6221d6
-let 
+keypoints, dogs = let 
 	σ = 1.6
 	num_intervals = 3
 	num_scales = get_num_octaves(image)
 	scales = generate_gaussian_kernels(σ, num_intervals)
 	images = generate_gaussian_images(image, num_scales, scales)
 	dogs = diff.(images)
-	detect_scale_extremas(dogs, scales, num_intervals)
+	keypoints = detect_scale_extremas(dogs, scales, num_intervals)
+	keypoints, dogs
+end;
+
+# ╔═╡ cb4cc8ed-6cd5-4ded-b71f-8c1b9ac8c703
+dogs[1]
+
+# ╔═╡ 59c79725-ecbb-4733-b01e-7b52a0536234
+CirclePointRadius(3, 3, 0.3)
+
+# ╔═╡ 8fe6e1e3-5aae-42e1-a44b-026004aea6bf
+function draw_keypoint(image, keypoints)
+	image = copy(image)
+	for (x, y, i, σ) in keypoints
+		if i > 1
+		end
+		shape = CirclePointRadius(x, y, σ * 3, fill=false, thickness=2) |> Ellipse
+		draw!(image, shape, RGB(1, 0, 0))
+	end
+	return image
 end
 
 # ╔═╡ 3fcd6014-6d2c-44b9-aca4-c2693eda922b
-
-
-# ╔═╡ aceea5aa-073f-4dc1-a9ec-a484c2274e6a
-gauss_images[end][begin] |> size
-
-# ╔═╡ 32ad1d8f-299d-4a2c-80ea-cdee9b48a694
-# function gen_scale_space_images(image::T, σ=1.6, num_samples=3) where T
-# 	num_octaves = get_num_octaves(image)
-# 	kernel = Kernel.gaussian(σ)
-# 	h, w = size(image)
-# 	# Compute first octave
-# 	first_octave = T[]
-# 	sizehint!(first_octave, num_samples)
-# 	for i in 1:num_samples
-# 		image = imfilter(image, kernel)
-# 		push!(first_octave, image)
-# 	end
-	
-# 	# Compute other octaves
-# 	rest_octaves = [
-# 		[
-# 		begin
-# 			step = 2 * n
-# 			image = image[begin:step:end, begin:step:end]
-# 			imresize(image, (h, w), method=Linear())
-# 		end
-# 		for image in first_octave
-# 		]
-# 		for n in 2:num_octaves
-# 	]
-
-# 	dogs = vcat(
-# 		diff(first_octave),
-# 		[diff(nth_octave) for nth_octave in rest_octaves]...)
-# end
-
-# ╔═╡ 6cb7fec3-d921-4085-9a09-0828dcb4e2e4
-dogs = gen_scale_space_images(image, 1.6, num_samples)
-
-# ╔═╡ 95a3d3ff-fdbd-4b4f-aeee-def2910fbf33
-size(dogs[end]), length(dogs)
-
-# ╔═╡ 45a94fb5-86c4-48bf-8cbc-4eca3768e47d
-num_samples
-
-# ╔═╡ da1b98f9-753d-4219-9270-c6ae9c1f7d47
-md"# Local extrema detection"
-
-# ╔═╡ dd5a2e9d-9cf8-437e-966c-90c6e37bad59
-function is_maxima(curr, prev, next, x, y, scale, threshold=0.03)
-	value = curr[x, y] - threshold
-	result = (value > prev[x, y]) & (value > next[x, y])
-	result = result && all(
-		value > prev[x+i,y+j] && value > next[x+i,y+j] && value > curr[x+i,y+j]
-		for (i, j) in Iterators.product((-scale, scale), (-scale, scale))
-	)
-end
-
-# ╔═╡ 2bde6807-2b5a-4622-8817-b0729abaacf6
-function is_minima(curr, prev, next, x, y, scale, threshold=0.03)
-	value = curr[x, y] + threshold * scale
-	result = (value < prev[x, y]) & (value < next[x, y])
-	result = result && all(
-		value < prev[x+i,y+j] && value < next[x+i,y+j] && value < curr[x+i,y+j]
-		for (i, j) in Iterators.product((-scale, scale), (-scale, scale))
-	)
-end
-
-# ╔═╡ 71a73d82-b837-467b-95ff-3a5b2f6a32ac
-div(1, 3)
-
-# ╔═╡ e0da518e-ede1-4eea-8373-7533836d89a4
-function detect_local_extrema(dogs, num_samples::Int, threshold=0.03)
-	h, w = size(dogs |> first)
-	extremas = fill(false, (h, w))
-	loop = 1
-	for (prev, curr, next) in zip(dogs, dogs[begin+1:end], dogs[begin+2:end])
-		scale = 1
-		for (x, y) in Iterators.product(1+scale:h-scale, 1+scale:w-scale)
-			maxima = is_maxima(curr, prev, next, x, y, scale, threshold)
-			minima = is_minima(curr, prev, next, x, y, scale, threshold) 
-			extremas[x, y] = extremas[x, y] || maxima || minima
-		end
-		loop += 1
-	end
-	extremas
-end
-
-# ╔═╡ 765f5e36-8047-4c73-90f9-c63c572e6245
-bgray(x) = broadcast(gray ∘ Gray, x)
-
-# ╔═╡ b2ddfa2d-4e10-447e-9fd1-3441eb27ed55
-
-
-# ╔═╡ 23631994-af57-4ad9-a45a-4d91b225ab43
-bdogs = bgray.(dogs);
-
-# ╔═╡ 77a8c80e-cb08-4805-921d-3650f5b96e9f
-@time detect_local_extrema(bdogs, num_samples)
-
-# ╔═╡ b6aad84e-2b2b-4514-aaa1-3a14247ed78d
-mask = detect_local_extrema(bgray.(dogs), num_samples)
-
-# ╔═╡ 88dabe26-6d1d-4c15-9667-5523e2e3c7e0
-let 
-	image = copy(orig_image)
-	image[mask] .= RGB(1, 0, 0)
-	image
-end
-
-# ╔═╡ 3245b2f7-0f9d-443a-a280-474c84d6bae8
-findall(mask)
+draw_keypoint(RGB.(orig_image), keypoints)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 FileIO = "5789e2e9-d7fb-5bc7-8068-2c6fae9b9549"
 ImageCore = "a09fc81d-aa75-5fe9-8630-4744c3626534"
+ImageDraw = "4381153b-2b60-58ae-a1ba-fd683676385f"
 ImageFiltering = "6a3955dd-da59-5b1f-98d4-e7296123deb5"
 ImageShow = "4e3cecfd-b093-5904-9786-8bbb286a6a31"
 ImageTransformations = "02fcd773-0e25-5acc-982a-7f6622650795"
 Interpolations = "a98d9a8b-a2ab-59e6-89dd-64a1c18fca59"
 Memoize = "c03570c3-d221-55d1-a50c-7939bbd78826"
 OffsetArrays = "6fe1bfb0-de20-5000-8ca7-80f57d26f881"
-PaddedViews = "5432bcbf-9aad-5242-b902-cca2824c8663"
 Parameters = "d96e819e-fc66-5662-9728-84c9c7592b0a"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
-Profile = "9abbd945-dff8-562f-b5e8-e1ebf5ef1b79"
-ProfileCanvas = "efd6af41-a80b-495e-886c-e51b0c7d77a3"
 Setfield = "efcf1570-3423-57d1-acb7-fd33fddbac46"
 TestImages = "5e47fb64-e119-507b-a336-dd2b206d9990"
+
+[compat]
+FileIO = "~1.16.0"
+ImageCore = "~0.9.4"
+ImageDraw = "~0.2.5"
+ImageFiltering = "~0.7.2"
+ImageShow = "~0.3.6"
+ImageTransformations = "~0.9.5"
+Interpolations = "~0.14.6"
+Memoize = "~0.4.4"
+OffsetArrays = "~1.12.8"
+Parameters = "~0.12.3"
+PlutoUI = "~0.7.48"
+Setfield = "~1.1.1"
+TestImages = "~1.7.1"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
@@ -373,7 +279,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.8.2"
 manifest_format = "2.0"
-project_hash = "6541c7626aec573e169040c56bcc33e24edbbf36"
+project_hash = "1993b5d155213e1d2e6a5d14a17e7ce4d892c32c"
 
 [[deps.AbstractFFTs]]
 deps = ["ChainRulesCore", "LinearAlgebra"]
@@ -614,6 +520,12 @@ deps = ["AbstractFFTs", "ColorVectorSpace", "Colors", "FixedPointNumbers", "Grap
 git-tree-sha1 = "acf614720ef026d38400b3817614c45882d75500"
 uuid = "a09fc81d-aa75-5fe9-8630-4744c3626534"
 version = "0.9.4"
+
+[[deps.ImageDraw]]
+deps = ["Distances", "ImageCore", "LinearAlgebra"]
+git-tree-sha1 = "6ed6e945d909f87c3013e391dcd3b2a56e48b331"
+uuid = "4381153b-2b60-58ae-a1ba-fd683676385f"
+version = "0.2.5"
 
 [[deps.ImageFiltering]]
 deps = ["CatIndices", "ComputationalResources", "DataStructures", "FFTViews", "FFTW", "ImageBase", "ImageCore", "LinearAlgebra", "OffsetArrays", "Reexport", "SparseArrays", "StaticArrays", "Statistics", "TiledIteration"]
@@ -941,16 +853,6 @@ version = "1.3.0"
 deps = ["Unicode"]
 uuid = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 
-[[deps.Profile]]
-deps = ["Printf"]
-uuid = "9abbd945-dff8-562f-b5e8-e1ebf5ef1b79"
-
-[[deps.ProfileCanvas]]
-deps = ["Base64", "JSON", "Pkg", "Profile", "REPL"]
-git-tree-sha1 = "e42571ce9a614c2fbebcaa8aab23bbf8865c624e"
-uuid = "efd6af41-a80b-495e-886c-e51b0c7d77a3"
-version = "0.1.6"
-
 [[deps.ProgressMeter]]
 deps = ["Distributed", "Printf"]
 git-tree-sha1 = "d7a7aef8f8f2d537104f170139553b14dfe39fe9"
@@ -1184,43 +1086,23 @@ version = "17.4.0+0"
 # ╠═c8c71b3e-343e-4e9f-b44b-ce7b203faa39
 # ╟─92685aab-2c03-451d-a7ed-ef2896023ea4
 # ╟─153288b8-3622-4b9c-a4d6-9b8d25accc20
+# ╠═26db3bbf-37f5-41c5-8c4d-0aeee24c36b1
+# ╠═e4658d31-2858-4f66-a168-b2cfcb914e6b
 # ╠═0320abdb-f8d2-456f-a59a-7238dc11bf39
 # ╠═bb892b57-5302-446f-bca9-a3c74c32c772
 # ╟─0a603cf2-f83c-47b7-9d75-abafada7beee
 # ╠═9568b235-fa4b-4297-a3c8-0085317a9eea
 # ╠═26fe385f-543b-485e-935c-8556e23c86d7
 # ╠═33c84d54-4026-4ce9-957d-50a0034ed6c1
-# ╠═4e1cf4ca-cbc7-4570-a350-4f47076bcc8c
-# ╠═026d1ac7-ecbb-4cc8-bb3e-403a9ff628d3
-# ╠═12399059-2f00-45f9-aff4-e75f48ea8ab3
-# ╠═5de0b8f6-18ff-4cfb-93e4-ad94d765e630
 # ╟─1d783473-dddc-43aa-8126-a8c8ad6ef9a3
 # ╟─23419689-7cfe-4a97-b917-928bc13dc766
 # ╠═c7a1474c-701a-4243-9a0c-3d69d60c63e8
-# ╠═7ca26e58-2b2e-4d36-8cc4-1331a212d685
 # ╠═89c22646-6a92-4be5-8060-f059b54187f4
 # ╠═1ba24b1d-e421-4d6b-9f8e-234ffa6221d6
+# ╠═cbbbc0d5-d318-4386-9547-261add4f2722
+# ╠═cb4cc8ed-6cd5-4ded-b71f-8c1b9ac8c703
+# ╠═59c79725-ecbb-4733-b01e-7b52a0536234
+# ╠═8fe6e1e3-5aae-42e1-a44b-026004aea6bf
 # ╠═3fcd6014-6d2c-44b9-aca4-c2693eda922b
-# ╠═aceea5aa-073f-4dc1-a9ec-a484c2274e6a
-# ╠═32ad1d8f-299d-4a2c-80ea-cdee9b48a694
-# ╠═6cb7fec3-d921-4085-9a09-0828dcb4e2e4
-# ╠═95a3d3ff-fdbd-4b4f-aeee-def2910fbf33
-# ╠═45a94fb5-86c4-48bf-8cbc-4eca3768e47d
-# ╟─da1b98f9-753d-4219-9270-c6ae9c1f7d47
-# ╠═adcd3dca-878d-422f-9fb2-3004f7fec702
-# ╠═dd5a2e9d-9cf8-437e-966c-90c6e37bad59
-# ╠═2bde6807-2b5a-4622-8817-b0729abaacf6
-# ╠═483bc2c2-248d-48aa-8ba3-1c9f5c747e1f
-# ╠═71a73d82-b837-467b-95ff-3a5b2f6a32ac
-# ╠═e0da518e-ede1-4eea-8373-7533836d89a4
-# ╠═765f5e36-8047-4c73-90f9-c63c572e6245
-# ╠═b2ddfa2d-4e10-447e-9fd1-3441eb27ed55
-# ╟─c034f315-93fb-4b27-b274-6b2cb132e667
-# ╠═7b812cb5-95b1-403e-b613-5bfd116ae797
-# ╠═23631994-af57-4ad9-a45a-4d91b225ab43
-# ╠═77a8c80e-cb08-4805-921d-3650f5b96e9f
-# ╠═b6aad84e-2b2b-4514-aaa1-3a14247ed78d
-# ╠═88dabe26-6d1d-4c15-9667-5523e2e3c7e0
-# ╠═3245b2f7-0f9d-443a-a280-474c84d6bae8
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

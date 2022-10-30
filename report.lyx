@@ -87,6 +87,19 @@
 
 \begin_body
 
+\begin_layout Standard
+\begin_inset FormulaMacro
+\newcommand{\next}{\phi}
+\end_inset
+
+
+\begin_inset FormulaMacro
+\newcommand{\prev}{\beta}
+\end_inset
+
+
+\end_layout
+
 \begin_layout Title
 Đối sánh ảnh sử dụng phương pháp của David Lowe
 \end_layout
@@ -379,11 +392,7 @@ Sử dụng diffientation of gaussian (DoG) để xét ảnh trên nhiều scale
 
 \begin_deeper
 \begin_layout Itemize
-tính nhiều mẫu mỗi octave
-\end_layout
-
-\begin_layout Itemize
-mỗi octave được tính bằng cách lấy chỉ số của octave trước
+tính nhiều mẫu mỗi scale
 \end_layout
 
 \end_deeper
@@ -416,6 +425,82 @@ Gán hướng, tính toán đặc trưng?
 \end_layout
 
 \end_deeper
+\begin_layout Enumerate
+Tinhs'
+\end_layout
+
+\begin_layout Standard
+\begin_inset Separator plain
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Tinh' gradient
+\begin_inset Formula 
+\[
+D\left(\hat{\mathbf{x}}\right)=D+\frac{1}{2}\frac{\partial D^{\top}}{\partial\mathbf{x}}\hat{\mathbf{x}}
+\]
+
+\end_inset
+
+trong đó 
+\series bold
+
+\begin_inset Formula $\hat{\mathbf{x}}=\left(x,y,\sigma_{i}\right)$
+\end_inset
+
+.
+ 
+\series default
+Trong lân cận 
+\begin_inset Formula $x,y$
+\end_inset
+
+ và lân cận của 
+\begin_inset Formula $\sigma_{i}$
+\end_inset
+
+ (rời rạc)
+\begin_inset Formula 
+\[
+D_{d}=\frac{\partial D}{\partial\mathbf{x}_{d}}=D\left(\next\left(\mathbf{x},d\right)\right)-D\left(\prev\left(D,\mathbf{x},d\right)\right)
+\]
+
+\end_inset
+
+trong đó 
+\begin_inset Formula $\next$
+\end_inset
+
+ và 
+\begin_inset Formula $\prev$
+\end_inset
+
+ là các hàm tăng và giảm chuyển chiều 
+\begin_inset Formula $d$
+\end_inset
+
+ của 
+\begin_inset Formula $\mathbf{x}$
+\end_inset
+
+ một đơn vị.
+ Tương tự, ta có
+\begin_inset Formula 
+\begin{align*}
+\frac{\partial^{2}D}{\partial\mathbf{x}_{d_{2}}\mathbf{x}_{d_{1}}} & =D_{d_{1}}\circ D_{d_{2}}\\
+ & =D_{d_{1}}\left(\next\left(\mathbf{x},d_{2}\right)\right)-D_{d_{1}}\left(\prev\left(\mathbf{x},d_{2}\right)\right)\\
+ & =\left(D\left(\next\left(\mathbf{x},d_{1}\right)\right)-D\left(\prev\left(\mathbf{x},d_{1}\right)\right)\right)\left(\next\left(\mathbf{x},d_{2}\right)\right)\\
+ & \phantom{-}-\left(D\left(\next\left(\mathbf{x},d_{1}\right)\right)-D\left(\prev\left(\mathbf{x},d_{1}\right)\right)\right)\left(\beta\left(\mathbf{x},d_{2}\right)\right)
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Section
 Thử nghiệm
 \end_layout

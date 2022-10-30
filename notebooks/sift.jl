@@ -19,6 +19,7 @@ begin
 	using TestImages
 	using ImageFiltering
 	using ImageCore
+	using Base.Iterators
 	using PlutoUI
 	using Interpolations
 	using ImageShow
@@ -28,13 +29,13 @@ begin
 	using Memoize
 	using Parameters
 	using Setfield
+	using LinearAlgebra
+	using DataStructures
+	using LinearSolve
 end
 
-# ╔═╡ c7a1474c-701a-4243-9a0c-3d69d60c63e8
-using Base.Iterators
-
-# ╔═╡ daa4cf75-ecd3-4e90-b988-2a262dc70027
-using LinearSolve
+# ╔═╡ 0f185020-77ff-4b06-9df2-6439a07447b7
+using Statistics
 
 # ╔═╡ cbbbc0d5-d318-4386-9547-261add4f2722
 using ImageDraw
@@ -70,14 +71,86 @@ image, orig_image = let
 	image, orig_image
 end
 
+# ╔═╡ 4a28764b-ac45-4f30-aabb-dc79ab444748
+md"# Helper functions"
+
+# ╔═╡ f794352c-2d5b-4d87-a7e4-bb1b7c7ea4ea
+
+
+# ╔═╡ a84ff639-deea-4bb0-a1c5-9cc1980e352b
+function nproduct(iter, n)
+	product(Iterators.repeated(iter, n)...)
+end
+
+# ╔═╡ 8991d7ff-9970-45e4-9066-dc62b5efce92
+function offset(idx, dim, by)
+	for (d, b) in zip(dim, by)
+		idx = @set idx[d] = idx[d] + b
+	end
+	return idx
+end
+
+# ╔═╡ 890ba89e-6b8e-4eae-aba5-15770bcd77bf
+function compute_gradients_at(arr, idx::CartesianIndex)
+	n = length(idx)
+	map(1:n) do d
+		inext = offset(idx, d, 1)
+		iprev = offset(idx, d, -1)
+		(arr[inext] - arr[iprev]) / 2
+	end
+end
+
+# ╔═╡ 99fe0bbf-d6a6-4255-acfc-6e892dd1cef0
+function compute_hessians_at(arr, idx::CartesianIndex)
+	n = length(idx)
+	map(product(1:n, 1:n)) do (d1, d2)
+		i1 = offset(idx, (d1, d2), ( 1,  1))
+		i2 = offset(idx, (d1, d2), ( 1, -1))
+		i3 = offset(idx, (d1, d2), (-1,  1))
+		i4 = offset(idx, (d1, d2), (-1, -1))
+		(arr[i1] - arr[i2] - arr[i3] + arr[i4]) / 4
+	end
+end
+
+# ╔═╡ 348e5417-abb4-4dc7-a536-fc1526013d2e
+function get_surround_idx(idx)
+	n = length(idx)
+	# All the offset index
+	iter = Iterators.filter(x -> any(x .!= 0), nproduct(-1:1, n))
+	offsets = Iterators.map(iter) do offset_
+		offset(idx, 1:n, offset_)
+	end
+end
+
+# ╔═╡ c0e218a7-0b01-4dbf-b988-2595e69552a7
+function is_point_extrema(arr, idx...)
+	n = ndims(arr)
+	arr = padarray(arr, Pad(ones(Int, n)...))
+	idx = CartesianIndex(idx...)
+	value = arr[idx]
+
+	# All the offset index
+	iter = Iterators.filter(x -> any(x .!= 0), nproduct(-1:1, n))
+	offsets = Iterators.map(iter) do offset_
+		offset(idx, 1:n, offset_)
+	end
+
+	# Check extrema
+	# Todo, padded view -> border is always not extrema
+	is_minima = all(offsets) do idx
+		value < arr[idx]
+	end
+	is_maxima = all(offsets) do idx
+		value > arr[idx]
+	end
+	is_minima || is_maxima
+end
+
 # ╔═╡ 0a603cf2-f83c-47b7-9d75-abafada7beee
 md"# Overall"
 
-# ╔═╡ 1d783473-dddc-43aa-8126-a8c8ad6ef9a3
-md"# Scale space"
-
-# ╔═╡ 23419689-7cfe-4a97-b917-928bc13dc766
-Maybe{T} = Union{Nothing, T}
+# ╔═╡ e1066c27-37c2-4b02-acf6-878bf7138632
+Maybe{T} = Union{T, Nothing}
 
 # ╔═╡ 9568b235-fa4b-4297-a3c8-0085317a9eea
 @with_kw struct SIFT
@@ -85,6 +158,9 @@ Maybe{T} = Union{Nothing, T}
 	num_samples::Int = 3
 	num_scales::Maybe{Int} = nothing
 end
+
+# ╔═╡ 59051609-342e-4aaa-8431-6a43975c8d7f
+hash(SIFT())
 
 # ╔═╡ 26fe385f-543b-485e-935c-8556e23c86d7
 @with_kw struct SIFTResult
@@ -97,176 +173,12 @@ end
 	
 end
 
-# ╔═╡ 453989ed-62f5-4796-9fba-bfff5dd5df96
-function take_image_grad(image)
-	cat(imgradients(image, KernelFactors.ando3)..., dims=ndims(image) + 1)
-end
+# ╔═╡ 1d783473-dddc-43aa-8126-a8c8ad6ef9a3
+md"# Scale space"
 
-# ╔═╡ dcc0a727-8325-4025-b584-723cd77aed7f
-function take_image_hess(image)
-	grads = imgradients(image, KernelFactors.ando3)
-	cat([take_image_grad(grad) for grad in grads]..., dims=ndims(image) + 2)
-end
-
-# ╔═╡ 89c22646-6a92-4be5-8060-f059b54187f4
-begin
-	function get_num_octaves(image)
-		convert(Int, log(image |> size |> minimum) / log(2) - 1 |> floor)
-	end
-	
-	function generate_gaussian_kernels(σ, num_intervals)
-		num_samples = num_intervals + 3
-		k = 2^(1 / num_intervals)
-		σs = [σ]
-		sizehint!(σs, num_samples)
-		for i in 1:num_samples - 1
-			σp = (k^(i - 1)) * σ
-			σ = σp * k
-			push!(σs, sqrt(σ^2 - σp^2))
-		end
-		return σs
-	end
-
-	function generate_gaussian_images(image, num_scales, scales)
-		T = typeof(image)
-		images = Vector{T}[]
-		sizehint!(images, num_scales)
-		kernels = Kernel.gaussian.(scales)
-		num_samples = length(kernels)
-		for i in 1:num_scales
-			samples = [image]
-			sizehint!(samples, num_samples)
-			for kern in drop(kernels, 1)
-				image = imfilter(image, kern)
-				push!(samples, image)
-			end
-			push!(images, samples)
-			base = samples[end - 3]
-			image = imresize(base; ratio=1//2)
-		end
-		images
-	end
-
-	function is_extrema(compare, samples, idx, x, y, threshold)
-		if abs(samples[idx][x, y]) <  threshold
-			return false
-		end
-
-		prev, cur, next = samples[idx - 1], samples[idx], samples[idx + 1]
-		value = cur[x, y]
-		compare = value > 0 ? (>) : (<)
-		result = (
-			compare(value, prev[x, y]) &&
-			compare(value, next[x, y])
-		)
-
-		result = result && all((
-			compare(value, prev[x + i, y + j]) &&
-			compare(value, cur[x + i, y + j]) && 
-			compare(value, next[x + i, y + j])
-			for (i, j) in product((-1, 1), (-1, 1))
-		))
-	
-		return result
-	end
-
-	function rescale_keypoints(x, y, i)
-		scale = 2^(i - 1)
-		x * scale, y * scale
-	end
-
-	function localize_keypoint(x, y, img_idx, octave_index, dogs, σ)
-		image_shape = size(first(dogs))
-		
-		for attempt in 1:10
-			prev, cur, next = dogs[img_idx - 1], dogs[img_idx], dogs[img_idx + 1]
-		end
-		x, y
-	end
-
-	function detect_scale_extremas(
-		dogs, 
-		scales,
-		num_intervals,
-		contrast_threshold=0.03,
-		image_border_width=5,
-	)
-		threshold = floor(0.5 * contrast_threshold / num_intervals * 255)
-		keypoints = Tuple{Int, Int, Int, Int}[]
-
-		# Detect keypoints
-		for ((octave_index, σi), samples) in zip(enumerate(scales), dogs), image_index in 2:(num_intervals-1)
-			h, w = size(samples |> first)
-			for (y, x) in product(2:h-1, 2:w-1)
-				is_ex = (
-					is_extrema(>, samples, image_index, y, x, threshold) && 
-					is_extrema(<, samples, image_index, y, x, threshold))
-
-				if is_ex
-					# x, y = rescale_keypoints(x, y, octave_index)
-					push!(keypoints, (y, x, image_index, octave_index))
-				end
-			end
-		end
-
-		# Localize keypoints
-		# dogs = cat(dogs..., dims=3)
-
-		l_keypoints = Tuple{Int, Int, Int, Int}[]
-		sizehint!(l_keypoints, length(keypoints))
-		dogs = [gray.(cat(dogs_..., dims=3)) for dogs_ in dogs]
-		grads = [take_image_grad(dog) for dog in dogs]
-		hesss = [take_image_hess(dog) for dog in dogs]
-		max_iterations = 10
-		for (row::Int, col::Int, image_index, octave_index) in keypoints
-			dogs_ = gray.(dogs[octave_index])
-			height, width = size(dogs_)
-			outside = false
-			error = true
-			low_contrast = false
-			for i in 1:max_iterations
-				grad = grads[octave_index][row, col, image_index, :]
-				hess = hesss[octave_index][row, col, image_index, :, :]
-				# println(size(hess), size(grad))
-				prob = LinearProblem(hess, grad)
-				try
-					update = solve(prob)
-				catch (e)
-					error = true
-				end
-				if error break end
-				if all(@. abs(update) < 0.5)
-					break
-				end
-				# drow, dcol = -inv(hess) * grad
-				row = row + round(update[1])
-				col = col + round(update[2])
-				image_index = image_index + round(update[3])
-
-				
-				if row < 1 || col < 1 || row > height || col > width || image_index < 2 || image_index > num_intervals
-					outside = true
-					break
-				end
-				
-				# This is supposed to be outside
-				# Check for low contrasts
-				D̂x = dogs_[row, col, image_index] + grad * update / 2
-				println(D̂x)
-				if norm(D̂x) < 0.03
-					low_contrast = true
-					break
-				end
-			end
-
-			
-			
-			if !outside && !low_contrast
-				push!(l_keypoints, (row::Int, col::Int, image_index, octave_index))
-			end
-		end
-		l_keypoints
-	end
+# ╔═╡ 23419689-7cfe-4a97-b917-928bc13dc766
+function get_num_octaves(image)
+	convert(Int, log(image |> size |> minimum) / log(2) - 1 |> floor)
 end
 
 # ╔═╡ 33c84d54-4026-4ce9-957d-50a0034ed6c1
@@ -288,71 +200,270 @@ function run_sift(image::Matrix, sift = SIFT())::SIFTResult
 	]
 end
 
-# ╔═╡ 1ba24b1d-e421-4d6b-9f8e-234ffa6221d6
-keypoints, dogs = let 
+# ╔═╡ 1928a00e-7374-4dda-bc17-b195fedcadf3
+function generate_gaussian_kernels(σ, num_intervals)
+	num_samples = num_intervals + 3
+	k = 2^(1 / num_intervals)
+	σs = [σ]
+	sizehint!(σs, num_samples)
+	for i in 1:num_samples - 1
+		σp = (k^(i - 1)) * σ
+		σ = σp * k
+		push!(σs, sqrt(σ^2 - σp^2))
+	end
+	return σs
+end
+
+# ╔═╡ 53597c59-d12b-4613-bcc3-99ada5e4a444
+function generate_gaussian_images(image, num_scales, scales)
+	T = typeof(image)
+	images = Vector{T}[]
+	sizehint!(images, num_scales)
+	kernels = Kernel.gaussian.(scales)
+	num_samples = length(kernels)
+	for i in 1:num_scales
+		samples = [image]
+		sizehint!(samples, num_samples)
+		for kern in drop(kernels, 1)
+			image = imfilter(image, kern)
+			push!(samples, image)
+		end
+		push!(images, samples)
+		base = samples[end - 3]
+		image = imresize(base; ratio=1//2)
+	end
+	images
+end
+
+
+# ╔═╡ 66dab619-8214-4970-a718-857c9512b4cc
+function rescale_keypoints(x, y, octave_index)
+	scale = 2^(octave_index - 1)
+	x * scale, y * scale
+end
+
+
+# ╔═╡ 9996691f-ea27-4217-ac7b-6491b1bb8723
+function generate_dg_images(images)
+	[gray.(cat(diff(images_)..., dims=3)) for images_ in images]
+end
+
+# ╔═╡ abe6b4b9-9bf5-474a-b0f1-0046e1a772e7
+function compute_keypoints_orientation(keypoints)
+end
+
+# ╔═╡ c3fe6289-0f30-4fca-a09a-5d4d2d9c91bd
+function localize_keypoint!(D, G, H, x; max_iterations=10)
+	sizes = size(D)
+	converge = true
+	for loop = 1:max_iterations
+		# Fit
+		converge = loop == max_iterations
+		grad = G[x...]
+		hess = H[x...]
+		prob = LinearProblem(hess, grad)
+		update = solve(prob)
+		
+		# Check converge
+		if all(abs(u) <= 0.5 for u in update)
+			converge = true
+		end
+	
+		x .= @. round(x + update)
+		if (any(i < 2 for i in x) || 
+			any(i > j - 1 for (j, i) in zip(sizes, x)))
+			converge = false
+			break
+		end
+	
+		converge = loop == max_iterations
+	end
+	if !converge
+		return nothing
+	else
+		return x
+	end
+end
+
+
+# ╔═╡ 11cde9d0-e6fd-4381-a5a9-f23e08d80045
+
+function detect_scale_extremas(
+	dogs, 
+	octaves,
+	contrast_threshold=0.03,
+	image_border_width=5,
+	r=10,
+)
+	num_samples = size(dogs[begin])[end]
+	threshold = floor(0.5 * contrast_threshold / num_samples * 255)
+	keypoints = MutableLinkedList()
+
+	# Detect keypoints
+	for (octave_index, σi) in enumerate(octaves)
+		D = dogs[octave_index]
+		extrema_mask = zeros(Bool, size(D))
+		height, width, num_samples = size(D)
+		for (row, col, image_index) in product(2:height-1, 2:width-1, 2:num_samples-1)
+			# Is extrema
+			idx = CartesianIndex(row, col, image_index)
+			if extrema_mask[idx]
+				continue
+			end
+			value = D[idx]
+			surround_indices = get_surround_idx(idx)
+			surrounds = (D[idx] for idx in surround_indices)
+			is_extrema = all(>(value), surrounds) || all(<(value), surrounds)
+
+			# Masking
+			if is_extrema
+				extrema_mask[idx] = false
+				for s_idx in surround_indices
+					extrema_mask[s_idx] = true
+				end
+				push!(keypoints, (row, col, image_index, octave_index))
+			end
+		end
+	end
+
+	# Localize keypoints
+	l_keypoints = MutableLinkedList()
+	max_iterations = 10
+	size_of_octaves = size.(dogs)
+	GH = [
+		begin
+			indices = CartesianIndices(D)
+			D1 = padarray(D, Pad(1, 1, 1))
+			D2 = padarray(D, Pad(2, 2, 2))
+			G = map(indices) do i
+				compute_gradients_at(D2, i)
+			end
+			H = compute_hessians_at.((padarray(D, Pad(2, 2, 2)),), indices)
+			G, H
+		end
+		for D in dogs
+	]
+	for (row, col, image_index, octave_index) in keypoints
+		x::Vector{Int} = [row, col, image_index]
+		D = dogs[octave_index]
+		G, H = GH[octave_index]
+		
+		x̂ = localize_keypoint!(D, G, H, x; max_iterations=10)
+		if isnothing(x̂) continue end
+		x = x̂
+
+		# Check for high contrasts
+		Dx̂ = D[x...] + transpose(G[x...]) * x / 2
+		highcontrast = abs(Dx̂) * (num_samples) >= 0.04
+		if !highcontrast continue end
+
+		# Check for strong edge responses
+		H = H[x...]
+		trH = tr(H)
+		detH = det(H)
+		strong_response = (trH^2 / detH) < (r + 1)^2/r
+
+		if strong_response
+			row, col = rescale_keypoints(row, col, octave_index)
+			push!(l_keypoints, (row, col, image_index, octave_index, Dx̂))
+		end
+	end
+	l_keypoints
+end
+
+# ╔═╡ 266b6f00-a716-45c4-bc06-f29e25f895de
+keypoints, dogs = let image = imresize(image; ratio=2)
 	σ = 1.6
 	num_intervals = 3
-	num_scales = get_num_octaves(image)
-	scales = generate_gaussian_kernels(σ, num_intervals)
-	images = generate_gaussian_images(image, num_scales, scales)
-	dogs = diff.(images)
-	keypoints = detect_scale_extremas(dogs, scales, num_intervals)
+	assumed_blur = 0.5
+	dσ = sqrt(σ^2 - ((2 * assumed_blur)^2))
+	@info "dσ = $dσ"
+	image = imfilter(image, Kernel.reflect(Kernel.gaussian(dσ)))
+	@info "Generated base image"
+	num_octaves = get_num_octaves(image) 
+	# num_octaves = 
+	@info "Number of octaves $num_octaves"
+	octaves = generate_gaussian_kernels(σ, num_intervals)
+	@info "Octaves: $(round.(octaves, digits=3))"
+	images = generate_gaussian_images(image, num_octaves, octaves)
+	dogs = generate_dg_images(images)
+	@info "Generated DoGs, last octave size: $(size(dogs[end]))" 
+	keypoints = detect_scale_extremas(dogs, octaves)
+	@info "Detected $(length(keypoints)) keypoints"
 	keypoints, dogs
 end;
 
-# ╔═╡ d789d4ea-92f6-4e5a-a1e8-33e3e6e05281
-hess = let dogs = rand(10, 10, 5)
-	take_image_hess(dogs)
-end;
-
-# ╔═╡ 8808ba85-adbf-428a-b4e2-b97ee1d77985
-function grad_at(x, I...)
-	grad_idx = Iterators.map(enumerate(I)) do (i, idx)
-		I1 = @set I[i] = idx + 1
-		I2 = @set I[i] = idx - 1
-		I1, I2
-	end
-	map(grad_idx) do (i1, i2)
-		x[CartesianIndex(i1)] - x[CartesianIndex(i2)]
-	end / 2
-end
-
-# ╔═╡ 8fa97381-900e-4d4f-b865-a9b4a6ff3ad5
-function hess_at(x, I...)
-	grad_idx = Iterators.map(enumerate(I)) do (i, idx)
-		I1 = @set I[i] = idx + 1
-		I2 = @set I[i] = idx - 1
-		I1, I2
-	end
-	# [grad_at(idx) for idx in grad_idx]
-	hess = map(grad_idx) do (i1, i2)
-		g1 = grad_at(x, i1...)
-		g2 = grad_at(x, i2...)
-		g1 - g2
-	end
-	cat(hess..., dims=2)
-end
-
-
-# ╔═╡ 8fe6e1e3-5aae-42e1-a44b-026004aea6bf
+# ╔═╡ 4edf4821-a5ae-4acc-96e9-9fba4f5781f4
 function draw_keypoint(image, keypoints)
 	image = copy(image)
-	for (y, x, image_index, octave_indices) in keypoints
-		shape = CirclePointRadius(x, y, octave_indices * 4, fill=false, thickness=2) |> Ellipse
-		draw!(image, shape, RGB(1, 0, 0))
+	height, width = size(image)
+	responses = [abs(r[end]) for r in keypoints]
+	n = minimum(responses) |> log |> abs |> ceil
+	responses = responses * 10^n
+	responses = (responses .- mean(responses)) / std(responses) .+ 2
+	responses = responses * 2
+	@info responses
+	for ((row, col, image_index, _, _), response) in zip(keypoints, responses)
+		shape = CirclePointRadius(col, row, response, fill=true, thickness=2) |> Ellipse
+		draw!(image, shape, RGBA(1, 0, 0))
+		if row > height  || col > width
+			@info "Row $row, height $height"
+			@info "Row $row, height $height"
+		end
 	end
 	return image
 end
 
+# ╔═╡ 3fcd6014-6d2c-44b9-aca4-c2693eda922b
+draw_keypoint(RGBA.(imresize(orig_image; ratio=2)), keypoints)
+
+# ╔═╡ 1c9eefff-d69b-4278-a7bc-e57b628b4eef
+
+
+# ╔═╡ ba3b342e-5a6b-4fd4-8c5b-74f55194ed9f
+x = rand(1024,1024, 5);
+
+# ╔═╡ 52ce783f-f68d-4b7f-b49d-849fcc0336ee
+function im_gradients(arr)
+	n = ndims(arr)
+	grads = map(1:n) do d
+		pads = [i == d ? 1 : 0 for i in 1:n]
+		padded = padarray(arr, Pad(pads...))
+		diff(padded, dims=d)
+	end
+	# cat(imgradients(arr, KernelFactors.sobel)..., dims=ndims(arr) + 1)
+end
+
+# ╔═╡ f396904a-833d-43eb-8e46-93d239d410aa
+args = KernelFactors.sobel()
+
+# ╔═╡ 5714f797-5567-4adc-8e08-fca9295c0261
+compute_hessians_at.((padarray(x, Pad(2, 2, 2)),), CartesianIndices(x))
+
+# ╔═╡ b67a25a9-f546-4ff5-9777-a6a2255b5c3a
+function grad_kernel(dims, )
+	([-1, 0, 1], [1 1 1]), ([1,1,1], [-1 0 1])
+end
+
+# ╔═╡ 106b6eb0-85f6-404b-9126-fc5ea0a38184
+gx = im_gradients(x)
+
+# ╔═╡ 8ac270ba-f5a5-4e90-9a3b-2a9c561a0900
+compute_gradients_at(x, 4, 4, 2)
+
+# ╔═╡ ed8512cf-a2f9-4d80-9dc9-24e5457b574c
+gx[4, 4, 2, :]
+
+# ╔═╡ 8fe6e1e3-5aae-42e1-a44b-026004aea6bf
+
+
 # ╔═╡ 2f65ee16-c443-491e-9ee3-f26caf5e4a18
 import Zygote
-
-# ╔═╡ 3fcd6014-6d2c-44b9-aca4-c2693eda922b
-draw_keypoint(RGB.(orig_image), keypoints)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
+DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
 FileIO = "5789e2e9-d7fb-5bc7-8068-2c6fae9b9549"
 ImageCore = "a09fc81d-aa75-5fe9-8630-4744c3626534"
 ImageDraw = "4381153b-2b60-58ae-a1ba-fd683676385f"
@@ -360,16 +471,19 @@ ImageFiltering = "6a3955dd-da59-5b1f-98d4-e7296123deb5"
 ImageShow = "4e3cecfd-b093-5904-9786-8bbb286a6a31"
 ImageTransformations = "02fcd773-0e25-5acc-982a-7f6622650795"
 Interpolations = "a98d9a8b-a2ab-59e6-89dd-64a1c18fca59"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 LinearSolve = "7ed4a6bd-45f5-4d41-b270-4a48e9bafcae"
 Memoize = "c03570c3-d221-55d1-a50c-7939bbd78826"
 OffsetArrays = "6fe1bfb0-de20-5000-8ca7-80f57d26f881"
 Parameters = "d96e819e-fc66-5662-9728-84c9c7592b0a"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 Setfield = "efcf1570-3423-57d1-acb7-fd33fddbac46"
+Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 TestImages = "5e47fb64-e119-507b-a336-dd2b206d9990"
 Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
 
 [compat]
+DataStructures = "~0.18.13"
 FileIO = "~1.16.0"
 ImageCore = "~0.9.4"
 ImageDraw = "~0.2.5"
@@ -393,7 +507,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.8.2"
 manifest_format = "2.0"
-project_hash = "f3b387fbd9ac16f03cd2e43d7b9eb73cbb79bf7e"
+project_hash = "fe34fc707dfd23605a6a3a0e317903ae35df5397"
 
 [[deps.AbstractFFTs]]
 deps = ["ChainRulesCore", "LinearAlgebra"]
@@ -1568,24 +1682,44 @@ version = "17.4.0+0"
 # ╠═e4658d31-2858-4f66-a168-b2cfcb914e6b
 # ╠═0320abdb-f8d2-456f-a59a-7238dc11bf39
 # ╠═bb892b57-5302-446f-bca9-a3c74c32c772
+# ╟─4a28764b-ac45-4f30-aabb-dc79ab444748
+# ╠═f794352c-2d5b-4d87-a7e4-bb1b7c7ea4ea
+# ╟─a84ff639-deea-4bb0-a1c5-9cc1980e352b
+# ╟─8991d7ff-9970-45e4-9066-dc62b5efce92
+# ╟─890ba89e-6b8e-4eae-aba5-15770bcd77bf
+# ╟─99fe0bbf-d6a6-4255-acfc-6e892dd1cef0
+# ╟─348e5417-abb4-4dc7-a536-fc1526013d2e
+# ╟─c0e218a7-0b01-4dbf-b988-2595e69552a7
 # ╟─0a603cf2-f83c-47b7-9d75-abafada7beee
-# ╠═9568b235-fa4b-4297-a3c8-0085317a9eea
-# ╠═26fe385f-543b-485e-935c-8556e23c86d7
-# ╠═33c84d54-4026-4ce9-957d-50a0034ed6c1
+# ╟─e1066c27-37c2-4b02-acf6-878bf7138632
+# ╟─9568b235-fa4b-4297-a3c8-0085317a9eea
+# ╟─59051609-342e-4aaa-8431-6a43975c8d7f
+# ╟─26fe385f-543b-485e-935c-8556e23c86d7
+# ╟─33c84d54-4026-4ce9-957d-50a0034ed6c1
 # ╟─1d783473-dddc-43aa-8126-a8c8ad6ef9a3
 # ╟─23419689-7cfe-4a97-b917-928bc13dc766
-# ╠═c7a1474c-701a-4243-9a0c-3d69d60c63e8
-# ╠═89c22646-6a92-4be5-8060-f059b54187f4
-# ╠═1ba24b1d-e421-4d6b-9f8e-234ffa6221d6
-# ╠═daa4cf75-ecd3-4e90-b988-2a262dc70027
-# ╠═453989ed-62f5-4796-9fba-bfff5dd5df96
-# ╠═dcc0a727-8325-4025-b584-723cd77aed7f
-# ╠═d789d4ea-92f6-4e5a-a1e8-33e3e6e05281
-# ╠═8808ba85-adbf-428a-b4e2-b97ee1d77985
-# ╠═8fa97381-900e-4d4f-b865-a9b4a6ff3ad5
+# ╟─1928a00e-7374-4dda-bc17-b195fedcadf3
+# ╟─53597c59-d12b-4613-bcc3-99ada5e4a444
+# ╟─66dab619-8214-4970-a718-857c9512b4cc
+# ╟─9996691f-ea27-4217-ac7b-6491b1bb8723
+# ╠═266b6f00-a716-45c4-bc06-f29e25f895de
+# ╠═abe6b4b9-9bf5-474a-b0f1-0046e1a772e7
+# ╟─c3fe6289-0f30-4fca-a09a-5d4d2d9c91bd
+# ╠═11cde9d0-e6fd-4381-a5a9-f23e08d80045
+# ╠═0f185020-77ff-4b06-9df2-6439a07447b7
+# ╠═4edf4821-a5ae-4acc-96e9-9fba4f5781f4
+# ╠═3fcd6014-6d2c-44b9-aca4-c2693eda922b
+# ╠═1c9eefff-d69b-4278-a7bc-e57b628b4eef
+# ╠═ba3b342e-5a6b-4fd4-8c5b-74f55194ed9f
+# ╠═52ce783f-f68d-4b7f-b49d-849fcc0336ee
+# ╠═f396904a-833d-43eb-8e46-93d239d410aa
+# ╠═5714f797-5567-4adc-8e08-fca9295c0261
+# ╠═b67a25a9-f546-4ff5-9777-a6a2255b5c3a
+# ╠═106b6eb0-85f6-404b-9126-fc5ea0a38184
+# ╠═8ac270ba-f5a5-4e90-9a3b-2a9c561a0900
+# ╠═ed8512cf-a2f9-4d80-9dc9-24e5457b574c
 # ╠═cbbbc0d5-d318-4386-9547-261add4f2722
 # ╠═8fe6e1e3-5aae-42e1-a44b-026004aea6bf
 # ╠═2f65ee16-c443-491e-9ee3-f26caf5e4a18
-# ╠═3fcd6014-6d2c-44b9-aca4-c2693eda922b
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

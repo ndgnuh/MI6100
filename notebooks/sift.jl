@@ -27,15 +27,13 @@ begin
 	using ImageTransformations
 	using OffsetArrays
 	using Memoize
+	using Statistics
 	using Parameters
 	using Setfield
 	using LinearAlgebra
 	using DataStructures
 	using LinearSolve
 end
-
-# ╔═╡ 0f185020-77ff-4b06-9df2-6439a07447b7
-using Statistics
 
 # ╔═╡ cbbbc0d5-d318-4386-9547-261add4f2722
 using ImageDraw
@@ -248,8 +246,16 @@ function generate_dg_images(images)
 	[gray.(cat(diff(images_)..., dims=3)) for images_ in images]
 end
 
-# ╔═╡ abe6b4b9-9bf5-474a-b0f1-0046e1a772e7
-function compute_keypoints_orientation(keypoints)
+# ╔═╡ 4daedb1b-538b-4f47-9060-ca140b891984
+Base.@kwdef mutable struct Keypoint
+	angle = nothing
+	octave_idx = nothing
+	image_idx = nothing
+	pt = nothing
+	response = nothing
+	size = nothing
+	orientation = nothing
+	magnitude = nothing
 end
 
 # ╔═╡ c3fe6289-0f30-4fca-a09a-5d4d2d9c91bd
@@ -288,16 +294,8 @@ end
 
 # ╔═╡ 11cde9d0-e6fd-4381-a5a9-f23e08d80045
 
-function detect_scale_extremas(
-	dogs, 
-	octaves,
-	contrast_threshold=0.03,
-	image_border_width=5,
-	r=10,
-)
-	num_samples = size(dogs[begin])[end]
-	threshold = floor(0.5 * contrast_threshold / num_samples * 255)
-	keypoints = MutableLinkedList()
+function detect_scale_extremas(dogs, octaves)
+	keypoints = MutableLinkedList{Keypoint}()
 
 	# Detect keypoints
 	for (octave_index, σi) in enumerate(octaves)
@@ -321,13 +319,23 @@ function detect_scale_extremas(
 				for s_idx in surround_indices
 					extrema_mask[s_idx] = true
 				end
-				push!(keypoints, (row, col, image_index, octave_index))
+				kpt = Keypoint(pt=[row, col, image_index], octave_idx=octave_index)
+				push!(keypoints, kpt)
 			end
 		end
 	end
+	return keypoints
+end
 
-	# Localize keypoints
-	l_keypoints = MutableLinkedList()
+# ╔═╡ a17076c1-b958-416e-9a4b-b2094c902e9a
+function localize_keypoints(
+	keypoints::MutableLinkedList{Keypoint}, dogs::Array;
+	contrast_threshold::Float32=0.04, r::Float32 = 10, max_iterations::Int = 10
+)
+	
+	
+	num_samples = size(dogs[begin])[end]
+	l_keypoints = MutableLinkedList{Keypoint}()
 	max_iterations = 10
 	size_of_octaves = size.(dogs)
 	GH = [
@@ -343,8 +351,9 @@ function detect_scale_extremas(
 		end
 		for D in dogs
 	]
-	for (row, col, image_index, octave_index) in keypoints
-		x::Vector{Int} = [row, col, image_index]
+	for keypoint in keypoints
+		octave_index = keypoint.octave_idx
+		x::Vector{Int} = keypoint.pt
 		D = dogs[octave_index]
 		G, H = GH[octave_index]
 		
@@ -354,7 +363,7 @@ function detect_scale_extremas(
 
 		# Check for high contrasts
 		Dx̂ = D[x...] + transpose(G[x...]) * x / 2
-		highcontrast = abs(Dx̂) * (num_samples) >= 0.04
+		highcontrast = abs(Dx̂) * (num_samples) >= contrast_threshold
 		if !highcontrast continue end
 
 		# Check for strong edge responses
@@ -364,15 +373,18 @@ function detect_scale_extremas(
 		strong_response = (trH^2 / detH) < (r + 1)^2/r
 
 		if strong_response
-			row, col = rescale_keypoints(row, col, octave_index)
-			push!(l_keypoints, (row, col, image_index, octave_index, Dx̂))
+			# row, col = rescale_keypoints(row, col, octave_index)
+			keypoint.response = Dx̂
+			keypoint.pt = x̂
+			keypoint.image_idx = x̂[end]
+			push!(l_keypoints, keypoint)
 		end
 	end
 	l_keypoints
 end
 
 # ╔═╡ 266b6f00-a716-45c4-bc06-f29e25f895de
-keypoints, dogs = let image = imresize(image; ratio=2)
+keypoints, dogs, gauss_images = let image = imresize(image; ratio=2)
 	σ = 1.6
 	num_intervals = 3
 	assumed_blur = 0.5
@@ -390,21 +402,54 @@ keypoints, dogs = let image = imresize(image; ratio=2)
 	@info "Generated DoGs, last octave size: $(size(dogs[end]))" 
 	keypoints = detect_scale_extremas(dogs, octaves)
 	@info "Detected $(length(keypoints)) keypoints"
-	keypoints, dogs
+	@info "Type $(typeof(keypoints)), $(typeof(dogs))"
+	keypoints = localize_keypoints(
+		keypoints, dogs;
+		contrast_threshold=0.04f0,
+		r = 10.0f0,
+		max_iterations = 10
+	)
+	@info "Keypoints after localization $(length(keypoints)) keypoints"
+	keypoints, dogs, images
 end;
+
+# ╔═╡ 0f185020-77ff-4b06-9df2-6439a07447b7
+function orientation_assignment!(keypoints::MutableLinkedList, gauss_images)
+	for keypoint in keypoints
+		row, col, image_idx = keypoint.pt
+		octave_idx = keypoint.octave_idx
+		
+		L = gauss_images[octave_idx][image_idx]
+	
+		drow = L[row + 1, col] - L[row - 1, col]
+		dcol = L[row, col + 1] - L[row, col - 1]
+		keypoint.magnitude = sqrt(drow^2 + dcol^2)
+		keypoint.orientation = atan(dcol / drow)
+	end
+end
+
+# ╔═╡ 0f70f746-3bff-45a7-9fae-9c3e1c5708ca
+gray(keypoints[1].magnitude)
+
+# ╔═╡ 04d2edf3-eebe-41ee-a690-758eac75ba8b
+orientation_assignment!(keypoints, gauss_images)
 
 # ╔═╡ 4edf4821-a5ae-4acc-96e9-9fba4f5781f4
 function draw_keypoint(image, keypoints)
 	image = copy(image)
 	height, width = size(image)
-	responses = [abs(r[end]) for r in keypoints]
-	n = minimum(responses) |> log |> abs |> ceil
-	responses = responses * 10^n
-	responses = (responses .- mean(responses)) / std(responses) .+ 2
-	responses = responses * 2
-	@info responses
-	for ((row, col, image_index, _, _), response) in zip(keypoints, responses)
-		shape = CirclePointRadius(col, row, response, fill=true, thickness=2) |> Ellipse
+	mags = [gray(keypoint.magnitude) for keypoint in keypoints]
+	min_mags = minimum(mags)
+	mag_scale = log10(min_mags) |> round
+	@info min_mags, mag_scale
+	for keypoint in keypoints
+		row, col, _ = keypoint.pt
+		# m = keypoint.magnitude
+		m = keypoint.magnitude
+		# m = gray.(round(keypoint.magnitude / 10^mag_scale))
+		m = max(m, 2)
+		@info "Mag = $m"
+		shape = Ellipse(CirclePointRadius(col, row, m; fill=true))
 		draw!(image, shape, RGBA(1, 0, 0))
 		if row > height  || col > width
 			@info "Row $row, height $height"
@@ -507,7 +552,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.8.2"
 manifest_format = "2.0"
-project_hash = "fe34fc707dfd23605a6a3a0e317903ae35df5397"
+project_hash = "67a4ef9f8dff5fea3be7fb369e09bf6fb223529b"
 
 [[deps.AbstractFFTs]]
 deps = ["ChainRulesCore", "LinearAlgebra"]
@@ -1702,11 +1747,14 @@ version = "17.4.0+0"
 # ╟─53597c59-d12b-4613-bcc3-99ada5e4a444
 # ╟─66dab619-8214-4970-a718-857c9512b4cc
 # ╟─9996691f-ea27-4217-ac7b-6491b1bb8723
-# ╠═266b6f00-a716-45c4-bc06-f29e25f895de
-# ╠═abe6b4b9-9bf5-474a-b0f1-0046e1a772e7
+# ╟─4daedb1b-538b-4f47-9060-ca140b891984
+# ╟─266b6f00-a716-45c4-bc06-f29e25f895de
 # ╟─c3fe6289-0f30-4fca-a09a-5d4d2d9c91bd
-# ╠═11cde9d0-e6fd-4381-a5a9-f23e08d80045
+# ╟─11cde9d0-e6fd-4381-a5a9-f23e08d80045
+# ╟─a17076c1-b958-416e-9a4b-b2094c902e9a
 # ╠═0f185020-77ff-4b06-9df2-6439a07447b7
+# ╠═0f70f746-3bff-45a7-9fae-9c3e1c5708ca
+# ╠═04d2edf3-eebe-41ee-a690-758eac75ba8b
 # ╠═4edf4821-a5ae-4acc-96e9-9fba4f5781f4
 # ╠═3fcd6014-6d2c-44b9-aca4-c2693eda922b
 # ╠═1c9eefff-d69b-4278-a7bc-e57b628b4eef

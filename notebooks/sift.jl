@@ -35,6 +35,9 @@ begin
 	using LinearSolve
 end
 
+# ╔═╡ 6ecae257-3978-42a8-8908-a83f516a0e03
+using PlutoLinks
+
 # ╔═╡ cbbbc0d5-d318-4386-9547-261add4f2722
 using ImageDraw
 
@@ -435,7 +438,7 @@ gray(keypoints[1].magnitude)
 orientation_assignment!(keypoints, gauss_images)
 
 # ╔═╡ 4edf4821-a5ae-4acc-96e9-9fba4f5781f4
-function draw_keypoint(image, keypoints)
+function draw_keypoints(image, keypoints)
 	image = copy(image)
 	height, width = size(image)
 	mags = [gray(keypoint.magnitude) for keypoint in keypoints]
@@ -460,10 +463,46 @@ function draw_keypoint(image, keypoints)
 end
 
 # ╔═╡ 3fcd6014-6d2c-44b9-aca4-c2693eda922b
-draw_keypoint(RGBA.(imresize(orig_image; ratio=2)), keypoints)
+draw_keypoints(RGBA.(imresize(orig_image; ratio=2)), keypoints)
 
 # ╔═╡ 1c9eefff-d69b-4278-a7bc-e57b628b4eef
+function draw_keypoint(img, kpt)
+	img = copy(img)
+	draw_multiplier = 1
+	if !isnothing(kpt.size)
+		radius = kpt.size // 2 * draw_multiplier
+		thickness = round(kpt.size / 3) |> Int
+		circ = CirclePointRadius(
+			kpt.pt...,
+			radius,
+			fill=false,
+			thickness=thickness
+		)
+		draw!(img, circ, RGB(1, 0, 0))
+	end
+	img
+end
 
+# ╔═╡ abf2caaf-8df3-4584-aa36-6260df70a903
+draw_keypoint(orig_image, Keypoint(size=4, pt = (300, 400)))
+
+# ╔═╡ 9f365ea6-4525-4af0-98ca-0288560e56b4
+Base.@kwdef struct CirclePath <: Drawable
+	center::Tuple{Int, Int}
+	radius::Int
+end
+
+# ╔═╡ 97c9cae1-d8f9-4519-90dc-ce88f1ea0704
+ImDraw = @ingredients("ImDraw.jl")
+
+# ╔═╡ b7121855-1f0b-4899-ac37-17b8e981cab8
+d = ImDraw.Line((40, 300), (30, 200))
+
+# ╔═╡ 8f5994be-b676-4fcb-98bb-f6297a1fa363
+ImDraw.interpolate(d, 1)
+
+# ╔═╡ 1100ef76-1882-44d4-9873-d3a0a9e04f69
+ImDraw.imdraw(orig_image, d, RGB(1, 0, 0), 5)
 
 # ╔═╡ ba3b342e-5a6b-4fd4-8c5b-74f55194ed9f
 x = rand(1024,1024, 5);
@@ -521,6 +560,7 @@ LinearSolve = "7ed4a6bd-45f5-4d41-b270-4a48e9bafcae"
 Memoize = "c03570c3-d221-55d1-a50c-7939bbd78826"
 OffsetArrays = "6fe1bfb0-de20-5000-8ca7-80f57d26f881"
 Parameters = "d96e819e-fc66-5662-9728-84c9c7592b0a"
+PlutoLinks = "0ff47ea0-7a50-410d-8455-4348d5de0420"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 Setfield = "efcf1570-3423-57d1-acb7-fd33fddbac46"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
@@ -540,6 +580,7 @@ LinearSolve = "~1.27.1"
 Memoize = "~0.4.4"
 OffsetArrays = "~1.12.8"
 Parameters = "~0.12.3"
+PlutoLinks = "~0.1.5"
 PlutoUI = "~0.7.48"
 Setfield = "~1.1.1"
 TestImages = "~1.7.1"
@@ -552,7 +593,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.8.2"
 manifest_format = "2.0"
-project_hash = "67a4ef9f8dff5fea3be7fb369e09bf6fb223529b"
+project_hash = "424fd6b4cea844e9d862b23bba00053b470652d5"
 
 [[deps.AbstractFFTs]]
 deps = ["ChainRulesCore", "LinearAlgebra"]
@@ -676,6 +717,12 @@ deps = ["ArrayInterface", "Static"]
 git-tree-sha1 = "5522c338564580adf5d58d91e43a55db0fa5fb39"
 uuid = "fb6a15b2-703c-40df-9091-08a04967cfa9"
 version = "0.1.10"
+
+[[deps.CodeTracking]]
+deps = ["InteractiveUtils", "UUIDs"]
+git-tree-sha1 = "cc4bd91eba9cdbbb4df4746124c22c0832a460d6"
+uuid = "da1fd8a2-8d9e-5ec2-8556-3022fb5608a2"
+version = "1.1.1"
 
 [[deps.ColorTypes]]
 deps = ["FixedPointNumbers", "Random"]
@@ -1086,6 +1133,12 @@ git-tree-sha1 = "b53380851c6e6664204efb2e62cd24fa5c47e4ba"
 uuid = "aacddb02-875f-59d6-b918-886e6ef4fbf8"
 version = "2.1.2+0"
 
+[[deps.JuliaInterpreter]]
+deps = ["CodeTracking", "InteractiveUtils", "Random", "UUIDs"]
+git-tree-sha1 = "0f960b1404abb0b244c1ece579a0ec78d056a5d1"
+uuid = "aa1ae85d-cabe-5617-a682-6adf51b2e16a"
+version = "0.9.15"
+
 [[deps.KLU]]
 deps = ["LinearAlgebra", "SparseArrays", "SuiteSparse_jll"]
 git-tree-sha1 = "764164ed65c30738750965d55652db9c94c59bfe"
@@ -1189,6 +1242,12 @@ deps = ["ArrayInterface", "ArrayInterfaceCore", "ArrayInterfaceOffsetArrays", "A
 git-tree-sha1 = "9f6030ca92d1a816e931abb657219c9fc4991a96"
 uuid = "bdcacae8-1622-11e9-2a5c-532679323890"
 version = "0.12.136"
+
+[[deps.LoweredCodeUtils]]
+deps = ["JuliaInterpreter"]
+git-tree-sha1 = "dedbebe234e06e1ddad435f5c6f4b85cd8ce55f7"
+uuid = "6f1432cf-f94c-5a45-995e-cdbf5db27b0b"
+version = "2.2.2"
 
 [[deps.MIMEs]]
 git-tree-sha1 = "65f28ad4b594aebe22157d6fac869786a255b7eb"
@@ -1335,6 +1394,18 @@ git-tree-sha1 = "f6cf8e7944e50901594838951729a1861e668cb8"
 uuid = "eebad327-c553-4316-9ea0-9fa01ccd7688"
 version = "0.3.2"
 
+[[deps.PlutoHooks]]
+deps = ["InteractiveUtils", "Markdown", "UUIDs"]
+git-tree-sha1 = "072cdf20c9b0507fdd977d7d246d90030609674b"
+uuid = "0ff47ea0-7a50-410d-8455-4348d5de0774"
+version = "0.0.5"
+
+[[deps.PlutoLinks]]
+deps = ["FileWatching", "InteractiveUtils", "Markdown", "PlutoHooks", "Revise", "UUIDs"]
+git-tree-sha1 = "0e8bcc235ec8367a8e9648d48325ff00e4b0a545"
+uuid = "0ff47ea0-7a50-410d-8455-4348d5de0420"
+version = "0.1.5"
+
 [[deps.PlutoUI]]
 deps = ["AbstractPlutoDingetjes", "Base64", "ColorTypes", "Dates", "FixedPointNumbers", "Hyperscript", "HypertextLiteral", "IOCapture", "InteractiveUtils", "JSON", "Logging", "MIMEs", "Markdown", "Random", "Reexport", "URIs", "UUIDs"]
 git-tree-sha1 = "efc140104e6d0ae3e7e30d56c98c4a927154d684"
@@ -1434,6 +1505,12 @@ deps = ["UUIDs"]
 git-tree-sha1 = "838a3a4188e2ded87a4f9f184b4b0d78a1e91cb7"
 uuid = "ae029012-a4dd-5104-9daa-d747884805df"
 version = "1.3.0"
+
+[[deps.Revise]]
+deps = ["CodeTracking", "Distributed", "FileWatching", "JuliaInterpreter", "LibGit2", "LoweredCodeUtils", "OrderedCollections", "Pkg", "REPL", "Requires", "UUIDs", "Unicode"]
+git-tree-sha1 = "dad726963ecea2d8a81e26286f625aee09a91b7c"
+uuid = "295af30f-e4ad-537b-8983-00126c2a3abe"
+version = "3.4.0"
 
 [[deps.Rotations]]
 deps = ["LinearAlgebra", "Quaternions", "Random", "StaticArrays", "Statistics"]
@@ -1755,9 +1832,16 @@ version = "17.4.0+0"
 # ╠═0f185020-77ff-4b06-9df2-6439a07447b7
 # ╠═0f70f746-3bff-45a7-9fae-9c3e1c5708ca
 # ╠═04d2edf3-eebe-41ee-a690-758eac75ba8b
-# ╠═4edf4821-a5ae-4acc-96e9-9fba4f5781f4
+# ╟─4edf4821-a5ae-4acc-96e9-9fba4f5781f4
 # ╠═3fcd6014-6d2c-44b9-aca4-c2693eda922b
 # ╠═1c9eefff-d69b-4278-a7bc-e57b628b4eef
+# ╠═abf2caaf-8df3-4584-aa36-6260df70a903
+# ╠═9f365ea6-4525-4af0-98ca-0288560e56b4
+# ╠═6ecae257-3978-42a8-8908-a83f516a0e03
+# ╠═97c9cae1-d8f9-4519-90dc-ce88f1ea0704
+# ╠═b7121855-1f0b-4899-ac37-17b8e981cab8
+# ╠═8f5994be-b676-4fcb-98bb-f6297a1fa363
+# ╠═1100ef76-1882-44d4-9873-d3a0a9e04f69
 # ╠═ba3b342e-5a6b-4fd4-8c5b-74f55194ed9f
 # ╠═52ce783f-f68d-4b7f-b49d-849fcc0336ee
 # ╠═f396904a-833d-43eb-8e46-93d239d410aa

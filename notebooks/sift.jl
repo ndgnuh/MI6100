@@ -426,65 +426,29 @@ function orientation_assignment!(keypoints::MutableLinkedList, gauss_images)
 	
 		drow = L[row + 1, col] - L[row - 1, col]
 		dcol = L[row, col + 1] - L[row, col - 1]
-		keypoint.magnitude = sqrt(drow^2 + dcol^2)
+		keypoint.size = gray(sqrt(drow^2 + dcol^2) * 1e3)
 		keypoint.orientation = atan(dcol / drow)
 	end
 end
 
-# ╔═╡ 0f70f746-3bff-45a7-9fae-9c3e1c5708ca
-gray(keypoints[1].magnitude)
-
 # ╔═╡ 04d2edf3-eebe-41ee-a690-758eac75ba8b
 orientation_assignment!(keypoints, gauss_images)
 
-# ╔═╡ 4edf4821-a5ae-4acc-96e9-9fba4f5781f4
-function draw_keypoints(image, keypoints)
-	image = copy(image)
-	height, width = size(image)
-	mags = [gray(keypoint.magnitude) for keypoint in keypoints]
-	min_mags = minimum(mags)
-	mag_scale = log10(min_mags) |> round
-	@info min_mags, mag_scale
-	for keypoint in keypoints
-		row, col, _ = keypoint.pt
-		# m = keypoint.magnitude
-		m = keypoint.magnitude
-		# m = gray.(round(keypoint.magnitude / 10^mag_scale))
-		m = max(m, 2)
-		@info "Mag = $m"
-		shape = Ellipse(CirclePointRadius(col, row, m; fill=true))
-		draw!(image, shape, RGBA(1, 0, 0))
-		if row > height  || col > width
-			@info "Row $row, height $height"
-			@info "Row $row, height $height"
-		end
-	end
-	return image
+# ╔═╡ fbeee854-205c-443b-9741-03b4e030794a
+length(keypoints)
+
+# ╔═╡ 9c85c557-297b-4f56-8128-1ac3d359d6f6
+
+
+# ╔═╡ 06025ea0-0be4-4ff1-8016-dec460bac5dd
+function normalize_minmax(x)
+	mx = minimum(x)
+	Mx = maximum(x)
+	@. (x - mx) / (Mx - mx)
 end
 
-# ╔═╡ 3fcd6014-6d2c-44b9-aca4-c2693eda922b
-draw_keypoints(RGBA.(imresize(orig_image; ratio=2)), keypoints)
-
-# ╔═╡ 1c9eefff-d69b-4278-a7bc-e57b628b4eef
-function draw_keypoint(img, kpt)
-	img = copy(img)
-	draw_multiplier = 1
-	if !isnothing(kpt.size)
-		radius = kpt.size // 2 * draw_multiplier
-		thickness = round(kpt.size / 3) |> Int
-		circ = CirclePointRadius(
-			kpt.pt...,
-			radius,
-			fill=false,
-			thickness=thickness
-		)
-		draw!(img, circ, RGB(1, 0, 0))
-	end
-	img
-end
-
-# ╔═╡ abf2caaf-8df3-4584-aa36-6260df70a903
-draw_keypoint(orig_image, Keypoint(size=4, pt = (300, 400)))
+# ╔═╡ 092b996d-9240-431d-8cb3-e45f5372895a
+[gray(keypoint.size) for keypoint in keypoints]
 
 # ╔═╡ 9f365ea6-4525-4af0-98ca-0288560e56b4
 Base.@kwdef struct CirclePath <: Drawable
@@ -494,6 +458,38 @@ end
 
 # ╔═╡ 97c9cae1-d8f9-4519-90dc-ce88f1ea0704
 ImDraw = @ingredients("ImDraw.jl")
+
+# ╔═╡ 1c9eefff-d69b-4278-a7bc-e57b628b4eef
+function draw_keypoint!(img, kpt; thickness=1)
+	Color = eltype(img)
+	draw_multiplier = 1
+	if !isnothing(kpt.size)
+		radius = Int(round(kpt.size / 2))
+		center = Tuple(Int.(round.(kpt.pt[1:2])))
+		ImDraw.imdraw!(img, ImDraw.Circle(center, radius), Color(1, 0, 0), thickness)
+	end
+	img
+end
+
+# ╔═╡ 4edf4821-a5ae-4acc-96e9-9fba4f5781f4
+function draw_keypoints(image, keypoints; thickness=1)
+	image = RGB.(image)
+	sizes = normalize_minmax([k.size for k in keypoints])
+	for (k, s) in zip(keypoints, sizes)
+		k.size = s * 20
+	end
+	# sizes = sizes .- mini(sizes)
+	for kpt in keypoints
+		image = draw_keypoint!(image, kpt; thickness=thickness)
+	end
+	return image
+end
+
+# ╔═╡ 3fcd6014-6d2c-44b9-aca4-c2693eda922b
+draw_keypoints(RGBA.(imresize(orig_image; ratio=2)), keypoints[1:end]; thickness=2)
+
+# ╔═╡ abf2caaf-8df3-4584-aa36-6260df70a903
+draw_keypoint!(copy(orig_image), Keypoint(size=40, pt = (300, 400)))
 
 # ╔═╡ b7121855-1f0b-4899-ac37-17b8e981cab8
 d = ImDraw.Line((40, 300), (30, 200))
@@ -1830,9 +1826,12 @@ version = "17.4.0+0"
 # ╟─11cde9d0-e6fd-4381-a5a9-f23e08d80045
 # ╟─a17076c1-b958-416e-9a4b-b2094c902e9a
 # ╠═0f185020-77ff-4b06-9df2-6439a07447b7
-# ╠═0f70f746-3bff-45a7-9fae-9c3e1c5708ca
 # ╠═04d2edf3-eebe-41ee-a690-758eac75ba8b
-# ╟─4edf4821-a5ae-4acc-96e9-9fba4f5781f4
+# ╠═fbeee854-205c-443b-9741-03b4e030794a
+# ╠═9c85c557-297b-4f56-8128-1ac3d359d6f6
+# ╠═06025ea0-0be4-4ff1-8016-dec460bac5dd
+# ╠═4edf4821-a5ae-4acc-96e9-9fba4f5781f4
+# ╠═092b996d-9240-431d-8cb3-e45f5372895a
 # ╠═3fcd6014-6d2c-44b9-aca4-c2693eda922b
 # ╠═1c9eefff-d69b-4278-a7bc-e57b628b4eef
 # ╠═abf2caaf-8df3-4584-aa36-6260df70a903

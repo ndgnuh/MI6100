@@ -12,11 +12,14 @@ struct Line{T}
 end
 
 const INTP_EPS = 1e-3
+const MAX_PTS = 200
 
 function _integer_points!(T, pts)
-    unique(Iterators.map(pts) do (x, y)
-               return convert(T, round(x)), convert(T, round(y))
-           end)
+    pts_ = map(pts) do (x, y)
+        return convert(T, round(x)), convert(T, round(y))
+    end
+    idx = unique(Iterators.map(Int ∘ round, range(1, length(pts); length=MAX_PTS)))
+    return Set(pts_[idx])
 end
 
 function interpolate(c::Circle{T}) where {T}
@@ -69,10 +72,13 @@ function interpolate(line::Line{T}, thickness) where {T}
     end
 end
 
-function imdraw(img, d, color, thickness=1)
-    img = copy(img)
+function imdraw!(img, d, color, thickness=1)
     for (row, col) in interpolate(d, thickness)
         drawifinbounds!(img, row, col, color)
     end
     return img
+end
+
+function imdraw(img, args...)
+    return imdraw!(copy(img))
 end

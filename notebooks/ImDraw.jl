@@ -25,8 +25,9 @@ end
 
 function interpolate(c::Circle{T}) where {T}
     crow, ccol = c.center
+    circ::Int = (ceil(2π * c.radius))
     r = c.radius
-    pts = map(range(0, 2π; length=MAX_PTS)) do t
+    pts = map(range(0, 2π; length=circ)) do t
         return (crow + r * cos(t), ccol + r * sin(t))
     end
     return _integer_points!(T, pts)
@@ -82,4 +83,15 @@ end
 
 function imdraw(img, args...)
     return imdraw!(copy(img))
+end
+
+function draw_keypoint!(img, kpt, color; thickness=1)
+    Color = eltype(img)
+    if !isnothing(kpt.size)
+        radius = Int(round(kpt.size / 2))
+        center = Tuple(Int.(round.(kpt.pt[1:2])))
+        imdraw!(img, Circle(center, radius), Color(color...), thickness)
+    end
+    img[kpt.pt...] = Color(color...)
+    return img
 end

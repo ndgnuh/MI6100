@@ -32,14 +32,15 @@ begin
 	using Setfield
 	using LinearAlgebra
 	using DataStructures
+	using PlutoLinks
 	using LinearSolve
 end
 
-# ╔═╡ 6ecae257-3978-42a8-8908-a83f516a0e03
-using PlutoLinks
-
 # ╔═╡ cbbbc0d5-d318-4386-9547-261add4f2722
 using ImageDraw
+
+# ╔═╡ b29b496e-580e-4b3b-9c08-e1f968513fec
+LinearSolve.LinearProblem
 
 # ╔═╡ c8c71b3e-343e-4e9f-b44b-ce7b203faa39
 TableOfContents()
@@ -55,6 +56,41 @@ readdir()
 
 # ╔═╡ e4658d31-2858-4f66-a168-b2cfcb914e6b
 download("https://raw.githubusercontent.com/rmislam/PythonSIFT/master/box.png", "../samples/box.png")
+
+# ╔═╡ 39110c52-b943-479a-9431-18206c3132db
+ImDraw = @ingredients("ImDraw.jl")
+
+# ╔═╡ 27caffc0-d61c-498d-896d-7da77a0301c6
+MySIFT = @ingredients("SIFT.jl")
+
+# ╔═╡ 1299a8f3-1b5d-4fae-b452-6c4594d4f04b
+sift = MySIFT.SIFT()
+
+# ╔═╡ a5737d9b-d1e3-4f34-9d7b-f3fcf95e6d8e
+function compute_grad_hess(image, kernel, border="replicate")
+    dims = ndims(image)
+    grads = imgradients(image, kernel, border)
+    hesses = [imgradients(grad, kernel, border) for grad in grads]
+
+    G = cat(grads...; dims=dims + 1)
+    H = cat([cat(hesses_...; dims=dims + 2) for hesses_ in hesses]...; dims=dims + 1)
+    return G, H
+end
+
+
+# ╔═╡ b557fba4-bd85-486b-a7a2-79afaad856bb
+let (G, H) = compute_grad_hess(rand(9, 9, 3), KernelFactors.ando3)
+	size(G), size(H)
+end
+
+# ╔═╡ 51bd18f6-1a69-42bb-8bd2-63511ef764fe
+
+
+# ╔═╡ 1dc4a952-317e-4636-af0f-1f96787f70c5
+ImDraw.draw_keypoint!
+
+# ╔═╡ 4f1c148a-ada9-4ee1-aac3-0b1ea32da2c3
+Kernel.prewitt() .* 6
 
 # ╔═╡ 0320abdb-f8d2-456f-a59a-7238dc11bf39
 @bind image_file FilePicker()
@@ -72,11 +108,44 @@ image, orig_image = let
 	image, orig_image
 end
 
+# ╔═╡ ff348b37-45b7-452d-a2e5-70791a952c54
+gpyr = let image = image
+	# image = imfilter(image, Kernel.gaussian(sqrt(1.6^2 - 0.5^2)))
+	MySIFT.compute_gaussian_pyramid(sift, image, MySIFT.get_num_octaves(image));
+end;
+
+# ╔═╡ 5e4996cf-5565-4b77-a3e5-6a6404dcab7f
+dpyr = MySIFT.compute_dog_pyramid(sift, gpyr);
+
+# ╔═╡ 9a6acdfc-3729-40cd-afd1-4cb2f1e9891f
+MySIFT.imshow(dpyr[2, 4]);
+
+# ╔═╡ 4c6968a3-fac6-4ca3-98fb-d7ae849b276c
+keypoints = MySIFT.compute_scale_space_extremas(sift, dpyr)
+
+# ╔═╡ 517e1ef9-d39e-42e4-9fa5-31917682eeb9
+lkeypoints = MySIFT.localize_keypoints(sift, dpyr, keypoints)
+
+# ╔═╡ e29b585e-24a6-4f1e-a0cf-512c105b410a
+length(lkeypoints)
+
+# ╔═╡ 6950f4c7-62a6-4562-9cfa-71fb391c14d0
+let image = imresize(orig_image, ratio=2)
+	image = RGB.(image)
+	for kpt in lkeypoints
+		ImDraw.draw_keypoint!(image, kpt, (1, 0, 0))
+	end
+	image
+end
+
+# ╔═╡ 9e3a38db-35d8-4263-9735-4ce81a727c23
+img = MySIFT.preprare_input(image)
+
+# ╔═╡ 5e3f3359-5ed9-44d1-9ee8-d819aa04f80d
+MySIFT.preprare_input(imresize(image, ratio=2))
+
 # ╔═╡ 4a28764b-ac45-4f30-aabb-dc79ab444748
 md"# Helper functions"
-
-# ╔═╡ f794352c-2d5b-4d87-a7e4-bb1b7c7ea4ea
-
 
 # ╔═╡ a84ff639-deea-4bb0-a1c5-9cc1980e352b
 function nproduct(iter, n)
@@ -174,14 +243,6 @@ hash(SIFT())
 	
 end
 
-# ╔═╡ 1d783473-dddc-43aa-8126-a8c8ad6ef9a3
-md"# Scale space"
-
-# ╔═╡ 23419689-7cfe-4a97-b917-928bc13dc766
-function get_num_octaves(image)
-	convert(Int, log(image |> size |> minimum) / log(2) - 1 |> floor)
-end
-
 # ╔═╡ 33c84d54-4026-4ce9-957d-50a0034ed6c1
 function run_sift(image::Matrix, sift = SIFT())::SIFTResult
 	grayed = to_gray(image)
@@ -201,6 +262,9 @@ function run_sift(image::Matrix, sift = SIFT())::SIFTResult
 	]
 end
 
+# ╔═╡ 1d783473-dddc-43aa-8126-a8c8ad6ef9a3
+md"# Scale space"
+
 # ╔═╡ 1928a00e-7374-4dda-bc17-b195fedcadf3
 function generate_gaussian_kernels(σ, num_intervals)
 	num_samples = num_intervals + 3
@@ -214,35 +278,6 @@ function generate_gaussian_kernels(σ, num_intervals)
 	end
 	return σs
 end
-
-# ╔═╡ 53597c59-d12b-4613-bcc3-99ada5e4a444
-function generate_gaussian_images(image, num_scales, scales)
-	T = typeof(image)
-	images = Vector{T}[]
-	sizehint!(images, num_scales)
-	kernels = Kernel.gaussian.(scales)
-	num_samples = length(kernels)
-	for i in 1:num_scales
-		samples = [image]
-		sizehint!(samples, num_samples)
-		for kern in drop(kernels, 1)
-			image = imfilter(image, kern)
-			push!(samples, image)
-		end
-		push!(images, samples)
-		base = samples[end - 3]
-		image = imresize(base; ratio=1//2)
-	end
-	images
-end
-
-
-# ╔═╡ 66dab619-8214-4970-a718-857c9512b4cc
-function rescale_keypoints(x, y, octave_index)
-	scale = 2^(octave_index - 1)
-	x * scale, y * scale
-end
-
 
 # ╔═╡ 9996691f-ea27-4217-ac7b-6491b1bb8723
 function generate_dg_images(images)
@@ -260,6 +295,38 @@ Base.@kwdef mutable struct Keypoint
 	orientation = nothing
 	magnitude = nothing
 end
+
+# ╔═╡ 266b6f00-a716-45c4-bc06-f29e25f895de
+# keypoints, dogs, gauss_images = let image = imresize(image; ratio=2)
+# 	σ = 1.6
+# 	num_intervals = 3
+# 	assumed_blur = 0.5
+# 	dσ = sqrt(σ^2 - ((2 * assumed_blur)^2))
+# 	@info "dσ = $dσ"
+# 	image = imfilter(image, Kernel.reflect(Kernel.gaussian(dσ)))
+# 	@info "Generated base image"
+# 	num_octaves = get_num_octaves(image) 
+# 	# num_octaves = 
+# 	@info "Number of octaves $num_octaves"
+# 	octaves = generate_gaussian_kernels(σ, num_intervals)
+# 	@info "Octaves: $(round.(octaves, digits=3))"
+# 	images = generate_gaussian_images(image, num_octaves, octaves)
+# 	dogs = generate_dg_images(images)
+# 	@info "Generated DoGs, last octave size: $(size(dogs[end]))" 
+# 	keypoints = detect_scale_extremas(dogs, octaves)
+# 	@info "Detected $(lengt
+# N
+# h(keypoints)) keypoints"
+# 	@info "Type $(typeof(keypoints)), $(typeof(dogs))"
+# 	keypoints = localize_keypoints(
+# 		keypoints, dogs;
+# 		contrast_threshold=0.04f0,
+# 		r = 10.0f0,
+# 		max_iterations = 10
+# 	)
+# 	@info "Keypoints after localization $(length(keypoints)) keypoints"
+# 	keypoints, dogs, images
+# end;
 
 # ╔═╡ c3fe6289-0f30-4fca-a09a-5d4d2d9c91bd
 function localize_keypoint!(D, G, H, x; max_iterations=10)
@@ -294,41 +361,6 @@ function localize_keypoint!(D, G, H, x; max_iterations=10)
 	end
 end
 
-
-# ╔═╡ 11cde9d0-e6fd-4381-a5a9-f23e08d80045
-
-function detect_scale_extremas(dogs, octaves)
-	keypoints = MutableLinkedList{Keypoint}()
-
-	# Detect keypoints
-	for (octave_index, σi) in enumerate(octaves)
-		D = dogs[octave_index]
-		extrema_mask = zeros(Bool, size(D))
-		height, width, num_samples = size(D)
-		for (row, col, image_index) in product(2:height-1, 2:width-1, 2:num_samples-1)
-			# Is extrema
-			idx = CartesianIndex(row, col, image_index)
-			if extrema_mask[idx]
-				continue
-			end
-			value = D[idx]
-			surround_indices = get_surround_idx(idx)
-			surrounds = (D[idx] for idx in surround_indices)
-			is_extrema = all(>(value), surrounds) || all(<(value), surrounds)
-
-			# Masking
-			if is_extrema
-				extrema_mask[idx] = false
-				for s_idx in surround_indices
-					extrema_mask[s_idx] = true
-				end
-				kpt = Keypoint(pt=[row, col, image_index], octave_idx=octave_index)
-				push!(keypoints, kpt)
-			end
-		end
-	end
-	return keypoints
-end
 
 # ╔═╡ a17076c1-b958-416e-9a4b-b2094c902e9a
 function localize_keypoints(
@@ -386,39 +418,6 @@ function localize_keypoints(
 	l_keypoints
 end
 
-# ╔═╡ 266b6f00-a716-45c4-bc06-f29e25f895de
-keypoints, dogs, gauss_images = let image = imresize(image; ratio=2)
-	σ = 1.6
-	num_intervals = 3
-	assumed_blur = 0.5
-	dσ = sqrt(σ^2 - ((assumed_blur)^2))
-	@info "dσ = $dσ"
-	image = imfilter(image, Kernel.reflect(Kernel.gaussian(dσ)))
-	@info "Generated base image"
-	num_octaves = get_num_octaves(image) 
-	# num_octaves = 
-	@info "Number of octaves $num_octaves"
-	octaves = generate_gaussian_kernels(σ, num_intervals)
-	@info "Octaves: $(round.(octaves, digits=3))"
-	images = generate_gaussian_images(image, num_octaves, octaves)
-	dogs = generate_dg_images(images)
-	@info "Generated DoGs, last octave size: $(size(dogs[end]))" 
-	keypoints = detect_scale_extremas(dogs, octaves)
-	@info "Detected $(length(keypoints)) keypoints"
-	@info "Type $(typeof(keypoints)), $(typeof(dogs))"
-	keypoints = localize_keypoints(
-		keypoints, dogs;
-		contrast_threshold=0.04f0,
-		r = 10.0f0,
-		max_iterations = 10
-	)
-	@info "Keypoints after localization $(length(keypoints)) keypoints"
-	keypoints, dogs, images
-end;
-
-# ╔═╡ f54aa313-6171-4d12-acab-8a4a7548d5df
-std(image .|> gray)
-
 # ╔═╡ 0f185020-77ff-4b06-9df2-6439a07447b7
 function orientation_assignment!(keypoints::MutableLinkedList, gauss_images)
 	for keypoint in keypoints
@@ -434,27 +433,11 @@ function orientation_assignment!(keypoints::MutableLinkedList, gauss_images)
 	end
 end
 
-# ╔═╡ 04d2edf3-eebe-41ee-a690-758eac75ba8b
-orientation_assignment!(keypoints, gauss_images)
-
-# ╔═╡ fbeee854-205c-443b-9741-03b4e030794a
-length(keypoints)
-
-# ╔═╡ 9c85c557-297b-4f56-8128-1ac3d359d6f6
-
-
-# ╔═╡ 06025ea0-0be4-4ff1-8016-dec460bac5dd
-function normalize_minmax(x)
-	mx = minimum(x)
-	Mx = maximum(x)
-	@. (x - mx) / (Mx - mx)
-end
-
 # ╔═╡ 092b996d-9240-431d-8cb3-e45f5372895a
 [gray(keypoint.size) for keypoint in keypoints]
 
-# ╔═╡ 97c9cae1-d8f9-4519-90dc-ce88f1ea0704
-ImDraw = @ingredients("ImDraw.jl")
+# ╔═╡ 3fcd6014-6d2c-44b9-aca4-c2693eda922b
+draw_keypoints(RGBA.(imresize(orig_image; ratio=2)), keypoints[1:end]; thickness=2)
 
 # ╔═╡ 1c9eefff-d69b-4278-a7bc-e57b628b4eef
 function draw_keypoint!(img, kpt; thickness=1)
@@ -468,34 +451,48 @@ function draw_keypoint!(img, kpt; thickness=1)
 	img
 end
 
-# ╔═╡ 4edf4821-a5ae-4acc-96e9-9fba4f5781f4
-function draw_keypoints(image, keypoints; thickness=1)
-	image = RGB.(image)
-	sizes = normalize_minmax([k.size for k in keypoints])
-	for (k, s) in zip(keypoints, sizes)
-		k.size = s * 40
-	end
-	# sizes = sizes .- mini(sizes)
-	for kpt in keypoints
-		image = draw_keypoint!(image, kpt; thickness=thickness)
-	end
-	return image
-end
-
-# ╔═╡ 3fcd6014-6d2c-44b9-aca4-c2693eda922b
-draw_keypoints(RGBA.(imresize(orig_image; ratio=2)), keypoints[1:end]; thickness=1)
-
 # ╔═╡ abf2caaf-8df3-4584-aa36-6260df70a903
 draw_keypoint!(copy(orig_image), Keypoint(size=40, pt = (300, 400)))
+
+# ╔═╡ 9f365ea6-4525-4af0-98ca-0288560e56b4
+Base.@kwdef struct CirclePath <: Drawable
+	center::Tuple{Int, Int}
+	radius::Int
+end
+
+# ╔═╡ 6ecae257-3978-42a8-8908-a83f516a0e03
+
+
+# ╔═╡ 97c9cae1-d8f9-4519-90dc-ce88f1ea0704
+
 
 # ╔═╡ b7121855-1f0b-4899-ac37-17b8e981cab8
 d = ImDraw.Line((40, 300), (30, 200))
 
+# ╔═╡ 8f5994be-b676-4fcb-98bb-f6297a1fa363
+ImDraw.interpolate(d, 1)
+
 # ╔═╡ 1100ef76-1882-44d4-9873-d3a0a9e04f69
 ImDraw.imdraw(orig_image, d, RGB(1, 0, 0), 5)
 
-# ╔═╡ ba3b342e-5a6b-4fd4-8c5b-74f55194ed9f
-x = rand(1024,1024, 5);
+# ╔═╡ 7c22691b-ab73-4ac7-9c8d-2794a782a699
+imfilter.((x, x), Kernel.prewitt() .* 3)
+
+# ╔═╡ 272ec583-2e71-41e3-921a-e0caf6bd344a
+imgradients(x, KernelFactors.prewitt)
+
+# ╔═╡ 096623f2-dbe1-4238-b919-4759ea5a86ea
+function im_gradients_hessians(img)
+	dx = imfilter(x, hcat([-1, 0, 1]))
+	dy = imfilter(x, [-1 0 1])
+	dx/2, dy/2
+end
+
+# ╔═╡ 88496d4c-65bd-40d0-ac63-8cb3e66ae579
+im_gradients_hessians(x)
+
+# ╔═╡ ecbcb1cc-7f51-4588-90ed-7d5da1b1335d
+imfilter(x, hcat([-1, 0, 1]))
 
 # ╔═╡ 52ce783f-f68d-4b7f-b49d-849fcc0336ee
 function im_gradients(arr)
@@ -533,6 +530,15 @@ gx[4, 4, 2, :]
 
 # ╔═╡ 2f65ee16-c443-491e-9ee3-f26caf5e4a18
 import Zygote
+
+# ╔═╡ ba3b342e-5a6b-4fd4-8c5b-74f55194ed9f
+# ╠═╡ disabled = true
+#=╠═╡
+x = rand(1024,1024, 5);
+  ╠═╡ =#
+
+# ╔═╡ 1867153a-bfc9-4b0a-96b4-c10883eeaf37
+x = reshape(1:2:32, 4, 4)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -583,7 +589,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.8.2"
 manifest_format = "2.0"
-project_hash = "06145bef3eb652e1b197781965d7f6d9558cbc8b"
+project_hash = "424fd6b4cea844e9d862b23bba00053b470652d5"
 
 [[deps.AbstractFFTs]]
 deps = ["ChainRulesCore", "LinearAlgebra"]
@@ -1787,20 +1793,43 @@ version = "17.4.0+0"
 
 # ╔═╡ Cell order:
 # ╠═aff807a0-5124-11ed-1675-b74542d32634
+# ╠═b29b496e-580e-4b3b-9c08-e1f968513fec
 # ╠═c8c71b3e-343e-4e9f-b44b-ce7b203faa39
 # ╟─92685aab-2c03-451d-a7ed-ef2896023ea4
 # ╟─153288b8-3622-4b9c-a4d6-9b8d25accc20
 # ╠═26db3bbf-37f5-41c5-8c4d-0aeee24c36b1
 # ╠═e4658d31-2858-4f66-a168-b2cfcb914e6b
+# ╠═39110c52-b943-479a-9431-18206c3132db
+# ╠═27caffc0-d61c-498d-896d-7da77a0301c6
+# ╠═1299a8f3-1b5d-4fae-b452-6c4594d4f04b
+# ╠═9a6acdfc-3729-40cd-afd1-4cb2f1e9891f
+# ╠═ff348b37-45b7-452d-a2e5-70791a952c54
+# ╠═5e4996cf-5565-4b77-a3e5-6a6404dcab7f
+# ╠═4c6968a3-fac6-4ca3-98fb-d7ae849b276c
+# ╠═a5737d9b-d1e3-4f34-9d7b-f3fcf95e6d8e
+# ╠═b557fba4-bd85-486b-a7a2-79afaad856bb
+# ╠═51bd18f6-1a69-42bb-8bd2-63511ef764fe
+# ╠═517e1ef9-d39e-42e4-9fa5-31917682eeb9
+# ╠═e29b585e-24a6-4f1e-a0cf-512c105b410a
+# ╠═1dc4a952-317e-4636-af0f-1f96787f70c5
+# ╠═4f1c148a-ada9-4ee1-aac3-0b1ea32da2c3
+# ╠═1867153a-bfc9-4b0a-96b4-c10883eeaf37
+# ╠═88496d4c-65bd-40d0-ac63-8cb3e66ae579
+# ╠═7c22691b-ab73-4ac7-9c8d-2794a782a699
+# ╠═272ec583-2e71-41e3-921a-e0caf6bd344a
+# ╠═096623f2-dbe1-4238-b919-4759ea5a86ea
+# ╠═ecbcb1cc-7f51-4588-90ed-7d5da1b1335d
+# ╠═6950f4c7-62a6-4562-9cfa-71fb391c14d0
+# ╠═9e3a38db-35d8-4263-9735-4ce81a727c23
+# ╠═5e3f3359-5ed9-44d1-9ee8-d819aa04f80d
 # ╠═0320abdb-f8d2-456f-a59a-7238dc11bf39
 # ╠═bb892b57-5302-446f-bca9-a3c74c32c772
 # ╟─4a28764b-ac45-4f30-aabb-dc79ab444748
-# ╠═f794352c-2d5b-4d87-a7e4-bb1b7c7ea4ea
 # ╟─a84ff639-deea-4bb0-a1c5-9cc1980e352b
-# ╟─8991d7ff-9970-45e4-9066-dc62b5efce92
-# ╟─890ba89e-6b8e-4eae-aba5-15770bcd77bf
-# ╟─99fe0bbf-d6a6-4255-acfc-6e892dd1cef0
-# ╟─348e5417-abb4-4dc7-a536-fc1526013d2e
+# ╠═8991d7ff-9970-45e4-9066-dc62b5efce92
+# ╠═890ba89e-6b8e-4eae-aba5-15770bcd77bf
+# ╠═99fe0bbf-d6a6-4255-acfc-6e892dd1cef0
+# ╠═348e5417-abb4-4dc7-a536-fc1526013d2e
 # ╟─c0e218a7-0b01-4dbf-b988-2595e69552a7
 # ╟─0a603cf2-f83c-47b7-9d75-abafada7beee
 # ╟─e1066c27-37c2-4b02-acf6-878bf7138632
@@ -1809,30 +1838,22 @@ version = "17.4.0+0"
 # ╟─26fe385f-543b-485e-935c-8556e23c86d7
 # ╟─33c84d54-4026-4ce9-957d-50a0034ed6c1
 # ╟─1d783473-dddc-43aa-8126-a8c8ad6ef9a3
-# ╟─23419689-7cfe-4a97-b917-928bc13dc766
 # ╟─1928a00e-7374-4dda-bc17-b195fedcadf3
-# ╟─53597c59-d12b-4613-bcc3-99ada5e4a444
-# ╟─66dab619-8214-4970-a718-857c9512b4cc
 # ╟─9996691f-ea27-4217-ac7b-6491b1bb8723
-# ╟─4daedb1b-538b-4f47-9060-ca140b891984
-# ╠═266b6f00-a716-45c4-bc06-f29e25f895de
+# ╠═4daedb1b-538b-4f47-9060-ca140b891984
+# ╟─266b6f00-a716-45c4-bc06-f29e25f895de
 # ╟─c3fe6289-0f30-4fca-a09a-5d4d2d9c91bd
-# ╟─11cde9d0-e6fd-4381-a5a9-f23e08d80045
-# ╟─a17076c1-b958-416e-9a4b-b2094c902e9a
-# ╠═f54aa313-6171-4d12-acab-8a4a7548d5df
+# ╠═a17076c1-b958-416e-9a4b-b2094c902e9a
 # ╠═0f185020-77ff-4b06-9df2-6439a07447b7
-# ╠═04d2edf3-eebe-41ee-a690-758eac75ba8b
-# ╠═fbeee854-205c-443b-9741-03b4e030794a
-# ╠═9c85c557-297b-4f56-8128-1ac3d359d6f6
-# ╠═06025ea0-0be4-4ff1-8016-dec460bac5dd
-# ╠═4edf4821-a5ae-4acc-96e9-9fba4f5781f4
 # ╠═092b996d-9240-431d-8cb3-e45f5372895a
 # ╠═3fcd6014-6d2c-44b9-aca4-c2693eda922b
 # ╠═1c9eefff-d69b-4278-a7bc-e57b628b4eef
 # ╠═abf2caaf-8df3-4584-aa36-6260df70a903
+# ╠═9f365ea6-4525-4af0-98ca-0288560e56b4
 # ╠═6ecae257-3978-42a8-8908-a83f516a0e03
 # ╠═97c9cae1-d8f9-4519-90dc-ce88f1ea0704
 # ╠═b7121855-1f0b-4899-ac37-17b8e981cab8
+# ╠═8f5994be-b676-4fcb-98bb-f6297a1fa363
 # ╠═1100ef76-1882-44d4-9873-d3a0a9e04f69
 # ╠═ba3b342e-5a6b-4fd4-8c5b-74f55194ed9f
 # ╠═52ce783f-f68d-4b7f-b49d-849fcc0336ee

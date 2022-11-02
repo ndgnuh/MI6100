@@ -508,11 +508,23 @@ Tính toán không gian bậc
 \begin_layout Standard
 Ảnh đầu vào được tăng gấp đôi kích cỡ và lọc Gauss sao cho giá trị mờ của
  ảnh là 
-\begin_inset Formula $\sigma=1$
+\begin_inset Formula $\sigma_{1}=1$
 \end_inset
 
 .
- Giả định
+ Giả định ảnh đầu vào có độ mờ 
+\begin_inset Formula $\sigma_{0}=0.5$
+\end_inset
+
+, nhân Gauss mà cần lọc ảnh có giá trị
+\begin_inset Formula 
+\[
+\sigma_{0\to1}=
+\]
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Section

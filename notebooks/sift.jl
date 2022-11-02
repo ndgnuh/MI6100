@@ -391,7 +391,7 @@ keypoints, dogs, gauss_images = let image = imresize(image; ratio=2)
 	σ = 1.6
 	num_intervals = 3
 	assumed_blur = 0.5
-	dσ = sqrt(σ^2 - ((2 * assumed_blur)^2))
+	dσ = sqrt(σ^2 - ((assumed_blur)^2))
 	@info "dσ = $dσ"
 	image = imfilter(image, Kernel.reflect(Kernel.gaussian(dσ)))
 	@info "Generated base image"
@@ -415,6 +415,9 @@ keypoints, dogs, gauss_images = let image = imresize(image; ratio=2)
 	@info "Keypoints after localization $(length(keypoints)) keypoints"
 	keypoints, dogs, images
 end;
+
+# ╔═╡ f54aa313-6171-4d12-acab-8a4a7548d5df
+std(image .|> gray)
 
 # ╔═╡ 0f185020-77ff-4b06-9df2-6439a07447b7
 function orientation_assignment!(keypoints::MutableLinkedList, gauss_images)
@@ -450,12 +453,6 @@ end
 # ╔═╡ 092b996d-9240-431d-8cb3-e45f5372895a
 [gray(keypoint.size) for keypoint in keypoints]
 
-# ╔═╡ 9f365ea6-4525-4af0-98ca-0288560e56b4
-Base.@kwdef struct CirclePath <: Drawable
-	center::Tuple{Int, Int}
-	radius::Int
-end
-
 # ╔═╡ 97c9cae1-d8f9-4519-90dc-ce88f1ea0704
 ImDraw = @ingredients("ImDraw.jl")
 
@@ -476,7 +473,7 @@ function draw_keypoints(image, keypoints; thickness=1)
 	image = RGB.(image)
 	sizes = normalize_minmax([k.size for k in keypoints])
 	for (k, s) in zip(keypoints, sizes)
-		k.size = s * 20
+		k.size = s * 40
 	end
 	# sizes = sizes .- mini(sizes)
 	for kpt in keypoints
@@ -486,16 +483,13 @@ function draw_keypoints(image, keypoints; thickness=1)
 end
 
 # ╔═╡ 3fcd6014-6d2c-44b9-aca4-c2693eda922b
-draw_keypoints(RGBA.(imresize(orig_image; ratio=2)), keypoints[1:end]; thickness=2)
+draw_keypoints(RGBA.(imresize(orig_image; ratio=2)), keypoints[1:end]; thickness=1)
 
 # ╔═╡ abf2caaf-8df3-4584-aa36-6260df70a903
 draw_keypoint!(copy(orig_image), Keypoint(size=40, pt = (300, 400)))
 
 # ╔═╡ b7121855-1f0b-4899-ac37-17b8e981cab8
 d = ImDraw.Line((40, 300), (30, 200))
-
-# ╔═╡ 8f5994be-b676-4fcb-98bb-f6297a1fa363
-ImDraw.interpolate(d, 1)
 
 # ╔═╡ 1100ef76-1882-44d4-9873-d3a0a9e04f69
 ImDraw.imdraw(orig_image, d, RGB(1, 0, 0), 5)
@@ -589,7 +583,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.8.2"
 manifest_format = "2.0"
-project_hash = "424fd6b4cea844e9d862b23bba00053b470652d5"
+project_hash = "06145bef3eb652e1b197781965d7f6d9558cbc8b"
 
 [[deps.AbstractFFTs]]
 deps = ["ChainRulesCore", "LinearAlgebra"]
@@ -1821,10 +1815,11 @@ version = "17.4.0+0"
 # ╟─66dab619-8214-4970-a718-857c9512b4cc
 # ╟─9996691f-ea27-4217-ac7b-6491b1bb8723
 # ╟─4daedb1b-538b-4f47-9060-ca140b891984
-# ╟─266b6f00-a716-45c4-bc06-f29e25f895de
+# ╠═266b6f00-a716-45c4-bc06-f29e25f895de
 # ╟─c3fe6289-0f30-4fca-a09a-5d4d2d9c91bd
 # ╟─11cde9d0-e6fd-4381-a5a9-f23e08d80045
 # ╟─a17076c1-b958-416e-9a4b-b2094c902e9a
+# ╠═f54aa313-6171-4d12-acab-8a4a7548d5df
 # ╠═0f185020-77ff-4b06-9df2-6439a07447b7
 # ╠═04d2edf3-eebe-41ee-a690-758eac75ba8b
 # ╠═fbeee854-205c-443b-9741-03b4e030794a
@@ -1835,11 +1830,9 @@ version = "17.4.0+0"
 # ╠═3fcd6014-6d2c-44b9-aca4-c2693eda922b
 # ╠═1c9eefff-d69b-4278-a7bc-e57b628b4eef
 # ╠═abf2caaf-8df3-4584-aa36-6260df70a903
-# ╠═9f365ea6-4525-4af0-98ca-0288560e56b4
 # ╠═6ecae257-3978-42a8-8908-a83f516a0e03
 # ╠═97c9cae1-d8f9-4519-90dc-ce88f1ea0704
 # ╠═b7121855-1f0b-4899-ac37-17b8e981cab8
-# ╠═8f5994be-b676-4fcb-98bb-f6297a1fa363
 # ╠═1100ef76-1882-44d4-9873-d3a0a9e04f69
 # ╠═ba3b342e-5a6b-4fd4-8c5b-74f55194ed9f
 # ╠═52ce783f-f68d-4b7f-b49d-849fcc0336ee

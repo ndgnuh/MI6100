@@ -1,5 +1,6 @@
 using ImageDraw: drawifinbounds!
 using Base.Iterators
+using Base.Threads: @threads
 
 struct Circle{T}
     center::Tuple{T,T}
@@ -15,17 +16,17 @@ const INTP_EPS = 1e-3
 const MAX_PTS = 200
 
 function _integer_points!(T, pts)
-    pts_ = map(pts) do (x, y)
+    pts_ = Iterators.map(pts) do (x, y)
         return convert(T, round(x)), convert(T, round(y))
     end
-    idx = unique(Iterators.map(Int ∘ round, range(1, length(pts); length=MAX_PTS)))
-    return Set(pts_[idx])
+    #= idx = unique(Iterators.map(Int ∘ round, range(1, length(pts); length=MAX_PTS))) =#
+    return unique(pts_)
 end
 
 function interpolate(c::Circle{T}) where {T}
     crow, ccol = c.center
     r = c.radius
-    pts = map(0:INTP_EPS:(2 * pi)) do t
+    pts = map(range(0, 2π; length=MAX_PTS)) do t
         return (crow + r * cos(t), ccol + r * sin(t))
     end
     return _integer_points!(T, pts)
@@ -43,7 +44,7 @@ end
 function interpolate(l::Line{T}) where {T}
     x1, y1 = l.p1
     x2, y2 = l.p2
-    pts = Iterators.map(0:eps(Float16):1) do t
+    pts = Iterators.map(range(0, 1; length=MAX_PTS)) do t
         x = x1 * t + (1 - t) * x2
         y = x2 * t + (1 - t) * y2
         return x, y
@@ -73,7 +74,7 @@ function interpolate(line::Line{T}, thickness) where {T}
 end
 
 function imdraw!(img, d, color, thickness=1)
-    for (row, col) in interpolate(d, thickness)
+    @threads for (row, col) in interpolate(d, thickness)
         drawifinbounds!(img, row, col, color)
     end
     return img

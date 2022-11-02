@@ -381,90 +381,138 @@ Phương pháp SIFT
 Nội dung
 \end_layout
 
-\begin_layout Standard
-Ý tưởng của SIFT:
-\end_layout
-
-\begin_layout Enumerate
-Sử dụng diffientation of gaussian (DoG) để xét ảnh trên nhiều scale khác
- nhau, làm cho phương pháp scale-invariant
-\end_layout
-
-\begin_deeper
-\begin_layout Itemize
-tính nhiều mẫu mỗi scale
-\end_layout
-
-\end_deeper
-\begin_layout Enumerate
-So sánh một điểm ảnh với lân cận của nó
-\end_layout
-
-\begin_deeper
-\begin_layout Itemize
-Lân cận: điểm xung quanh của cùng scale, điểm xung quanh + chính nó của
- scale phía trước và phía sau
-\end_layout
-
-\begin_layout Itemize
-Dánh dấu cực trị
-\end_layout
-
-\end_deeper
-\begin_layout Enumerate
-(?)
-\end_layout
-
-\begin_deeper
-\begin_layout Itemize
-Lọc các cực trị với contrast thấp?
-\end_layout
-
-\begin_layout Itemize
-Gán hướng, tính toán đặc trưng?
-\end_layout
-
-\end_deeper
-\begin_layout Enumerate
-Tinhs'
+\begin_layout Subsection
+Ý tưởng và quy trình chung
 \end_layout
 
 \begin_layout Standard
-\begin_inset Separator plain
+Ý tưởng của SIFT là đưa ra các keypoint không nhạy cảm với kích thước, góc
+ xoay, và nhạy cảm ít với độ sáng cũng như màu của ảnh.
+ Một các thô sơ, quy trình của thuật toán SIFT diễn ra như sau:
+\end_layout
+
+\begin_layout Itemize
+SIFT hoạt động trên ảnh đen trắng, do đó ảnh màu cần được chuyển đổi về
+ dạng đen trắng trước.
+\end_layout
+
+\begin_layout Itemize
+Sau đó, thuật toán sẽ tìm ra các phiên bản của ảnh đầu vào mà tương ứng
+ với mỗi cung bậc (octave) khác nhau.
+ 
+\end_layout
+
+\begin_layout Itemize
+Đối với mỗi cung bậc, SIFT sẽ 
+\begin_inset Quotes eld
 \end_inset
 
+lấy mẫu
+\begin_inset Quotes erd
+\end_inset
 
+ ảnh đó bằng cách áp dụng tích chập với nhân Gauss liên tục.
+ 
+\end_layout
+
+\begin_layout Itemize
+Các sai phân của các mẫu này được dùng để xấp xỉ gradient của ảnh và được
+ tính bằng cách lấy ảnh phía.
+\end_layout
+
+\begin_layout Itemize
+Sau khi thu được các mẫu, với mỗi điểm ảnh, SIFT tiến hành so sánh nó với
+ các lân cận.
+ Nếu điểm được xét là điểm dừng (lớn hơn hoặc nhỏ hơn tất cả các lân cận),
+ nó được xếp vào tập các điểm nhấn.
+\end_layout
+
+\begin_layout Itemize
+Sau khi thu được tập các điểm nhấn, bước tiếp theo là xác định vị trí và
+ cấp độ của các điểm nhấn trên ảnh gốc.
+ Trong quá trình đó, ta cũng tính được những thông số quan trọng như độ
+ tương phản của điểm nhấn, những điểm nhấn có độ tương phản thấp sẽ được
+ lọc bỏ.
+ 
+\end_layout
+
+\begin_layout Itemize
+Với những điểm nhấn còn lại, ta xác định hai số đo là góc chủ đạo và độ
+ lớn của điểm nhấn.
+ 
+\end_layout
+
+\begin_layout Itemize
+Sau tất cả những bước trên, ta tiến hành tính toán biểu diễn số cho những
+ điểm nhấn.
+\end_layout
+
+\begin_layout Subsection
+Phân tích
+\end_layout
+
+\begin_layout Paragraph
+Không gian bậc (Scale space)
+\end_layout
+
+\begin_layout Paragraph
+Địa phương hóa
+\end_layout
+
+\begin_layout Paragraph
+Góc chủ đạo và độ lớn
+\end_layout
+
+\begin_layout Paragraph
+Tính dặc trưng
+\end_layout
+
+\begin_layout Subsection
+Quy trình cụ thể
+\end_layout
+
+\begin_layout Paragraph
+Chuyển ảnh thành đen trắng
 \end_layout
 
 \begin_layout Standard
-Tinh' gradient
+Ảnh màu được chuyển thành đen trắng sử dụng công thức
 \begin_inset Formula 
 \[
-D\left(\hat{\mathbf{x}}\right)=D+\frac{1}{2}\frac{\partial D^{\top}}{\partial\mathbf{x}}\hat{\mathbf{x}}
+\text{gray}=0.2126\cdot\text{red}+0.7152\cdot\text{green}+0.0722\cdot\text{blue},
 \]
 
 \end_inset
 
-trong đó 
-\series bold
+trong đó red, green, blue là giá trị sáng của kênh màu tương ứng tại một
+ ví trí của ảnh
+\begin_inset ERT
+status open
 
-\begin_inset Formula $\hat{\mathbf{x}}=\left(x,y,\sigma_{i}\right)$
+\begin_layout Plain Layout
+
+
+\backslash
+cite{RGB2Gray}
+\end_layout
+
 \end_inset
 
 .
- 
-\series default
-Xấp xỉ rời rạc:
-\begin_inset Formula 
-\begin{align*}
-f'\left(\mathbf{x}\right) & =\left\{ \frac{f\left(x_{i}+h\right)-f\left(x_{i}-h\right)}{2h},i=\overline{1,h}\right\} \\
-f^{\prime\prime}\left(\mathbf{x}\right) & =\left\{ \frac{f_{j}\left(x_{i}+h\right)-f_{j}\left(x_{i}-h\right)}{2h}\right\} \\
- & =\left\{ \frac{f\left(x_{i}+h,x_{j}+h\right)-f\left(x_{i}+h,x_{j}-h\right)-f\left(x_{i}-h,x_{j}+h\right)+f\left(x_{i}-h,x_{j}-h\right)}{4h}\right\} 
-\end{align*}
+\end_layout
 
+\begin_layout Paragraph
+Tính toán không gian bậc
+\end_layout
+
+\begin_layout Standard
+Ảnh đầu vào được tăng gấp đôi kích cỡ và lọc Gauss sao cho giá trị mờ của
+ ảnh là 
+\begin_inset Formula $\sigma=1$
 \end_inset
 
-
+.
+ Giả định
 \end_layout
 
 \begin_layout Section

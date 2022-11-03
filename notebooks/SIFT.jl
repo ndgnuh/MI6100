@@ -212,10 +212,11 @@ function compute_scale_space_extremas(sift, dog_pyramid, σ)
                 end
 
                 # Contrast
-                x, y, z = @. Int(round(X + update))
+                X = X + update
+                x, y, z = @. Int(round(X))
                 D = dog_pyramid[o, z]
                 grad = [grad[x, y, z] for grad in grads]
-                contrast = abs(D[x, y] + grad' * update / 2)
+                contrast = abs(D[x, y] + sum(grad .* update) / 2)
                 if contrast * sift.n_octave_layers < sift.contrast_threshold
                     continue
                 end

@@ -21,26 +21,18 @@ begin
 	using ImageCore
 	using Base.Iterators
 	using PlutoUI
-	using Interpolations
 	using ImageShow
+	using DataStructures
+	using LinearSolve
 	using FileIO
 	using ImageTransformations
 	using OffsetArrays
-	using Memoize
 	using Statistics
-	using Parameters
 	using Setfield
 	using LinearAlgebra
-	using DataStructures
+	using ImageDraw
 	using PlutoLinks
-	using LinearSolve
 end
-
-# ╔═╡ cbbbc0d5-d318-4386-9547-261add4f2722
-using ImageDraw
-
-# ╔═╡ b29b496e-580e-4b3b-9c08-e1f968513fec
-LinearSolve.LinearProblem
 
 # ╔═╡ c8c71b3e-343e-4e9f-b44b-ce7b203faa39
 TableOfContents()
@@ -48,17 +40,23 @@ TableOfContents()
 # ╔═╡ 92685aab-2c03-451d-a7ed-ef2896023ea4
 md"# Input"
 
+# ╔═╡ adc23ce2-1a13-4eff-b014-f4ee1bcd5049
+@bind image_file FilePicker()
+
+# ╔═╡ 20718551-d549-45e7-b31c-69ef55bb9ab0
+image = let io = IOBuffer()
+	write(io, image_file["data"])
+	image = load(Stream{format"PNG"}(io))
+end
+
 # ╔═╡ 153288b8-3622-4b9c-a4d6-9b8d25accc20
 @bind image_name PlutoUI.Select((@. first(splitext(TestImages.remotefiles))), default="lighthouse")
 
-# ╔═╡ 26db3bbf-37f5-41c5-8c4d-0aeee24c36b1
-readdir()
-
-# ╔═╡ e4658d31-2858-4f66-a168-b2cfcb914e6b
-download("https://raw.githubusercontent.com/rmislam/PythonSIFT/master/box.png", "../samples/box.png")
-
 # ╔═╡ 39110c52-b943-479a-9431-18206c3132db
 ImDraw = @ingredients("ImDraw.jl")
+
+# ╔═╡ d2b25caa-f356-40c4-9d79-ce7b05043e8b
+ImDiff = @ingredients("imdiff.jl")
 
 # ╔═╡ 27caffc0-d61c-498d-896d-7da77a0301c6
 MySIFT = @ingredients("SIFT.jl")
@@ -66,36 +64,20 @@ MySIFT = @ingredients("SIFT.jl")
 # ╔═╡ 1299a8f3-1b5d-4fae-b452-6c4594d4f04b
 sift = MySIFT.SIFT()
 
-# ╔═╡ a5737d9b-d1e3-4f34-9d7b-f3fcf95e6d8e
-function compute_grad_hess(image, kernel, border="replicate")
-    dims = ndims(image)
-    grads = imgradients(image, kernel, border)
-    hesses = [imgradients(grad, kernel, border) for grad in grads]
+# ╔═╡ 5cc5f9a8-72d8-47d1-a22b-fdbc29d372eb
+result = MySIFT.fit(sift, image);
 
-    G = cat(grads...; dims=dims + 1)
-    H = cat([cat(hesses_...; dims=dims + 2) for hesses_ in hesses]...; dims=dims + 1)
-    return G, H
+# ╔═╡ 6950f4c7-62a6-4562-9cfa-71fb391c14d0
+let image = RGB.(result.base_image)
+	for kpt in result.keypoints
+		ImDraw.draw_keypoint!(image, kpt, (1, 1, 0); thickness=2)
+	end
+	image
 end
-
-
-# ╔═╡ b557fba4-bd85-486b-a7a2-79afaad856bb
-let (G, H) = compute_grad_hess(rand(9, 9, 3), KernelFactors.ando3)
-	size(G), size(H)
-end
-
-# ╔═╡ 51bd18f6-1a69-42bb-8bd2-63511ef764fe
-
-
-# ╔═╡ 1dc4a952-317e-4636-af0f-1f96787f70c5
-ImDraw.draw_keypoint!
-
-# ╔═╡ 4f1c148a-ada9-4ee1-aac3-0b1ea32da2c3
-Kernel.prewitt() .* 6
-
-# ╔═╡ 0320abdb-f8d2-456f-a59a-7238dc11bf39
-@bind image_file FilePicker()
 
 # ╔═╡ bb892b57-5302-446f-bca9-a3c74c32c772
+# ╠═╡ disabled = true
+#=╠═╡
 image, orig_image = let
 	image = testimage(image_name)
 	if !isnothing(image_file)
@@ -107,226 +89,10 @@ image, orig_image = let
 	image = Gray.(image)
 	image, orig_image
 end
-
-# ╔═╡ ff348b37-45b7-452d-a2e5-70791a952c54
-gpyr = let image = image
-	# image = imfilter(image, Kernel.gaussian(sqrt(1.6^2 - 0.5^2)))
-	MySIFT.compute_gaussian_pyramid(sift, image, MySIFT.get_num_octaves(image));
-end;
-
-# ╔═╡ 5e4996cf-5565-4b77-a3e5-6a6404dcab7f
-dpyr = MySIFT.compute_dog_pyramid(sift, gpyr);
-
-# ╔═╡ 9a6acdfc-3729-40cd-afd1-4cb2f1e9891f
-MySIFT.imshow(dpyr[2, 4]);
-
-# ╔═╡ 4c6968a3-fac6-4ca3-98fb-d7ae849b276c
-keypoints = MySIFT.compute_scale_space_extremas(sift, dpyr)
-
-# ╔═╡ 517e1ef9-d39e-42e4-9fa5-31917682eeb9
-lkeypoints = MySIFT.localize_keypoints(sift, dpyr, keypoints)
-
-# ╔═╡ e29b585e-24a6-4f1e-a0cf-512c105b410a
-length(lkeypoints)
-
-# ╔═╡ 6950f4c7-62a6-4562-9cfa-71fb391c14d0
-let image = imresize(orig_image, ratio=2)
-	image = RGB.(image)
-	for kpt in lkeypoints
-		ImDraw.draw_keypoint!(image, kpt, (1, 0, 0))
-	end
-	image
-end
-
-# ╔═╡ 9e3a38db-35d8-4263-9735-4ce81a727c23
-img = MySIFT.preprare_input(image)
-
-# ╔═╡ 5e3f3359-5ed9-44d1-9ee8-d819aa04f80d
-MySIFT.preprare_input(imresize(image, ratio=2))
-
-# ╔═╡ 4a28764b-ac45-4f30-aabb-dc79ab444748
-md"# Helper functions"
-
-# ╔═╡ a84ff639-deea-4bb0-a1c5-9cc1980e352b
-function nproduct(iter, n)
-	product(Iterators.repeated(iter, n)...)
-end
-
-# ╔═╡ 8991d7ff-9970-45e4-9066-dc62b5efce92
-function offset(idx, dim, by)
-	for (d, b) in zip(dim, by)
-		idx = @set idx[d] = idx[d] + b
-	end
-	return idx
-end
-
-# ╔═╡ 890ba89e-6b8e-4eae-aba5-15770bcd77bf
-function compute_gradients_at(arr, idx::CartesianIndex)
-	n = length(idx)
-	map(1:n) do d
-		inext = offset(idx, d, 1)
-		iprev = offset(idx, d, -1)
-		(arr[inext] - arr[iprev]) / 2
-	end
-end
-
-# ╔═╡ 99fe0bbf-d6a6-4255-acfc-6e892dd1cef0
-function compute_hessians_at(arr, idx::CartesianIndex)
-	n = length(idx)
-	map(product(1:n, 1:n)) do (d1, d2)
-		i1 = offset(idx, (d1, d2), ( 1,  1))
-		i2 = offset(idx, (d1, d2), ( 1, -1))
-		i3 = offset(idx, (d1, d2), (-1,  1))
-		i4 = offset(idx, (d1, d2), (-1, -1))
-		(arr[i1] - arr[i2] - arr[i3] + arr[i4]) / 4
-	end
-end
-
-# ╔═╡ 348e5417-abb4-4dc7-a536-fc1526013d2e
-function get_surround_idx(idx)
-	n = length(idx)
-	# All the offset index
-	iter = Iterators.filter(x -> any(x .!= 0), nproduct(-1:1, n))
-	offsets = Iterators.map(iter) do offset_
-		offset(idx, 1:n, offset_)
-	end
-end
-
-# ╔═╡ c0e218a7-0b01-4dbf-b988-2595e69552a7
-function is_point_extrema(arr, idx...)
-	n = ndims(arr)
-	arr = padarray(arr, Pad(ones(Int, n)...))
-	idx = CartesianIndex(idx...)
-	value = arr[idx]
-
-	# All the offset index
-	iter = Iterators.filter(x -> any(x .!= 0), nproduct(-1:1, n))
-	offsets = Iterators.map(iter) do offset_
-		offset(idx, 1:n, offset_)
-	end
-
-	# Check extrema
-	# Todo, padded view -> border is always not extrema
-	is_minima = all(offsets) do idx
-		value < arr[idx]
-	end
-	is_maxima = all(offsets) do idx
-		value > arr[idx]
-	end
-	is_minima || is_maxima
-end
-
-# ╔═╡ 0a603cf2-f83c-47b7-9d75-abafada7beee
-md"# Overall"
-
-# ╔═╡ e1066c27-37c2-4b02-acf6-878bf7138632
-Maybe{T} = Union{T, Nothing}
-
-# ╔═╡ 9568b235-fa4b-4297-a3c8-0085317a9eea
-@with_kw struct SIFT
-	σ::Float32 = 1.6
-	num_samples::Int = 3
-	num_scales::Maybe{Int} = nothing
-end
-
-# ╔═╡ 59051609-342e-4aaa-8431-6a43975c8d7f
-hash(SIFT())
-
-# ╔═╡ 26fe385f-543b-485e-935c-8556e23c86d7
-@with_kw struct SIFTResult
-	sift::SIFT
-	num_scales::Maybe{Int} = nothing
-	scales::Maybe{Vector} = nothing
-	gauss_kernels = nothing
-	gauss_images = nothing
-	dog_images = nothing
-	
-end
-
-# ╔═╡ 33c84d54-4026-4ce9-957d-50a0034ed6c1
-function run_sift(image::Matrix, sift = SIFT())::SIFTResult
-	grayed = to_gray(image)
-	result = SIFTResult(sift=sift)
-	@set! result.num_scales = num_scales = get_num_octaves(grayed)
-	k = 2^(1/num_scales)
-	@set! result.scales = [sift.σ * (k^(n-1)) for n in 1:result.num_scales]
-	FType = (eltype(grayed))
-	@set! result.gauss_kernels = [
-		begin
-			k = Kernel.gaussian(k)
-		end for k in result.scales]
-	result
-	@set! result.gauss_images = [
-		gen_single_octave(grayed, kernel, sift.num_samples) for
-		kernel in result.gauss_kernels
-	]
-end
+  ╠═╡ =#
 
 # ╔═╡ 1d783473-dddc-43aa-8126-a8c8ad6ef9a3
 md"# Scale space"
-
-# ╔═╡ 1928a00e-7374-4dda-bc17-b195fedcadf3
-function generate_gaussian_kernels(σ, num_intervals)
-	num_samples = num_intervals + 3
-	k = 2^(1 / num_intervals)
-	σs = [σ]
-	sizehint!(σs, num_samples)
-	for i in 1:num_samples - 1
-		σp = (k^(i - 1)) * σ
-		σ = σp * k
-		push!(σs, sqrt(σ^2 - σp^2))
-	end
-	return σs
-end
-
-# ╔═╡ 9996691f-ea27-4217-ac7b-6491b1bb8723
-function generate_dg_images(images)
-	[gray.(cat(diff(images_)..., dims=3)) for images_ in images]
-end
-
-# ╔═╡ 4daedb1b-538b-4f47-9060-ca140b891984
-Base.@kwdef mutable struct Keypoint
-	angle = nothing
-	octave_idx = nothing
-	image_idx = nothing
-	pt = nothing
-	response = nothing
-	size = nothing
-	orientation = nothing
-	magnitude = nothing
-end
-
-# ╔═╡ 266b6f00-a716-45c4-bc06-f29e25f895de
-# keypoints, dogs, gauss_images = let image = imresize(image; ratio=2)
-# 	σ = 1.6
-# 	num_intervals = 3
-# 	assumed_blur = 0.5
-# 	dσ = sqrt(σ^2 - ((2 * assumed_blur)^2))
-# 	@info "dσ = $dσ"
-# 	image = imfilter(image, Kernel.reflect(Kernel.gaussian(dσ)))
-# 	@info "Generated base image"
-# 	num_octaves = get_num_octaves(image) 
-# 	# num_octaves = 
-# 	@info "Number of octaves $num_octaves"
-# 	octaves = generate_gaussian_kernels(σ, num_intervals)
-# 	@info "Octaves: $(round.(octaves, digits=3))"
-# 	images = generate_gaussian_images(image, num_octaves, octaves)
-# 	dogs = generate_dg_images(images)
-# 	@info "Generated DoGs, last octave size: $(size(dogs[end]))" 
-# 	keypoints = detect_scale_extremas(dogs, octaves)
-# 	@info "Detected $(lengt
-# N
-# h(keypoints)) keypoints"
-# 	@info "Type $(typeof(keypoints)), $(typeof(dogs))"
-# 	keypoints = localize_keypoints(
-# 		keypoints, dogs;
-# 		contrast_threshold=0.04f0,
-# 		r = 10.0f0,
-# 		max_iterations = 10
-# 	)
-# 	@info "Keypoints after localization $(length(keypoints)) keypoints"
-# 	keypoints, dogs, images
-# end;
 
 # ╔═╡ c3fe6289-0f30-4fca-a09a-5d4d2d9c91bd
 function localize_keypoint!(D, G, H, x; max_iterations=10)
@@ -433,12 +199,6 @@ function orientation_assignment!(keypoints::MutableLinkedList, gauss_images)
 	end
 end
 
-# ╔═╡ 092b996d-9240-431d-8cb3-e45f5372895a
-[gray(keypoint.size) for keypoint in keypoints]
-
-# ╔═╡ 3fcd6014-6d2c-44b9-aca4-c2693eda922b
-draw_keypoints(RGBA.(imresize(orig_image; ratio=2)), keypoints[1:end]; thickness=2)
-
 # ╔═╡ 1c9eefff-d69b-4278-a7bc-e57b628b4eef
 function draw_keypoint!(img, kpt; thickness=1)
 	Color = eltype(img)
@@ -451,95 +211,6 @@ function draw_keypoint!(img, kpt; thickness=1)
 	img
 end
 
-# ╔═╡ abf2caaf-8df3-4584-aa36-6260df70a903
-draw_keypoint!(copy(orig_image), Keypoint(size=40, pt = (300, 400)))
-
-# ╔═╡ 9f365ea6-4525-4af0-98ca-0288560e56b4
-Base.@kwdef struct CirclePath <: Drawable
-	center::Tuple{Int, Int}
-	radius::Int
-end
-
-# ╔═╡ 6ecae257-3978-42a8-8908-a83f516a0e03
-
-
-# ╔═╡ 97c9cae1-d8f9-4519-90dc-ce88f1ea0704
-
-
-# ╔═╡ b7121855-1f0b-4899-ac37-17b8e981cab8
-d = ImDraw.Line((40, 300), (30, 200))
-
-# ╔═╡ 8f5994be-b676-4fcb-98bb-f6297a1fa363
-ImDraw.interpolate(d, 1)
-
-# ╔═╡ 1100ef76-1882-44d4-9873-d3a0a9e04f69
-ImDraw.imdraw(orig_image, d, RGB(1, 0, 0), 5)
-
-# ╔═╡ 7c22691b-ab73-4ac7-9c8d-2794a782a699
-imfilter.((x, x), Kernel.prewitt() .* 3)
-
-# ╔═╡ 272ec583-2e71-41e3-921a-e0caf6bd344a
-imgradients(x, KernelFactors.prewitt)
-
-# ╔═╡ 096623f2-dbe1-4238-b919-4759ea5a86ea
-function im_gradients_hessians(img)
-	dx = imfilter(x, hcat([-1, 0, 1]))
-	dy = imfilter(x, [-1 0 1])
-	dx/2, dy/2
-end
-
-# ╔═╡ 88496d4c-65bd-40d0-ac63-8cb3e66ae579
-im_gradients_hessians(x)
-
-# ╔═╡ ecbcb1cc-7f51-4588-90ed-7d5da1b1335d
-imfilter(x, hcat([-1, 0, 1]))
-
-# ╔═╡ 52ce783f-f68d-4b7f-b49d-849fcc0336ee
-function im_gradients(arr)
-	n = ndims(arr)
-	grads = map(1:n) do d
-		pads = [i == d ? 1 : 0 for i in 1:n]
-		padded = padarray(arr, Pad(pads...))
-		diff(padded, dims=d)
-	end
-	# cat(imgradients(arr, KernelFactors.sobel)..., dims=ndims(arr) + 1)
-end
-
-# ╔═╡ f396904a-833d-43eb-8e46-93d239d410aa
-args = KernelFactors.sobel()
-
-# ╔═╡ 5714f797-5567-4adc-8e08-fca9295c0261
-compute_hessians_at.((padarray(x, Pad(2, 2, 2)),), CartesianIndices(x))
-
-# ╔═╡ b67a25a9-f546-4ff5-9777-a6a2255b5c3a
-function grad_kernel(dims, )
-	([-1, 0, 1], [1 1 1]), ([1,1,1], [-1 0 1])
-end
-
-# ╔═╡ 106b6eb0-85f6-404b-9126-fc5ea0a38184
-gx = im_gradients(x)
-
-# ╔═╡ 8ac270ba-f5a5-4e90-9a3b-2a9c561a0900
-compute_gradients_at(x, 4, 4, 2)
-
-# ╔═╡ ed8512cf-a2f9-4d80-9dc9-24e5457b574c
-gx[4, 4, 2, :]
-
-# ╔═╡ 8fe6e1e3-5aae-42e1-a44b-026004aea6bf
-
-
-# ╔═╡ 2f65ee16-c443-491e-9ee3-f26caf5e4a18
-import Zygote
-
-# ╔═╡ ba3b342e-5a6b-4fd4-8c5b-74f55194ed9f
-# ╠═╡ disabled = true
-#=╠═╡
-x = rand(1024,1024, 5);
-  ╠═╡ =#
-
-# ╔═╡ 1867153a-bfc9-4b0a-96b4-c10883eeaf37
-x = reshape(1:2:32, 4, 4)
-
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
@@ -550,18 +221,14 @@ ImageDraw = "4381153b-2b60-58ae-a1ba-fd683676385f"
 ImageFiltering = "6a3955dd-da59-5b1f-98d4-e7296123deb5"
 ImageShow = "4e3cecfd-b093-5904-9786-8bbb286a6a31"
 ImageTransformations = "02fcd773-0e25-5acc-982a-7f6622650795"
-Interpolations = "a98d9a8b-a2ab-59e6-89dd-64a1c18fca59"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 LinearSolve = "7ed4a6bd-45f5-4d41-b270-4a48e9bafcae"
-Memoize = "c03570c3-d221-55d1-a50c-7939bbd78826"
 OffsetArrays = "6fe1bfb0-de20-5000-8ca7-80f57d26f881"
-Parameters = "d96e819e-fc66-5662-9728-84c9c7592b0a"
 PlutoLinks = "0ff47ea0-7a50-410d-8455-4348d5de0420"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 Setfield = "efcf1570-3423-57d1-acb7-fd33fddbac46"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 TestImages = "5e47fb64-e119-507b-a336-dd2b206d9990"
-Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
 
 [compat]
 DataStructures = "~0.18.13"
@@ -571,16 +238,12 @@ ImageDraw = "~0.2.5"
 ImageFiltering = "~0.7.2"
 ImageShow = "~0.3.6"
 ImageTransformations = "~0.9.5"
-Interpolations = "~0.14.6"
 LinearSolve = "~1.27.1"
-Memoize = "~0.4.4"
 OffsetArrays = "~1.12.8"
-Parameters = "~0.12.3"
 PlutoLinks = "~0.1.5"
 PlutoUI = "~0.7.48"
 Setfield = "~1.1.1"
 TestImages = "~1.7.1"
-Zygote = "~0.6.49"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
@@ -589,7 +252,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.8.2"
 manifest_format = "2.0"
-project_hash = "424fd6b4cea844e9d862b23bba00053b470652d5"
+project_hash = "b8808f2cddf2a6d3eec1fe9a6c3bd4fe8ba66953"
 
 [[deps.AbstractFFTs]]
 deps = ["ChainRulesCore", "LinearAlgebra"]
@@ -689,12 +352,6 @@ deps = ["CustomUnitRanges", "OffsetArrays"]
 git-tree-sha1 = "a0f80a09780eed9b1d106a1bf62041c2efc995bc"
 uuid = "aafaddc9-749c-510e-ac4f-586e18779b91"
 version = "0.2.2"
-
-[[deps.ChainRules]]
-deps = ["Adapt", "ChainRulesCore", "Compat", "Distributed", "GPUArraysCore", "IrrationalConstants", "LinearAlgebra", "Random", "RealDot", "SparseArrays", "Statistics", "StructArrays"]
-git-tree-sha1 = "d7d816527558cb8373e8f7a746d88eb8a167b023"
-uuid = "082447d4-558c-5d27-93f4-14fc19e9eca2"
-version = "1.44.7"
 
 [[deps.ChainRulesCore]]
 deps = ["Compat", "LinearAlgebra", "SparseArrays"]
@@ -927,12 +584,6 @@ version = "0.1.1"
 deps = ["Random"]
 uuid = "9fa8497b-333b-5362-9e8d-4d0656e87820"
 
-[[deps.GPUArrays]]
-deps = ["Adapt", "GPUArraysCore", "LLVM", "LinearAlgebra", "Printf", "Random", "Reexport", "Serialization", "Statistics"]
-git-tree-sha1 = "45d7deaf05cbb44116ba785d147c518ab46352d7"
-uuid = "0c68f7d7-f131-5f86-a1c3-88cf8149b2d7"
-version = "8.5.0"
-
 [[deps.GPUArraysCore]]
 deps = ["Adapt"]
 git-tree-sha1 = "6872f5ec8fd1a38880f027a26739d42dcda6691f"
@@ -953,9 +604,9 @@ version = "1.1.2"
 
 [[deps.HostCPUFeatures]]
 deps = ["BitTwiddlingConvenienceFunctions", "IfElse", "Libdl", "Static"]
-git-tree-sha1 = "b7b88a4716ac33fe31d6556c02fc60017594343c"
+git-tree-sha1 = "d076c069de9afda45e379f4be46f1f54bdf37ca9"
 uuid = "3e5b6fbb-0976-4d2c-9146-d79de83f2fb0"
-version = "0.1.8"
+version = "0.1.9"
 
 [[deps.Hyperscript]]
 deps = ["Test"]
@@ -974,12 +625,6 @@ deps = ["Logging", "Random"]
 git-tree-sha1 = "f7be53659ab06ddc986428d3a9dcc95f6fa6705a"
 uuid = "b5f81e59-6552-4d32-b1f0-c071b021bf89"
 version = "0.2.2"
-
-[[deps.IRTools]]
-deps = ["InteractiveUtils", "MacroTools", "Test"]
-git-tree-sha1 = "2e99184fca5eb6f075944b04c22edec29beb4778"
-uuid = "7869d1d1-7146-5819-86e3-90919afe41df"
-version = "0.4.7"
 
 [[deps.IfElse]]
 git-tree-sha1 = "debdd00ffef04665ccbb3e150747a77560e8fad1"
@@ -1159,18 +804,6 @@ git-tree-sha1 = "bf36f528eec6634efc60d7ec062008f171071434"
 uuid = "88015f11-f218-50d7-93a8-a6af411a945d"
 version = "3.0.0+1"
 
-[[deps.LLVM]]
-deps = ["CEnum", "LLVMExtra_jll", "Libdl", "Printf", "Unicode"]
-git-tree-sha1 = "e7e9184b0bf0158ac4e4aa9daf00041b5909bf1a"
-uuid = "929cbde3-209d-540e-8aea-75f648917ca0"
-version = "4.14.0"
-
-[[deps.LLVMExtra_jll]]
-deps = ["Artifacts", "JLLWrappers", "LazyArtifacts", "Libdl", "Pkg", "TOML"]
-git-tree-sha1 = "771bfe376249626d3ca12bcd58ba243d3f961576"
-uuid = "dad2f222-ce93-54a1-a47d-0025e8a3acab"
-version = "0.0.16+0"
-
 [[deps.LayoutPointers]]
 deps = ["ArrayInterface", "ArrayInterfaceOffsetArrays", "ArrayInterfaceStaticArrays", "LinearAlgebra", "ManualMemory", "SIMDTypes", "Static"]
 git-tree-sha1 = "73e2e40eb02d6ccd191a8a9f8cee20db8d5df010"
@@ -1281,12 +914,6 @@ deps = ["Artifacts", "Libdl"]
 uuid = "c8ffd9c3-330d-5841-b78e-0817d7145fa1"
 version = "2.28.0+0"
 
-[[deps.Memoize]]
-deps = ["MacroTools"]
-git-tree-sha1 = "2b1dfcba103de714d31c033b5dacc2e4a12c7caa"
-uuid = "c03570c3-d221-55d1-a50c-7939bbd78826"
-version = "0.4.4"
-
 [[deps.Mmap]]
 uuid = "a63ad114-7e13-5084-954f-fe012c677804"
 
@@ -1366,12 +993,6 @@ deps = ["OffsetArrays"]
 git-tree-sha1 = "03a7a85b76381a3d04c7a1656039197e70eda03d"
 uuid = "5432bcbf-9aad-5242-b902-cca2824c8663"
 version = "0.5.11"
-
-[[deps.Parameters]]
-deps = ["OrderedCollections", "UnPack"]
-git-tree-sha1 = "34c0e9ad262e5f7fc75b10a9952ca7692cfc5fbe"
-uuid = "d96e819e-fc66-5662-9728-84c9c7592b0a"
-version = "0.12.3"
 
 [[deps.Parsers]]
 deps = ["Dates"]
@@ -1467,12 +1088,6 @@ git-tree-sha1 = "dc84268fe0e3335a62e315a3a7cf2afa7178a734"
 uuid = "c84ed2f1-dad5-54f0-aa8e-dbefe2724439"
 version = "0.4.3"
 
-[[deps.RealDot]]
-deps = ["LinearAlgebra"]
-git-tree-sha1 = "9f0a1b71baaf7650f4fa8a1d168c7fb6ee41f0c9"
-uuid = "c1ae055f-0cd5-4b69-90a6-9a35b1a98df9"
-version = "0.1.0"
-
 [[deps.RecipesBase]]
 deps = ["SnoopPrecompile"]
 git-tree-sha1 = "d12e612bba40d189cead6ff857ddb67bd2e6a387"
@@ -1543,9 +1158,9 @@ version = "0.6.36"
 
 [[deps.SciMLBase]]
 deps = ["ArrayInterfaceCore", "CommonSolve", "ConstructionBase", "Distributed", "DocStringExtensions", "EnumX", "FunctionWrappersWrappers", "IteratorInterfaceExtensions", "LinearAlgebra", "Logging", "Markdown", "Preferences", "RecipesBase", "RecursiveArrayTools", "RuntimeGeneratedFunctions", "StaticArraysCore", "Statistics", "Tables"]
-git-tree-sha1 = "3a396522ce4a81758cac1481bd596c3059a8e69c"
+git-tree-sha1 = "12e532838db2f2a435a84ab7c01003ceb45baa53"
 uuid = "0bca4576-84f4-4d90-8ffe-ffa030f20462"
-version = "1.66.0"
+version = "1.67.0"
 
 [[deps.Serialization]]
 uuid = "9e88b42a-f829-5b0c-bbe9-9e923198166b"
@@ -1628,12 +1243,6 @@ deps = ["Distances", "StatsAPI"]
 git-tree-sha1 = "ceeef74797d961aee825aabf71446d6aba898acb"
 uuid = "88034a9c-02f8-509d-84a9-84ec65e18404"
 version = "0.11.2"
-
-[[deps.StructArrays]]
-deps = ["Adapt", "DataAPI", "StaticArraysCore", "Tables"]
-git-tree-sha1 = "13237798b407150a6d2e2bce5d793d7d9576e99e"
-uuid = "09ab397b-f2b6-538f-b94a-2f83cf4a842a"
-version = "0.6.13"
 
 [[deps.SuiteSparse]]
 deps = ["Libdl", "LinearAlgebra", "Serialization", "SparseArrays"]
@@ -1751,12 +1360,6 @@ git-tree-sha1 = "e45044cd873ded54b6a5bac0eb5c971392cf1927"
 uuid = "3161d3a3-bdf6-5164-811a-617609db77b4"
 version = "1.5.2+0"
 
-[[deps.Zygote]]
-deps = ["AbstractFFTs", "ChainRules", "ChainRulesCore", "DiffRules", "Distributed", "FillArrays", "ForwardDiff", "GPUArrays", "GPUArraysCore", "IRTools", "InteractiveUtils", "LinearAlgebra", "LogExpFunctions", "MacroTools", "NaNMath", "Random", "Requires", "SparseArrays", "SpecialFunctions", "Statistics", "ZygoteRules"]
-git-tree-sha1 = "66cc604b9a27a660e25a54e408b4371123a186a6"
-uuid = "e88e6eb3-aa80-5325-afca-941959d7151f"
-version = "0.6.49"
-
 [[deps.ZygoteRules]]
 deps = ["MacroTools"]
 git-tree-sha1 = "8c1a8e4dfacb1fd631745552c8db35d0deb09ea0"
@@ -1793,78 +1396,22 @@ version = "17.4.0+0"
 
 # ╔═╡ Cell order:
 # ╠═aff807a0-5124-11ed-1675-b74542d32634
-# ╠═b29b496e-580e-4b3b-9c08-e1f968513fec
 # ╠═c8c71b3e-343e-4e9f-b44b-ce7b203faa39
 # ╟─92685aab-2c03-451d-a7ed-ef2896023ea4
+# ╠═adc23ce2-1a13-4eff-b014-f4ee1bcd5049
+# ╠═20718551-d549-45e7-b31c-69ef55bb9ab0
 # ╟─153288b8-3622-4b9c-a4d6-9b8d25accc20
-# ╠═26db3bbf-37f5-41c5-8c4d-0aeee24c36b1
-# ╠═e4658d31-2858-4f66-a168-b2cfcb914e6b
 # ╠═39110c52-b943-479a-9431-18206c3132db
+# ╠═d2b25caa-f356-40c4-9d79-ce7b05043e8b
 # ╠═27caffc0-d61c-498d-896d-7da77a0301c6
 # ╠═1299a8f3-1b5d-4fae-b452-6c4594d4f04b
-# ╠═9a6acdfc-3729-40cd-afd1-4cb2f1e9891f
-# ╠═ff348b37-45b7-452d-a2e5-70791a952c54
-# ╠═5e4996cf-5565-4b77-a3e5-6a6404dcab7f
-# ╠═4c6968a3-fac6-4ca3-98fb-d7ae849b276c
-# ╠═a5737d9b-d1e3-4f34-9d7b-f3fcf95e6d8e
-# ╠═b557fba4-bd85-486b-a7a2-79afaad856bb
-# ╠═51bd18f6-1a69-42bb-8bd2-63511ef764fe
-# ╠═517e1ef9-d39e-42e4-9fa5-31917682eeb9
-# ╠═e29b585e-24a6-4f1e-a0cf-512c105b410a
-# ╠═1dc4a952-317e-4636-af0f-1f96787f70c5
-# ╠═4f1c148a-ada9-4ee1-aac3-0b1ea32da2c3
-# ╠═1867153a-bfc9-4b0a-96b4-c10883eeaf37
-# ╠═88496d4c-65bd-40d0-ac63-8cb3e66ae579
-# ╠═7c22691b-ab73-4ac7-9c8d-2794a782a699
-# ╠═272ec583-2e71-41e3-921a-e0caf6bd344a
-# ╠═096623f2-dbe1-4238-b919-4759ea5a86ea
-# ╠═ecbcb1cc-7f51-4588-90ed-7d5da1b1335d
+# ╠═5cc5f9a8-72d8-47d1-a22b-fdbc29d372eb
 # ╠═6950f4c7-62a6-4562-9cfa-71fb391c14d0
-# ╠═9e3a38db-35d8-4263-9735-4ce81a727c23
-# ╠═5e3f3359-5ed9-44d1-9ee8-d819aa04f80d
-# ╠═0320abdb-f8d2-456f-a59a-7238dc11bf39
 # ╠═bb892b57-5302-446f-bca9-a3c74c32c772
-# ╟─4a28764b-ac45-4f30-aabb-dc79ab444748
-# ╟─a84ff639-deea-4bb0-a1c5-9cc1980e352b
-# ╠═8991d7ff-9970-45e4-9066-dc62b5efce92
-# ╠═890ba89e-6b8e-4eae-aba5-15770bcd77bf
-# ╠═99fe0bbf-d6a6-4255-acfc-6e892dd1cef0
-# ╠═348e5417-abb4-4dc7-a536-fc1526013d2e
-# ╟─c0e218a7-0b01-4dbf-b988-2595e69552a7
-# ╟─0a603cf2-f83c-47b7-9d75-abafada7beee
-# ╟─e1066c27-37c2-4b02-acf6-878bf7138632
-# ╟─9568b235-fa4b-4297-a3c8-0085317a9eea
-# ╟─59051609-342e-4aaa-8431-6a43975c8d7f
-# ╟─26fe385f-543b-485e-935c-8556e23c86d7
-# ╟─33c84d54-4026-4ce9-957d-50a0034ed6c1
-# ╟─1d783473-dddc-43aa-8126-a8c8ad6ef9a3
-# ╟─1928a00e-7374-4dda-bc17-b195fedcadf3
-# ╟─9996691f-ea27-4217-ac7b-6491b1bb8723
-# ╠═4daedb1b-538b-4f47-9060-ca140b891984
-# ╟─266b6f00-a716-45c4-bc06-f29e25f895de
-# ╟─c3fe6289-0f30-4fca-a09a-5d4d2d9c91bd
+# ╠═1d783473-dddc-43aa-8126-a8c8ad6ef9a3
+# ╠═c3fe6289-0f30-4fca-a09a-5d4d2d9c91bd
 # ╠═a17076c1-b958-416e-9a4b-b2094c902e9a
 # ╠═0f185020-77ff-4b06-9df2-6439a07447b7
-# ╠═092b996d-9240-431d-8cb3-e45f5372895a
-# ╠═3fcd6014-6d2c-44b9-aca4-c2693eda922b
 # ╠═1c9eefff-d69b-4278-a7bc-e57b628b4eef
-# ╠═abf2caaf-8df3-4584-aa36-6260df70a903
-# ╠═9f365ea6-4525-4af0-98ca-0288560e56b4
-# ╠═6ecae257-3978-42a8-8908-a83f516a0e03
-# ╠═97c9cae1-d8f9-4519-90dc-ce88f1ea0704
-# ╠═b7121855-1f0b-4899-ac37-17b8e981cab8
-# ╠═8f5994be-b676-4fcb-98bb-f6297a1fa363
-# ╠═1100ef76-1882-44d4-9873-d3a0a9e04f69
-# ╠═ba3b342e-5a6b-4fd4-8c5b-74f55194ed9f
-# ╠═52ce783f-f68d-4b7f-b49d-849fcc0336ee
-# ╠═f396904a-833d-43eb-8e46-93d239d410aa
-# ╠═5714f797-5567-4adc-8e08-fca9295c0261
-# ╠═b67a25a9-f546-4ff5-9777-a6a2255b5c3a
-# ╠═106b6eb0-85f6-404b-9126-fc5ea0a38184
-# ╠═8ac270ba-f5a5-4e90-9a3b-2a9c561a0900
-# ╠═ed8512cf-a2f9-4d80-9dc9-24e5457b574c
-# ╠═cbbbc0d5-d318-4386-9547-261add4f2722
-# ╠═8fe6e1e3-5aae-42e1-a44b-026004aea6bf
-# ╠═2f65ee16-c443-491e-9ee3-f26caf5e4a18
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

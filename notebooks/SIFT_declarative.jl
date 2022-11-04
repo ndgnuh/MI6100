@@ -85,12 +85,23 @@ function compute_scale_space_extrema(s)
                                         2:(num_samples(s) - 1))
         extremas = Iterators.filter(all_indices) do (row, col, layer)
             is_point_extrema(s, octave, row, col, layer)
-            layer == num_samples(s) - 1
         end
 
         extremas
     end
     return candidates
+end
+
+@memoize function _compare_function(cmp::Function)
+    return function (idx)
+        drow, dcol, dlayer = idx
+        if drow == dcol == dlayer == 0
+            return true
+        end
+        compare_dog = compute_dog_image(s, octave, layer + dlayer)
+        compare_value = compare_dog[row + drow, col + dcol]
+        cmp(center_value, compare_value)
+    end
 end
 
 function is_point_extrema(s, octave, row, col, layer)
@@ -106,18 +117,7 @@ function is_point_extrema(s, octave, row, col, layer)
 
     iter = Iterators.product(-1:1, -1:1, -1:1)
 
-    function compare_function(cmp::Function)
-        return function (idx)
-            drow, dcol, dlayer = idx
-            if drow == dcol == dlayer == 0
-                return true
-            end
-            compare_dog = compute_dog_image(s, octave, layer + dlayer)
-            compare_value = compare_dog[row + drow, col + dcol]
-            cmp(center_value, compare_value)
-        end
-    end
-    is_minima = Iterators.map(compare_function(<), iter)
-    is_maxima = Iterators.map(compare_function(>), iter)
+    is_minima = Iterators.map(_compare_function(<), iter)
+    is_maxima = Iterators.map(_compare_function(>), iter)
     all(is_minima) || all(is_maxima)
 end

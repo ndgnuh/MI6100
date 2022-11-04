@@ -60,7 +60,7 @@ end
 function gaussian_blur(image, σ)
     ksize = Int(round(round(σ * 2) / 2) * 2 - 1)
     kern = KernelFactors.gaussian((σ, σ), (ksize, ksize))
-    imfilter(image, kern, NA())
+    return imfilter(image, kern, NA())
 end
 
 function compute_gaussian_kernels(sift)
@@ -108,7 +108,7 @@ function compute_gaussian_pyramid(sift::SIFT, image, σ, num_octaves)
 
         # First sample of each octave is half of the original one
         if s_idx == 1
-            pyramid[o_idx, s_idx] = imresize(pyramid[o_idx - 1, end]; ratio=1 // 2)
+            pyramid[o_idx, s_idx] = imresize(pyramid[o_idx - 1, end - 3]; ratio=1 // 2)
             continue
         end
 
@@ -121,9 +121,11 @@ end
 
 function compute_dog_pyramid(sift, gaussian_pyramid::Matrix)
     num_octaves, num_samples = size(gaussian_pyramid)
-    dog_pyramid = [zeros(eltype(m), size(m)) for m in gaussian_pyramid[:, 1:(end - 1)]]
-    for o in 1:(num_octaves - 1), s in 1:(num_samples - 1)
-        @. dog_pyramid[o, s] = gaussian_pyramid[o, s + 1] - gaussian_pyramid[o, s]
+    dog_pyramid = [copy(m) for m in gaussian_pyramid[:, 1:(end - 1)]]
+    @threads for o in 1:(num_octaves - 1)
+        for s in 1:(num_samples - 1)
+            @. dog_pyramid[o, s] = gaussian_pyramid[o, s + 1] - gaussian_pyramid[o, s]
+        end
     end
     return dog_pyramid
 end
@@ -134,11 +136,11 @@ function compute_scale_space_extremas(sift, dog_pyramid, σ)
     border_width = sift.border_width
     gradients = map(eachrow(dog_pyramid)) do dog
         cdog = cat(dog...; dims=3)
-        G = im_gradients(cdog)
+        return G = im_gradients(cdog)
     end
     hessians = map(eachrow(dog_pyramid)) do dog
         cdog = cat(dog...; dims=3)
-        im_hessians(cdog)
+        return im_hessians(cdog)
     end
 
     # Find extremas
@@ -247,8 +249,7 @@ function compute_scale_space_extremas(sift, dog_pyramid, σ)
     return keypoints
 end
 
-function localize_keypoint!(sift::SIFT, grads, hesses, keypoint)
-end
+function localize_keypoint!(sift::SIFT, grads, hesses, keypoint) end
 
 function localize_keypoints!(sift::SIFT, dog_pyramid, keypoints; num_attempts=10)
     lkeypoints = MutableLinkedList{Keypoint}()
@@ -258,7 +259,7 @@ function localize_keypoints!(sift::SIFT, dog_pyramid, keypoints; num_attempts=10
         cdog = cat(dog...; dims=3)
         G = im_gradients(cdog)
         H = im_hessians(cdog)
-        G, H
+        return G, H
     end
 
     for keypoint in keypoints

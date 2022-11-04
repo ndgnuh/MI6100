@@ -75,22 +75,6 @@ let image = RGB.(result.base_image)
 	image
 end
 
-# ╔═╡ bb892b57-5302-446f-bca9-a3c74c32c772
-# ╠═╡ disabled = true
-#=╠═╡
-image, orig_image = let
-	image = testimage(image_name)
-	if !isnothing(image_file)
-		io = IOBuffer()
-		write(io, image_file["data"])
-		image = load(Stream{format"PNG"}(io))
-	end
-	orig_image = image
-	image = Gray.(image)
-	image, orig_image
-end
-  ╠═╡ =#
-
 # ╔═╡ 1d783473-dddc-43aa-8126-a8c8ad6ef9a3
 md"# Scale space"
 
@@ -252,7 +236,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.8.2"
 manifest_format = "2.0"
-project_hash = "b8808f2cddf2a6d3eec1fe9a6c3bd4fe8ba66953"
+project_hash = "fffd1c66f3ab034a8fdf3b8238f9bbea3207eeb7"
 
 [[deps.AbstractFFTs]]
 deps = ["ChainRulesCore", "LinearAlgebra"]

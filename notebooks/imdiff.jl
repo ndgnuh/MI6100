@@ -30,7 +30,7 @@ function compute_hessian_kernels(dims)
         else
             c1 = (d1, 1, 1)
             c2 = (d1, 0, -2)
-            c3 = (d1, -1, -1)
+            c3 = (d1, -1, 1)
             (c1, c2, c3)
         end
     end

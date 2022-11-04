@@ -511,25 +511,114 @@ Tính toán không gian bậc
 \end_layout
 
 \begin_layout Standard
-Ảnh đầu vào được tăng gấp đôi kích cỡ và lọc Gauss sao cho giá trị mờ của
- ảnh là 
-\begin_inset Formula $\sigma_{1}=1$
+Không gian bậc của ảnh 
+\begin_inset Formula $I$
 \end_inset
 
-.
- Giả định ảnh đầu vào có độ mờ 
-\begin_inset Formula $\sigma_{0}=0.5$
+ là một ma trận chứa 
+\begin_inset Formula $n\times m$
 \end_inset
 
-, nhân Gauss mà cần lọc ảnh có giá trị
+ ảnh, trong đó 
+\begin_inset Formula $n$
+\end_inset
+
+ là số bậc, 
+\begin_inset Formula $s$
+\end_inset
+
+ là số mẫu.
+\end_layout
+
+\begin_layout Standard
 \begin_inset Formula 
 \[
-\sigma_{0\to1}=
+n=\left\lfloor \frac{\ln\left(\min\left(\operatorname{size}\left(I\right)\right)\right)}{\ln\left(2\right)}-1\right\rfloor .
 \]
 
 \end_inset
 
+Không gian bậc có thể được xem như một kim tự tháp, trong đó, ảnh 
+\begin_inset Formula $G_{k,\cdot}$
+\end_inset
 
+ ở bậc thứ 
+\begin_inset Formula $k$
+\end_inset
+
+ có kích thước bằng một nửa ảnh 
+\begin_inset Formula $G_{k-1,\cdot}$
+\end_inset
+
+ ở bậc thứ 
+\begin_inset Formula $k-1$
+\end_inset
+
+.
+ Mỗi bậc sẽ bao gồm 
+\begin_inset Formula $m$
+\end_inset
+
+ mẫu, ảnh mẫu thứ 
+\begin_inset Formula $G_{i,j+1}$
+\end_inset
+
+ được tính bằng cách mờ ảnh 
+\begin_inset Formula $G_{i,j}$
+\end_inset
+
+ bằng lọc Gauss với 
+\begin_inset Formula $\sigma_{j}$
+\end_inset
+
+.
+ Mẫu đầu tiên của mỗi bậc được tính bằng cách giảm kích thước của mẫu cuối
+ bậc trước đi một nửa.
+ Mẫu đầu tiên của bậc đầu tiên chính là ảnh đầu vào.
+\begin_inset Formula 
+\begin{align*}
+L_{1,1}\left(x,y\right) & =I\left(x,y\right),\\
+L_{k,1} & =\resize\left(L_{k-1,s},\frac{1}{2}\right),\quad k=\overline{1,n}\\
+L_{k,l} & =G\left(x,y,\sigma\right)\ast L_{k,l-1}\left(x,y\right),\quad k=\overline{1,n},l=\overline{2,s}.
+\end{align*}
+
+\end_inset
+
+Sau khi tìm các ảnh 
+\begin_inset Formula $L_{k,l}$
+\end_inset
+
+, ta tìm không gian bậc với các hàm sai phân Gauss theo công thức
+\begin_inset Formula 
+\[
+D_{k,i}=L_{k,i+1}-L_{k,i},\quad k=\overline{1,n},i=\overline{1,s}.
+\]
+
+\end_inset
+
+Theo thực nghiệm, 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+cite{DavidLowe2004}
+\end_layout
+
+\end_inset
+
+ thấy rằng lấy 
+\begin_inset Formula $6$
+\end_inset
+
+ mẫu mỗi octave cho ra số lượng keypoint nhiều nhất.
+ Do đó ta sử dụng 
+\begin_inset Formula $s=6$
+\end_inset
+
+.
 \end_layout
 
 \begin_layout Paragraph
@@ -603,7 +692,7 @@ Trong trường hợp
 , ta được công thức đơn giản hơn
 \begin_inset Formula 
 \[
-\frac{\partial^{2}I}{\partial d}=\frac{1}{4h^{2}}\left[I\left(\next^{2}\left(\mathbf{x},d\right)\right)-2I\left(\mathbf{x}\right)+\beta^{2}\left(\mathbf{x},d_{2}\right)\right],
+\frac{\partial^{2}I}{\partial d^{2}}=\frac{1}{4h^{2}}\left[I\left(\next^{2}\left(\mathbf{x},d\right)\right)-2I\left(\mathbf{x}\right)+\beta^{2}\left(\mathbf{x},d_{2}\right)\right],
 \]
 
 \end_inset
@@ -615,7 +704,7 @@ Trong trường hợp
 , ta có
 \begin_inset Formula 
 \[
-\frac{\partial^{2}I}{\partial d}=\frac{1}{\left(h'\right)^{2}}\left[I\left(\next_{h^{'}}\left(\mathbf{x},d\right)\right)-2I\left(\mathbf{x}\right)+\beta_{h'}\left(\mathbf{x},d_{2}\right)\right].
+\frac{\partial^{2}I}{\partial d^{2}}=\frac{1}{\left(h'\right)^{2}}\left[I\left(\next_{h^{'}}\left(\mathbf{x},d\right)\right)-2I\left(\mathbf{x}\right)+\beta_{h'}\left(\mathbf{x},d_{2}\right)\right].
 \]
 
 \end_inset
@@ -628,55 +717,41 @@ Thay
 \begin_inset Formula $h'$
 \end_inset
 
- phù hợp, ta có công thức tính gradient và hessian của ảnh:
+ phù hợp, ta có công thức tính các gradients và hessians của ảnh theo chiều
+ 
+\begin_inset Formula $d$
+\end_inset
+
+:
 \begin_inset Formula 
-\[
-I_{x}=\frac{1}{2}\left[I\left(x+1\right)\right]
-\]
+\begin{align}
+\frac{\partial I}{\partial d} & =\frac{1}{2}I\left(\next_{1}\left(\mathbf{x},d\right)\right)-\frac{1}{2}I\left(\prev_{1}\left(\mathbf{x},d\right)\right),\label{eq:grad-d}\\
+\frac{\partial^{2}I}{\partial d^{2}} & =I\left(\next_{1}\left(\mathbf{x},d\right)\right)-2I\left(\mathbf{x}\right)+\beta_{1}\left(\mathbf{x},d_{2}\right),\label{eq:hess-d}\\
+\frac{\partial I}{\partial d_{1}\partial d_{2}} & =\frac{1}{4}I\left(\next_{1}\left(\next_{1}\left(\mathbf{x},d_{1}\right),d_{2}\right)\right)+\frac{1}{4}I\left(\prev_{1}\left(\prev_{1}\left(\mathbf{x},d_{1}\right),d_{2}\right)\right)\nonumber \\
+ & -\frac{1}{4}I\left(\prev\left(\next\left(\mathbf{x},d_{1}\right),d_{2}\right)\right)-\frac{1}{4}I\left(\next\left(\prev\left(\mathbf{x},d_{1}\right),d_{2}\right)\right).\label{eq:hess-d1-d2}
+\end{align}
 
 \end_inset
 
-Để áp dụng trong SIFT, ta áp dụng công thức 
-\begin_inset CommandInset ref
-LatexCommand eqref
-reference "eq:grad"
-plural "false"
-caps "false"
-noprefix "false"
-
-\end_inset
-
- với ba chiều 
-\begin_inset Formula $d_{1},d_{2},d_{3}$
-\end_inset
-
-.
- Trong trường hợp đó, Gradient của 
-\begin_inset Formula $I\left(\mathbf{x}\right)$
-\end_inset
-
- sẽ được tính bằng công thức
+Như vậy, việc tính gradient và hessian của ảnh có thể được đưa về thao tác
+ nhân chập các chiều tương ứng của ảnh.
+ Nhân để tính gradient và hessian lần lượt là:
 \begin_inset Formula 
-\[
-\frac{\partial I}{\partial d}\left(\mathbf{x}\right)=K_{d}\left(\mathbf{x}\right)\ast I\left(\mathbf{x}\right)
-\]
+\begin{align*}
+K_{G} & =\left[\begin{array}{ccc}
+-\frac{1}{2} & 0 & \frac{1}{2}\end{array}\right],\\
+K_{H} & =\left[\begin{array}{ccc}
+-\frac{1}{2} & 0 & \frac{1}{2}\\
+0 & 0 & 0\\
+\frac{1}{2} & 0 & -\frac{1}{2}
+\end{array}\right],\quad d_{1}\ne d_{2},\\
+K_{H} & =\left[\begin{array}{ccc}
+0 & 0 & 0\\
+1 & -2 & 1\\
+0 & 0 & 0
+\end{array}\right],\quad d_{1}=d_{2}.
+\end{align*}
 
-\end_inset
-
-trong đó 
-\begin_inset Formula $K_{d}\left(\mathbf{x}\right)\in\R^{n_{1},n_{2},n_{3}}$
-\end_inset
-
-, 
-\begin_inset Formula $n_{i}=1$
-\end_inset
-
- nếu 
-\begin_inset Formula $d\ne i$
-\end_inset
-
- và 
-\begin_inset Formula $ $
 \end_inset
 
 

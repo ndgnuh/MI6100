@@ -94,22 +94,24 @@ function imdraw(img, args...)
     return imdraw!(copy(img))
 end
 
-function draw_keypoint!(img, kpt, color; thickness=1)
+function draw_keypoint!(img, kpt, color; thickness=1, rich=true)
     Color = eltype(img)
     row, col = kpt.pt
-    if !isnothing(kpt.size)
-        radius = kpt.size / 2
-        center = kpt.pt[1:2]
-        imdraw!(img, Circle(center, radius), Color(color...), thickness)
+    radius = if rich && !isnothing(kpt.size)
+        kpt.size / 2
+    else
+        3 # OpenCV standard
     end
+    center = kpt.pt[1:2]
+    imdraw!(img, Circle(center, radius), Color(color...), thickness)
 
-    #= if !isnothing(kpt.angle) =#
-    #=     radius = kpt.size / 2 =#
-    #=     angle_rad = kpt.angle * pi / 180 =#
-    #=     row_orient = row + radius * sin(angle_rad) =#
-    #=     col_orient = col + radius * cos(angle_rad) =#
-    #=     imdraw!(img, Line((row, col), (row_orient, col_orient)), Color(color...), thickness) =#
-    #= end =#
+    if rich && !isnothing(kpt.angle)
+        radius = kpt.size / 2
+        angle_rad = kpt.angle * pi / 180
+        row_orient = row + radius * sin(angle_rad)
+        col_orient = col + radius * cos(angle_rad)
+        imdraw!(img, Line((row, col), (row_orient, col_orient)), Color(color...), thickness)
+    end
 
     img[trunc(Int, row), trunc(Int, col)] = Color(color...)
     return img

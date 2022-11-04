@@ -19,9 +19,6 @@ using ImageFiltering
 # ╔═╡ 8db90ca9-015e-4cc1-8cc4-3c7ce4ad383c
 using PlutoLinks
 
-# ╔═╡ 761e70d8-d5e6-4e1e-9e00-93a9e0fdaec7
-using Statistics
-
 # ╔═╡ 2846ab98-748e-46af-a9de-a85805045b07
 SIFTD = @ingredients("notebooks/SIFT_declarative.jl")
 
@@ -30,6 +27,9 @@ img = reinterpret(UInt8, load("samples/box.png")) / 255;
 
 # ╔═╡ 1d409144-9c32-44f1-8bb4-0d2e449d6c62
 L = SIFTD.ScaleSpace(img, 3, 1.6)
+
+# ╔═╡ 19851c60-7d12-44a2-a7bd-1761cc9042be
+SIFTD.get_blurs(L)
 
 # ╔═╡ a844b39a-6a42-47a7-a030-7f81777751df
 gpyr = SIFTD.compute_gaussian_pyramid(L)
@@ -52,42 +52,20 @@ dpyr = SIFTD.compute_dog_pyramid(L)
 # ╔═╡ bc95c8c2-2fbf-4ed2-b9d5-ead3a4b494b4
 SIFTD.compute_scale_space_extrema(L)
 
-# ╔═╡ 39a11a4b-b1f8-4fec-98df-d99992788594
-mapwindow(dpyr, (1, 3)) do w
-	size.(w)
-end
-
-# ╔═╡ b0f9cb66-ea85-4732-bbaf-8ce1be25967a
-@which mapwindow
-
-# ╔═╡ c477880d-fa38-4338-a3e0-08b378ec8527
-@memoize function f(x::Int)
-	@info x
-	x + 1
-end
-
-# ╔═╡ cf7ab6fb-9d31-4889-ac11-abe7bfed8f68
-function f(x::Float32)
-	x + 1000
-end
-
-# ╔═╡ b2fed6ff-ef29-472c-a192-a041d8d481a7
-f(1f4)
-
-# ╔═╡ ec7c853f-209f-4b58-909b-287692262d8f
-W[2, 4]
-
 # ╔═╡ ac3c655a-541a-4186-a86a-d0888ddf30e5
 SIFTD.memoize_cache((SIFTD.compute_dog_pyramid))
+
+# ╔═╡ 69b916de-ee97-4d6e-8df5-d5ff13de0271
+empty!(SIFTD.memoize_cache(SIFTD.is_point_extrema))
 
 # ╔═╡ 37975f4a-2462-4b62-98d2-799cbce341eb
 size.(gpyr)
 
-# ╔═╡ a4eddb73-a6f7-44e5-a575-1d311fc94d41
-M = rand(0:1, 30, 30)
-
 # ╔═╡ c7d034ae-c895-4992-aa43-89eb02dc4e1a
->
+(Memoize.memoize_cache(SIFTD.compute_dog_image))
+
+# ╔═╡ d02823e3-d110-4136-994e-117e14752241
+
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -98,7 +76,6 @@ ImageIO = "82e4d734-157c-48bb-816b-45c225c6df19"
 Images = "916415d5-f1e6-5110-898d-aaa5f9f070e0"
 Memoize = "c03570c3-d221-55d1-a50c-7939bbd78826"
 PlutoLinks = "0ff47ea0-7a50-410d-8455-4348d5de0420"
-Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 
 [compat]
 FileIO = "~1.16.0"
@@ -115,7 +92,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.8.2"
 manifest_format = "2.0"
-project_hash = "97d2c1e1c2ef3c59fb2cef86d483d8245dc33f1b"
+project_hash = "e2cf7b2f16ffe9658525c01b02d91f3f4e1c0074"
 
 [[deps.AbstractFFTs]]
 deps = ["ChainRulesCore", "LinearAlgebra"]
@@ -986,6 +963,7 @@ version = "17.4.0+0"
 # ╠═2846ab98-748e-46af-a9de-a85805045b07
 # ╠═c1befa78-c842-4d62-b71c-fb8ca53a5992
 # ╠═1d409144-9c32-44f1-8bb4-0d2e449d6c62
+# ╠═19851c60-7d12-44a2-a7bd-1761cc9042be
 # ╠═a844b39a-6a42-47a7-a030-7f81777751df
 # ╠═11838dc0-4e48-4bec-ac9b-7857a5569ba0
 # ╠═28dc323c-d0da-4c93-8220-1fd5e63026d1
@@ -993,16 +971,10 @@ version = "17.4.0+0"
 # ╠═1a6d99ee-7d85-4f8e-abc8-960bae74e099
 # ╠═c87180b3-63c3-4c6c-be49-fd6639ea1ca7
 # ╠═bc95c8c2-2fbf-4ed2-b9d5-ead3a4b494b4
-# ╠═39a11a4b-b1f8-4fec-98df-d99992788594
-# ╠═b0f9cb66-ea85-4732-bbaf-8ce1be25967a
-# ╠═761e70d8-d5e6-4e1e-9e00-93a9e0fdaec7
-# ╠═c477880d-fa38-4338-a3e0-08b378ec8527
-# ╠═cf7ab6fb-9d31-4889-ac11-abe7bfed8f68
-# ╠═b2fed6ff-ef29-472c-a192-a041d8d481a7
-# ╠═ec7c853f-209f-4b58-909b-287692262d8f
 # ╠═ac3c655a-541a-4186-a86a-d0888ddf30e5
+# ╠═69b916de-ee97-4d6e-8df5-d5ff13de0271
 # ╠═37975f4a-2462-4b62-98d2-799cbce341eb
-# ╠═a4eddb73-a6f7-44e5-a575-1d311fc94d41
 # ╠═c7d034ae-c895-4992-aa43-89eb02dc4e1a
+# ╠═d02823e3-d110-4136-994e-117e14752241
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

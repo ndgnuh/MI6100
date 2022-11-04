@@ -8,8 +8,12 @@ struct ScaleSpace
     σ::Float32
 end
 
+@memoize function get_octave_size(s, octave)
+    return size(compute_dog_image(s, octave, 1))
+end
+
 @memoize function get_blur(s, layer::Int)
-    k = 2^(1 / s.num_layers)
+    k = get_multiply_factor(s)
     if layer == 1
         return s.σ
     else
@@ -17,6 +21,14 @@ end
         σk = k * σp
         return sqrt(σk^2 - σp^2)
     end
+end
+
+function get_blurs(s)
+    [get_blur(s, i) for i in 1:num_octaves(s)]
+end
+
+@memoize function get_multiply_factor(s)
+    return 2.0f0^(1 / s.num_layers)
 end
 
 @memoize function compute_gaussian_image(s, octave, layer)::Matrix{Float32}
@@ -64,34 +76,39 @@ end
     return s.num_layers + 3
 end
 
-@memoize function get_octave_size(s, octave)
-    return size(compute_dog_image(s, octave, 1))
-end
-
-@memoize function compute_scale_space_extrema(s)
-    dpyr = compute_gaussian_pyramid(s)
+function compute_scale_space_extrema(s)
     candidates = mapreduce(union, 1:num_octaves(s)) do octave
         height, width = get_octave_size(s, octave)
+        @info height, width, num_samples(s)
         all_indices = Iterators.product(2:(height - 1),
                                         2:(width - 1),
-                                        2:(num_layers(s) - 1))
+                                        2:(num_samples(s) - 1))
         extremas = Iterators.filter(all_indices) do (row, col, layer)
             is_point_extrema(s, octave, row, col, layer)
+            layer == num_samples(s) - 1
         end
 
-        Set(extremas)
+        extremas
     end
+    return candidates
 end
 
-@memoize function is_point_extrema(s, octave, row, col, layer)
+function is_point_extrema(s, octave, row, col, layer)
+    if layer == 1 && row == 1
+        @info "Layer ", layer
+    end
     curr = compute_dog_image(s, octave, layer)
-    threshold = 0.03
+    threshold = 0.3
     center_value = curr[row, col]
+    #= if abs(center_value) <= threshold =#
+    #=     return false =#
+    #= end =#
 
     iter = Iterators.product(-1:1, -1:1, -1:1)
 
     function compare_function(cmp::Function)
-        return function (drow, dcol, dlayer)
+        return function (idx)
+            drow, dcol, dlayer = idx
             if drow == dcol == dlayer == 0
                 return true
             end

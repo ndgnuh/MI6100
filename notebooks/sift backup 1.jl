@@ -56,11 +56,7 @@ end
 ImDraw = @ingredients("ImDraw.jl")
 
 # ╔═╡ d2b25caa-f356-40c4-9d79-ce7b05043e8b
-ImDiff = try
-	@ingredients("imdiff.jl")
-catch (e) 
-	@warn e
-end
+ImDiff = @ingredients("imdiff.jl")
 
 # ╔═╡ 27caffc0-d61c-498d-896d-7da77a0301c6
 MySIFT = @ingredients("SIFT.jl")
@@ -71,25 +67,10 @@ sift = MySIFT.SIFT()
 # ╔═╡ 5cc5f9a8-72d8-47d1-a22b-fdbc29d372eb
 result = MySIFT.fit(sift, image);
 
-# ╔═╡ 0e112f18-3423-4d6c-905a-560c3c347d57
-k1 = MySIFT.Keypoint()
-
-# ╔═╡ 7af63324-ae22-45f1-bbcc-3fdcb2379a60
-k2 = MySIFT.Keypoint()
-
-# ╔═╡ 957e1957-cd03-4b46-adb4-4f9d9bc0558c
-k1 == k2
-
-# ╔═╡ ea0d1bbd-5f1f-40a3-b12d-2f0a2d11eb37
-unique([k1, k2])
-
-# ╔═╡ a4dc73d2-1424-40ca-990b-ae3840bfe9a7
-length(result.keypoints |> Set)
-
 # ╔═╡ 6950f4c7-62a6-4562-9cfa-71fb391c14d0
 let image = RGB.(result.base_image)
 	for kpt in result.keypoints
-		ImDraw.draw_keypoint!(image, kpt, (1, 1, 0); thickness=1)
+		ImDraw.draw_keypoint!(image, kpt, (1, 1, 0); thickness=2)
 	end
 	image
 end
@@ -1409,12 +1390,8 @@ version = "17.4.0+0"
 # ╠═27caffc0-d61c-498d-896d-7da77a0301c6
 # ╠═1299a8f3-1b5d-4fae-b452-6c4594d4f04b
 # ╠═5cc5f9a8-72d8-47d1-a22b-fdbc29d372eb
-# ╠═0e112f18-3423-4d6c-905a-560c3c347d57
-# ╠═7af63324-ae22-45f1-bbcc-3fdcb2379a60
-# ╠═957e1957-cd03-4b46-adb4-4f9d9bc0558c
-# ╠═ea0d1bbd-5f1f-40a3-b12d-2f0a2d11eb37
-# ╠═a4dc73d2-1424-40ca-990b-ae3840bfe9a7
 # ╠═6950f4c7-62a6-4562-9cfa-71fb391c14d0
+# ╠═bb892b57-5302-446f-bca9-a3c74c32c772
 # ╠═1d783473-dddc-43aa-8126-a8c8ad6ef9a3
 # ╠═c3fe6289-0f30-4fca-a09a-5d4d2d9c91bd
 # ╠═a17076c1-b958-416e-9a4b-b2094c902e9a

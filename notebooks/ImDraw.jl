@@ -2,9 +2,9 @@ using ImageDraw: drawifinbounds!
 using Base.Iterators
 using Base.Threads: @threads
 
-struct Circle{T}
+struct Circle{T,F}
     center::Tuple{T,T}
-    radius::T
+    radius::F
 end
 
 struct Line{T}
@@ -14,6 +14,14 @@ end
 
 const INTP_EPS = 1e-3
 const MAX_PTS = 200
+
+function _integer_points!(pts)
+    pts_ = map(pts) do (x, y)
+        return convert(Int, round(x)), convert(Int, round(y))
+    end
+    #= idx = unique(Iterators.map(Int ∘ round, range(1, length(pts); length=MAX_PTS))) =#
+    return unique(pts_)
+end
 
 function _integer_points!(T, pts)
     pts_ = Iterators.map(pts) do (x, y)
@@ -30,7 +38,7 @@ function interpolate(c::Circle{T}) where {T}
     pts = map(range(0, 2π; length=circ)) do t
         return (crow + r * cos(t), ccol + r * sin(t))
     end
-    return _integer_points!(T, pts)
+    return _integer_points!(pts)
 end
 
 function interpolate(c::Circle{T}, thickness::Int) where {T}
@@ -45,12 +53,13 @@ end
 function interpolate(l::Line{T}) where {T}
     x1, y1 = l.p1
     x2, y2 = l.p2
+    length = trunc(Int, sqrt((x1 - x2)^2 + (y1 - y2)^2)) + 1
     pts = Iterators.map(range(0, 1; length=MAX_PTS)) do t
         x = x1 * t + (1 - t) * x2
         y = x2 * t + (1 - t) * y2
         return x, y
     end
-    return _integer_points!(T, pts)
+    return _integer_points!(pts)
 end
 
 function interpolate(line::Line{T}, thickness) where {T}
@@ -87,11 +96,21 @@ end
 
 function draw_keypoint!(img, kpt, color; thickness=1)
     Color = eltype(img)
+    row, col = kpt.pt
     if !isnothing(kpt.size)
-        radius = Int(round(kpt.size / 2))
-        center = Tuple(Int.(round.(kpt.pt[1:2])))
+        radius = kpt.size / 2
+        center = kpt.pt[1:2]
         imdraw!(img, Circle(center, radius), Color(color...), thickness)
     end
-    img[kpt.pt...] = Color(color...)
+
+    #= if !isnothing(kpt.angle) =#
+    #=     radius = kpt.size / 2 =#
+    #=     angle_rad = kpt.angle * pi / 180 =#
+    #=     row_orient = row + radius * sin(angle_rad) =#
+    #=     col_orient = col + radius * cos(angle_rad) =#
+    #=     imdraw!(img, Line((row, col), (row_orient, col_orient)), Color(color...), thickness) =#
+    #= end =#
+
+    img[trunc(Int, row), trunc(Int, col)] = Color(color...)
     return img
 end

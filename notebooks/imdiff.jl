@@ -21,13 +21,20 @@ end
 
 function compute_hessian_kernels(dims)
     coefs = map(product(1:dims, 1:dims)) do (d1, d2)
-        c1 = ([d1, d2], [1, 1], 1 / 4)
-        c2 = ([d1, d2], [1, -1], -1 / 4)
-        c3 = ([d1, d2], [-1, 1], -1 / 4)
-        c4 = ([d1, d2], [-1, -1], 1 / 4)
-        (c1, c2, c3, c4)
+        if d1 != d2
+            c1 = ([d1, d2], [1, 1], 1 / 4)
+            c2 = ([d1, d2], [1, -1], -1 / 4)
+            c3 = ([d1, d2], [-1, 1], -1 / 4)
+            c4 = ([d1, d2], [-1, -1], 1 / 4)
+            (c1, c2, c3, c4)
+        else
+            c1 = (d1, 1, 1)
+            c2 = (d1, 0, -2)
+            c3 = (d1, -1, -1)
+            (c1, c2, c3)
+        end
     end
-    compute_diff_kernel.(coefs, 5, dims)
+    compute_diff_kernel.(coefs, 3, dims)
 end
 
 function compute_gradient_kernels(dims)

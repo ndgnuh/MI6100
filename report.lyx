@@ -540,7 +540,7 @@ Tính toán không gian bậc
 Đạo hàm bậc 1 (gradient) của ảnh được tính theo công thức sai phân
 \begin_inset Formula 
 \begin{equation}
-\frac{\partial I}{\partial d}\left(\mathbf{x}\right)=\frac{I\left(\next\left(\mathbf{x},d\right)\right)-I\left(\prev\left(\mathbf{x},d\right)\right)}{2}\label{eq:grad}
+\frac{\partial I}{\partial d}\left(\mathbf{x}\right)=\frac{I\left(\next\left(\mathbf{x},d\right)\right)-I\left(\prev\left(\mathbf{x},d\right)\right)}{2h}\label{eq:grad}
 \end{equation}
 
 \end_inset
@@ -557,21 +557,82 @@ trong đó
 \begin_inset Formula $\prev$
 \end_inset
 
- là các hàm tăng giảm tọa độ 
-\begin_inset Formula $\mathbf{x}$
+ là các hàm được định nghĩa bởi
+\begin_inset Formula 
+\begin{align*}
+\next\left(\mathbf{x},d\right) & =\left[x_{i}+h\cdot\mathbf{1}\left(d,i\right)\right],\\
+\prev\left(\mathbf{x},d\right) & =\left[x_{i}-h\cdot\mathbf{1}\left(d,i\right)\right],\\
+\mathbf{1}\left(d,i\right) & =\begin{cases}
+1 & d=i,\\
+0 & d\ne i.
+\end{cases}
+\end{align*}
+
 \end_inset
 
- tại chiều thứ 
-\begin_inset Formula $d$
+và 
+\begin_inset Formula $h$
 \end_inset
 
- đi một đơn vị.
+ được chọn sao cho 
+\begin_inset Formula $\next\left(\mathbf{x},d\right)$
+\end_inset
+
+ và 
+\series bold
+
+\begin_inset Formula $\prev\left(\mathbf{x},d\right)$
+\end_inset
+
+ 
+\series default
+nguyên.
  Theo định nghĩa hessian, đạo hàm bậc hai được
 \begin_inset Formula 
 \begin{align}
-\frac{\partial^{2}I}{\partial d_{2}\partial d_{1}}\left(\mathbf{x}\right) & =\frac{1}{2}\left[\frac{\partial I}{\partial d_{2}}\next\left(\mathbf{x},d_{1}\right)-\frac{\partial I}{\partial d_{2}}\left(\prev\left(\mathbf{x},d_{1}\right)\right)\right]\nonumber\nonumber \\
- & =\frac{1}{4}\left[I\left(\next\left(\next\left(\mathbf{x},d_{1}\right),d_{2}\right)\right)-I\left(\prev\left(\next\left(\mathbf{x},d_{1}\right),d_{2}\right)\right)-I\left(\next\left(\prev\left(\mathbf{x},d_{1}\right),d_{2}\right)\right)+I\left(\prev\left(\prev\left(\mathbf{x},d_{1}\right),d_{2}\right)\right)\right].\label{eq:hess}
+\frac{\partial^{2}I}{\partial d_{2}\partial d_{1}}\left(\mathbf{x}\right) & =\frac{1}{2h}\left[\frac{\partial I}{\partial d_{2}}\next\left(\mathbf{x},d_{1}\right)-\frac{\partial I}{\partial d_{2}}\left(\prev\left(\mathbf{x},d_{1}\right)\right)\right]\nonumber \\
+ & =\frac{1}{4h^{2}}\left[I\left(\next\left(\next\left(\mathbf{x},d_{1}\right),d_{2}\right)\right)-I\left(\prev\left(\next\left(\mathbf{x},d_{1}\right),d_{2}\right)\right)-I\left(\next\left(\prev\left(\mathbf{x},d_{1}\right),d_{2}\right)\right)+I\left(\prev\left(\prev\left(\mathbf{x},d_{1}\right),d_{2}\right)\right)\right].\label{eq:hess}
 \end{align}
+
+\end_inset
+
+Trong trường hợp 
+\begin_inset Formula $d_{1}=d_{2}$
+\end_inset
+
+, ta được công thức đơn giản hơn
+\begin_inset Formula 
+\[
+\frac{\partial^{2}I}{\partial d}=\frac{1}{4h^{2}}\left[I\left(\next^{2}\left(\mathbf{x},d\right)\right)-2I\left(\mathbf{x}\right)+\beta^{2}\left(\mathbf{x},d_{2}\right)\right],
+\]
+
+\end_inset
+
+đặt 
+\begin_inset Formula $h'=2h$
+\end_inset
+
+, ta có
+\begin_inset Formula 
+\[
+\frac{\partial^{2}I}{\partial d}=\frac{1}{\left(h'\right)^{2}}\left[I\left(\next_{h^{'}}\left(\mathbf{x},d\right)\right)-2I\left(\mathbf{x}\right)+\beta_{h'}\left(\mathbf{x},d_{2}\right)\right].
+\]
+
+\end_inset
+
+Thay 
+\begin_inset Formula $h$
+\end_inset
+
+ và 
+\begin_inset Formula $h'$
+\end_inset
+
+ phù hợp, ta có công thức tính gradient và hessian của ảnh:
+\begin_inset Formula 
+\[
+I_{x}=\frac{1}{2}\left[I\left(x+1\right)\right]
+\]
 
 \end_inset
 
@@ -616,19 +677,6 @@ trong đó
 
  và 
 \begin_inset Formula $ $
-\end_inset
-
-
-\begin_inset Formula 
-\begin{align*}
-\frac{I\left(\next\left(\mathbf{x},d\right)\right)-I\left(\prev\left(\mathbf{x},d\right)\right)}{2} & \sim\left[-1,0,1\right]\\
-\frac{1}{4}I\left(\next\left(\next\left(\mathbf{x},d_{1}\right),d_{2}\right)\right)-\frac{1}{4}I\left(\prev\left(\next\left(\mathbf{x},d_{1}\right),d_{2}\right)\right)-\frac{1}{4}I\left(\next\left(\prev\left(\mathbf{x},d_{1}\right),d_{2}\right)\right)+\frac{1}{4}I\left(\prev\left(\prev\left(\mathbf{x},d_{1}\right),d_{2}\right)\right) & \sim\left[\begin{array}{ccc}
-\\
-\\
-\\
-\end{array}\right]
-\end{align*}
-
 \end_inset
 
 

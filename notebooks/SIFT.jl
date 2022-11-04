@@ -12,7 +12,7 @@ using Base.Threads: @threads
 include(joinpath(@__DIR__, "imdiff.jl"))
 
 Maybe{T} = Union{T,Nothing}
-@kwdef mutable struct Keypoint
+@kwdef struct Keypoint
     angle = nothing
     octave = nothing
     sample = nothing
@@ -108,7 +108,7 @@ function compute_gaussian_pyramid(sift::SIFT, image, σ, num_octaves)
 
         # First sample of each octave is half of the original one
         if s_idx == 1
-            pyramid[o_idx, s_idx] = imresize(pyramid[o_idx - 1, end - 3]; ratio=1 // 2)
+            pyramid[o_idx, s_idx] = imresize(pyramid[o_idx - 1, end]; ratio=1 // 2)
             continue
         end
 
@@ -197,6 +197,9 @@ function compute_scale_space_extremas(sift, dog_pyramid, σ)
 
                     grad = [grad[x, y, z] for grad in grads]
                     hess = [hess[x, y, z] for hess in hesses]
+                    if det(hess) == 0
+                        break
+                    end
                     update .= -solve(LinearProblem(hess, grad))
 
                     ur, uc, ul = update
@@ -214,12 +217,12 @@ function compute_scale_space_extremas(sift, dog_pyramid, σ)
                 end
 
                 # Contrast
-                X = X + update
+                #= X = X + update =#
                 x, y, z = @. Int(round(X))
                 D = dog_pyramid[o, z]
                 grad = [grad[x, y, z] for grad in grads]
                 contrast = abs(D[x, y] + sum(grad .* update) / 2)
-                if contrast * sift.n_octave_layers < sift.contrast_threshold
+                if contrast * sift.n_octave_layers <= sift.contrast_threshold
                     continue
                 end
 
@@ -231,16 +234,10 @@ function compute_scale_space_extremas(sift, dog_pyramid, σ)
                     continue
                 end
 
-                keypoint = Keypoint(; octave=o, sample=layer,
-                                    pt=(row, col))
-                keypoint.response = contrast
-                keypoint.pt = (x * 2^(o - 1), y * 2^(o - 1))
-                keypoint.size = let
-                    #= sigma * (2 ** ((image_index + extremum_update[2]) / float32(num_intervals))) * (2 ** (octave_index + 1)) =#
-                    p = (z / sift.n_octave_layers)
-                    σ[o] * 2^p * 2^(o + 1)
-                end
-
+                keypoint = Keypoint(; response=contrast,
+                                    pt=(x * 2^(o - 1), y * 2^(o - 1)),
+                                    size=σ[o] * 2^(z / sift.n_octave_layers) * 2^(o),
+                                    octave=o, sample=layer)
                 push!(keypoints, keypoint)
             end
         end

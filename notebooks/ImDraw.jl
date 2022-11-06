@@ -7,9 +7,9 @@ struct Circle{T,F}
     radius::F
 end
 
-struct Line{T}
-    p1::Tuple{T,T}
-    p2::Tuple{T,T}
+struct Line
+    p1::Tuple
+    p2::Tuple
 end
 
 const INTP_EPS = 1e-3
@@ -50,7 +50,7 @@ function interpolate(c::Circle{T}, thickness::Int) where {T}
     end
 end
 
-function interpolate(l::Line{T}) where {T}
+function interpolate(l::Line)
     x1, y1 = l.p1
     x2, y2 = l.p2
     length = trunc(Int, sqrt((x1 - x2)^2 + (y1 - y2)^2)) + 1
@@ -62,7 +62,7 @@ function interpolate(l::Line{T}) where {T}
     return _integer_points!(pts)
 end
 
-function interpolate(line::Line{T}, thickness) where {T}
+function interpolate(line::Line, thickness)
     if thickness == 1
         return interpolate(line)
     else
@@ -114,5 +114,26 @@ function draw_keypoint!(img, kpt, color; thickness=1, rich=true)
     end
 
     img[trunc(Int, row), trunc(Int, col)] = Color(color...)
+    return img
+end
+
+function draw_keypoint2!(img, kpt, color; thickness=1, rich=true)
+    Color = eltype(img)
+    row, col = kpt.row, kpt.col
+    radius = if rich && !isnothing(kpt.size)
+        kpt.size / 2
+    else
+        3 # OpenCV standard
+    end
+    imdraw!(img, Circle((row, col), radius), Color(color...), thickness)
+
+    if rich && !isnothing(kpt.angle)
+        angle_rad = kpt.angle * pi / 180
+        row_orient = row + radius * sin(angle_rad)
+        col_orient = col + radius * cos(angle_rad)
+        imdraw!(img, Line((row, col), (row_orient, col_orient)), Color(color...), thickness)
+    end
+
+    img[row, col] = Color(color...)
     return img
 end

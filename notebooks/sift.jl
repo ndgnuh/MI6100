@@ -34,6 +34,9 @@ begin
 	using PlutoLinks
 end
 
+# ╔═╡ 36e850d5-fd06-4681-8a4b-458d9a19a2f2
+using Serialization
+
 # ╔═╡ 5d7e30bc-2a59-42be-aa9d-39a662945f32
 using Images
 
@@ -74,11 +77,17 @@ sift = MySIFT.SIFT()
 # ╔═╡ 5cc5f9a8-72d8-47d1-a22b-fdbc29d372eb
 result = MySIFT.fit(sift, image);
 
+# ╔═╡ 16ab5f85-eba9-4417-ac8c-7283c795f667
+result.scales
+
 # ╔═╡ a4dc73d2-1424-40ca-990b-ae3840bfe9a7
 length(result.keypoints |> Set)
 
 # ╔═╡ 355bf51e-b6b3-4904-adea-922ac96142e7
 result.g_pyramid
+
+# ╔═╡ 7650385a-097d-45cd-a113-1ebebde808f2
+serialize("gpyr_sift.dat", result.g_pyramid)
 
 # ╔═╡ c0fe83e5-2b60-4ea8-b091-2ba49a9f6e2d
 function get_surrounding_idx(row, col, radius)
@@ -112,10 +121,13 @@ compute_keypoint_orientations(result.g_pyramid, result.keypoints)
 # ╔═╡ 6950f4c7-62a6-4562-9cfa-71fb391c14d0
 let image = RGB.(result.base_image)
 	for kpt in result.keypoints
-		ImDraw.draw_keypoint!(image, kpt, (1, 1, 0); thickness=1, rich=false)
+		ImDraw.draw_keypoint!(image, kpt, (1, 1, 0); thickness=1, rich=true)
 	end
 	image
 end
+
+# ╔═╡ 3ce2f508-cc1e-44ef-b3aa-729cde297633
+
 
 # ╔═╡ 1d783473-dddc-43aa-8126-a8c8ad6ef9a3
 md"# Scale space"
@@ -253,6 +265,7 @@ LinearSolve = "7ed4a6bd-45f5-4d41-b270-4a48e9bafcae"
 OffsetArrays = "6fe1bfb0-de20-5000-8ca7-80f57d26f881"
 PlutoLinks = "0ff47ea0-7a50-410d-8455-4348d5de0420"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
+Serialization = "9e88b42a-f829-5b0c-bbe9-9e923198166b"
 Setfield = "efcf1570-3423-57d1-acb7-fd33fddbac46"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 TestImages = "5e47fb64-e119-507b-a336-dd2b206d9990"
@@ -280,7 +293,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.8.2"
 manifest_format = "2.0"
-project_hash = "e37fd3f3f68401b4f51296e96b6301610788f277"
+project_hash = "4b8b6d57072ca1101eda883637225fee5dce6cb9"
 
 [[deps.AbstractFFTs]]
 deps = ["ChainRulesCore", "LinearAlgebra"]
@@ -1570,15 +1583,19 @@ version = "17.4.0+0"
 # ╠═39110c52-b943-479a-9431-18206c3132db
 # ╠═d2b25caa-f356-40c4-9d79-ce7b05043e8b
 # ╠═27caffc0-d61c-498d-896d-7da77a0301c6
+# ╠═16ab5f85-eba9-4417-ac8c-7283c795f667
 # ╠═1299a8f3-1b5d-4fae-b452-6c4594d4f04b
 # ╠═5cc5f9a8-72d8-47d1-a22b-fdbc29d372eb
 # ╠═a4dc73d2-1424-40ca-990b-ae3840bfe9a7
 # ╠═355bf51e-b6b3-4904-adea-922ac96142e7
+# ╠═7650385a-097d-45cd-a113-1ebebde808f2
 # ╠═763ff2ea-387b-4e5f-97cb-28f9c208fb80
+# ╠═36e850d5-fd06-4681-8a4b-458d9a19a2f2
 # ╠═5d7e30bc-2a59-42be-aa9d-39a662945f32
 # ╠═c0fe83e5-2b60-4ea8-b091-2ba49a9f6e2d
 # ╠═ea6ae871-6853-4c3d-a918-dbfe2df02ab7
 # ╠═6950f4c7-62a6-4562-9cfa-71fb391c14d0
+# ╠═3ce2f508-cc1e-44ef-b3aa-729cde297633
 # ╠═1d783473-dddc-43aa-8126-a8c8ad6ef9a3
 # ╠═c3fe6289-0f30-4fca-a09a-5d4d2d9c91bd
 # ╠═a17076c1-b958-416e-9a4b-b2094c902e9a

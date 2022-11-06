@@ -161,6 +161,10 @@ function compute_scale_space_extremas(sift, dog_pyramid, σ)
                 col in (1 + border_width):(width - border_width)
 
                 cval = img[row, col]
+                if abs(cval) <= 1 / 255
+                    continue
+                end
+
                 is_maxima = all(begin
                                     r, c = row + i, col + j
                                     c1 = cval > prev[r, c]
@@ -187,11 +191,11 @@ function compute_scale_space_extremas(sift, dog_pyramid, σ)
                 X = Float32[row, col, layer]
                 update = Float32[0, 0, 0]
                 for _ in 1:10
-                    x, y, z = @. Int(round(X))
+                    x, y, z = trunc.(Int, X)
 
                     if (z < 2 || z > sift.n_octave_layers + 1 ||
-                        x <= 1 + border_width || x >= height - border_width ||
-                        y <= 1 + border_width || y >= width - border_width)
+                        x < 1 + border_width || x > height - border_width ||
+                        y < 1 + border_width || y > width - border_width)
                         break
                     end
 
@@ -200,7 +204,10 @@ function compute_scale_space_extremas(sift, dog_pyramid, σ)
                     if det(hess) == 0
                         break
                     end
-                    update .= -solve(LinearProblem(hess, grad))
+                    update .= let A = hess, b = grad
+                        prob = LinearProblem(A' * A, A' * b)
+                        -solve(prob)
+                    end
 
                     ur, uc, ul = update
                     if abs(ur) <= 0.5 && abs(uc) <= 0.5 && abs(ul) <= 0.5
@@ -208,7 +215,7 @@ function compute_scale_space_extremas(sift, dog_pyramid, σ)
                         break
                     end
 
-                    @. X = X + update
+                    X = X + update
                 end
 
                 # Successful localization

@@ -10,12 +10,25 @@
 \usepackage[fontsize=14pt]{scrextend}
 \usepackage[a4paper,top=3.5cm,left=3cm,right=2cm,bottom=2cm]{geometry}
 \usepackage{setspace}\onehalfspacing
+
+\let\oldparagraph\paragraph
+\def\paragraph#1{\oldparagraph{#1.}}
+
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\renewcommand{\algorithmicrequire}{\textbf{Input:}}
+\renewcommand{\algorithmicensure}{\textbf{Output:}}
+\newcommand{\Any}[1]{\operatorname{any\left(#1\right)}}
+\newcommand{\Not}{\textbf{not}\ }
+\newcommand{\abs}[1]{\left\lvert#1\right\rvert}
+\newcommand{\trace}{\operatorname{tr}}
+\usepackage{nicefrac}
 \end_preamble
 \use_default_options true
 \maintain_unincluded_children false
 \language vietnamese
 \language_package default
-\inputencoding auto
+\inputencoding utf8x
 \fontencoding T5
 \font_roman "default" "default"
 \font_sans "default" "default"
@@ -35,8 +48,17 @@
 \bibtex_command default
 \index_command default
 \paperfontsize default
-\spacing single
-\use_hyperref false
+\spacing onehalf
+\use_hyperref true
+\pdf_bookmarks true
+\pdf_bookmarksnumbered true
+\pdf_bookmarksopen true
+\pdf_bookmarksopenlevel 1
+\pdf_breaklinks false
+\pdf_pdfborder false
+\pdf_colorlinks false
+\pdf_backref false
+\pdf_pdfusetitle true
 \papersize default
 \use_geometry false
 \use_package amsmath 1
@@ -100,6 +122,12 @@
 
 \begin_inset FormulaMacro
 \newcommand{\R}{\mathbb{R}}
+\end_inset
+
+
+\begin_inset FormulaMacro
+\newcommand{\resize}{\operatorname{resize}}
+{\text{resize}}
 \end_inset
 
 
@@ -584,18 +612,6 @@ L_{k,l} & =G\left(x,y,\sigma\right)\ast L_{k,l-1}\left(x,y\right),\quad k=\overl
 
 \end_inset
 
-Sau khi tìm các ảnh 
-\begin_inset Formula $L_{k,l}$
-\end_inset
-
-, ta tìm không gian bậc với các hàm sai phân Gauss theo công thức
-\begin_inset Formula 
-\[
-D_{k,i}=L_{k,i+1}-L_{k,i},\quad k=\overline{1,n},i=\overline{1,s}.
-\]
-
-\end_inset
-
 Theo thực nghiệm, 
 \begin_inset ERT
 status open
@@ -610,15 +626,795 @@ cite{DavidLowe2004}
 \end_inset
 
  thấy rằng lấy 
-\begin_inset Formula $6$
+\begin_inset Formula $3$
 \end_inset
 
  mẫu mỗi octave cho ra số lượng keypoint nhiều nhất.
  Do đó ta sử dụng 
-\begin_inset Formula $s=6$
+\begin_inset Formula $s=3$
 \end_inset
 
 .
+ Tuy nhiên ở bước tìm cực trị của không gian bậc, ta cần so sánh ba mẫu
+ liên tiếp trên một bậc, do đó thực chất ta sẽ lấy 
+\begin_inset Formula $s+3$
+\end_inset
+
+ mẫu mỗi bậc.
+\end_layout
+
+\begin_layout Standard
+\begin_inset FormulaMacro
+\newcommand{\octave}{\mathrm{octave}}
+\end_inset
+
+
+\begin_inset FormulaMacro
+\newcommand{\layer}{\mathrm{layer}}
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float algorithm
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{algorithmic}[1]
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+Require Ảnh $I$, độ mờ $
+\backslash
+sigma$, số lượng mẫu $s$
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+Ensure Không gian bậc $L$
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+State $k 
+\backslash
+gets 2^{
+\backslash
+nicefrac{1}{s}}$ là hệ số nhân
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+For {$
+\backslash
+octave 
+\backslash
+gets 1,n$}
+\end_layout
+
+\begin_layout Plain Layout
+
+	
+\backslash
+For {$
+\backslash
+layer 
+\backslash
+gets 1,s$}
+\end_layout
+
+\begin_layout Plain Layout
+
+		
+\backslash
+If {$
+\backslash
+octave = 
+\backslash
+layer = 1$}
+\end_layout
+
+\begin_layout Plain Layout
+
+			
+\backslash
+State $L_{
+\backslash
+octave}(x, y, 
+\backslash
+sigma_{
+\backslash
+layer}) 
+\backslash
+gets I$
+\end_layout
+
+\begin_layout Plain Layout
+
+		
+\backslash
+EndIf
+\end_layout
+
+\begin_layout Plain Layout
+
+		
+\backslash
+If {$
+\backslash
+layer = 1$}
+\end_layout
+
+\begin_layout Plain Layout
+
+			
+\backslash
+State $L_{
+\backslash
+octave}(x, y, 
+\backslash
+sigma_{
+\backslash
+layer}) 
+\backslash
+gets 
+\backslash
+resize(L(x, y, 
+\backslash
+sigma{
+\backslash
+layer - 1})$
+\end_layout
+
+\begin_layout Plain Layout
+
+		
+\backslash
+EndIf
+\end_layout
+
+\begin_layout Plain Layout
+
+	
+\backslash
+EndFor
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+EndFor
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{algorithmic}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Tính toán không gian bậc
+\begin_inset CommandInset label
+LatexCommand label
+name "alg:scale-space"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Paragraph
+Tìm cực trị của không gian bậc
+\end_layout
+
+\begin_layout Standard
+Sau khi tìm các ảnh 
+\begin_inset Formula $L_{k,l}$
+\end_inset
+
+, ta tìm không gian bậc với các hàm sai phân Gauss theo công thức
+\begin_inset Formula 
+\[
+D_{k,i}=L_{k,i+1}-L_{k,i},\quad k=\overline{1,n},i=\overline{1,s+2}.
+\]
+
+\end_inset
+
+Sau đó ta coi mỗi bậc như một ảnh ba chiều, ta so sánh mỗi voxel với các
+ điểm thuộc khối pixel lân cận nó (26 điểm tất cả).
+ Nếu điểm nằm ở tâm là cực trị, ta đánh dấu nó là điểm nhấn tiềm năng.
+\end_layout
+
+\begin_layout Paragraph
+Địa phương hóa điểm nhấn
+\end_layout
+
+\begin_layout Standard
+Xét một điểm nhấn bất kỳ với các tọa độ: hàng, cột, bậc và tọa độ mẫu.
+ Ta cần xác định xem điểm nhấn đó có vị trí chính xác ở đâu trên ảnh, cụ
+ thể hơn là với ba tọa độ hàng cột và mẫu.
+ Việc địa phương hóa được thực hiện qua thủ tục lặp trong 
+\begin_inset CommandInset ref
+LatexCommand formatted
+reference "alg:localize-kpt"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ Trong đó, 
+\begin_inset Formula $\operatorname{IsValidPoint}$
+\end_inset
+
+ kiểm tra xem 
+\begin_inset Formula $\mathbf{x}$
+\end_inset
+
+ có phải một tọa độ nằm trong miền ảnh 
+\begin_inset Formula $D$
+\end_inset
+
+ hay không.
+\begin_inset Float algorithm
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{algorithmic}[1]
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+Require Các ảnh DoG $D$ ở trong một bậc.
+ Tọa độ keypoint $
+\backslash
+mathbf{x}$.
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+Ensure Tọa độ sau khi localize $
+\backslash
+mathbf{x}$ nếu địa phương hóa thành công
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+Function{Localize}{$
+\backslash
+mathbf{x} = 
+\backslash
+left(x,y,
+\backslash
+sigma
+\backslash
+right)$}
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+State $n 
+\backslash
+gets 1$ là số vòng lặp tối đa 
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+For {$
+\backslash
+left(i = 
+\backslash
+overline{1, n}
+\backslash
+right)$}
+\end_layout
+
+\begin_layout Plain Layout
+
+	
+\backslash
+State $
+\backslash
+hat{
+\backslash
+mathbf{x}}
+\backslash
+gets-
+\backslash
+left(
+\backslash
+frac{
+\backslash
+partial^{2}D}{
+\backslash
+partial
+\backslash
+mathbf{x}^{2}}
+\backslash
+right)^{-1}
+\backslash
+cdot
+\backslash
+frac{
+\backslash
+partial D}{
+\backslash
+partial
+\backslash
+mathbf{x}}$
+\end_layout
+
+\begin_layout Plain Layout
+
+	
+\backslash
+State $
+\backslash
+mathbf{x} 
+\backslash
+gets 
+\backslash
+mathbf{x} + 
+\backslash
+mathbf{
+\backslash
+hat{x}}$
+\end_layout
+
+\begin_layout Plain Layout
+
+	
+\backslash
+If {
+\backslash
+Not $
+\backslash
+operatorname{IsValidPoint}(
+\backslash
+mathbf{x})$}
+\end_layout
+
+\begin_layout Plain Layout
+
+		
+\backslash
+State 
+\backslash
+Return nothing
+\end_layout
+
+\begin_layout Plain Layout
+
+	
+\backslash
+EndIf
+\end_layout
+
+\begin_layout Plain Layout
+
+	
+\backslash
+If {$
+\backslash
+Any{
+\backslash
+mathbf{x} < 0.5}$}
+\end_layout
+
+\begin_layout Plain Layout
+
+		
+\backslash
+State $c
+\backslash
+gets 1$
+\end_layout
+
+\begin_layout Plain Layout
+
+		
+\backslash
+State 
+\backslash
+Return $
+\backslash
+mathbf{x}$
+\end_layout
+
+\begin_layout Plain Layout
+
+	
+\backslash
+EndIf
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+EndFor
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+State 
+\backslash
+Return nothing
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+EndFunction
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{algorithmic}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Địa phương hóa keypoint
+\begin_inset CommandInset label
+LatexCommand label
+name "alg:localize-kpt"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Paragraph
+Lọc keypoint tương phản kém
+\end_layout
+
+\begin_layout Standard
+Sau khi địa phương hóa điểm nhấn, ta loại bỏ các điểm ảnh với độ tương phản
+ thấp và các điểm nhấn nằm trên cạnh (do các điểm nhấn nằm trên cạnh sẽ
+ bị ảnh hưởng bởi góc quay của ảnh).
+ Việc loại bỏ được tính sử dụng 
+\begin_inset CommandInset ref
+LatexCommand formatted
+reference "alg:keypoint-filter"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+\begin_inset Float algorithm
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{algorithmic}[1]
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+Require Keypoint $
+\backslash
+mathbf{x}$, dung sai $
+\backslash
+mathbf{
+\backslash
+hat{x}}$, ngưỡng $r$ (mặc định $10$)
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+Ensure Bỏ keypoint hoặc không
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+Function {RejectKeypoint}{$
+\backslash
+mathbf{x}$, $
+\backslash
+mathbf{
+\backslash
+hat{x}}$, $r = 10$}
+\end_layout
+
+\begin_layout Plain Layout
+
+	
+\backslash
+State $D
+\backslash
+left(
+\backslash
+mathbf{
+\backslash
+hat{x}}
+\backslash
+right) 
+\backslash
+gets D+
+\backslash
+frac{1}{2}
+\backslash
+left(
+\backslash
+frac{
+\backslash
+partial D}{
+\backslash
+partial x}
+\backslash
+right)^{
+\backslash
+top}
+\backslash
+mathbf{
+\backslash
+hat{x}}$
+\end_layout
+
+\begin_layout Plain Layout
+
+	
+\backslash
+If {$
+\backslash
+abs{D
+\backslash
+left(
+\backslash
+mathbf{
+\backslash
+hat{x}}
+\backslash
+right))}< 0.03$}
+\end_layout
+
+\begin_layout Plain Layout
+
+		
+\backslash
+State 
+\backslash
+Return 1
+\end_layout
+
+\begin_layout Plain Layout
+
+	
+\backslash
+EndIf
+\end_layout
+
+\begin_layout Plain Layout
+
+	
+\backslash
+State $
+\backslash
+mathbf{H} 
+\backslash
+gets 
+\backslash
+left[
+\backslash
+begin{array}{cc}
+D_{xx} & D_{xy}
+\backslash
+
+\backslash
+
+D_{xy} & D_{yy}
+
+\backslash
+end{array}
+\backslash
+right]$
+\end_layout
+
+\begin_layout Plain Layout
+
+	
+\backslash
+If {$
+\backslash
+nicefrac{
+\backslash
+trace
+\backslash
+left(
+\backslash
+mathbf{H}
+\backslash
+right)}{
+\backslash
+det
+\backslash
+left(
+\backslash
+mathbf{H}
+\backslash
+right)} 
+\backslash
+ge 
+\backslash
+nicefrac{
+\backslash
+left(r+1
+\backslash
+right)^{2}}{r}$}
+\end_layout
+
+\begin_layout Plain Layout
+
+		
+\backslash
+State 
+\backslash
+Return 1
+\end_layout
+
+\begin_layout Plain Layout
+
+	
+\backslash
+EndIf
+\end_layout
+
+\begin_layout Plain Layout
+
+	
+\backslash
+State 
+\backslash
+Return 0
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+EndFunction
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{algorithmic}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Lọc bỏ keypoint
+\begin_inset CommandInset label
+LatexCommand label
+name "alg:keypoint-filter"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Paragraph
@@ -751,6 +1547,116 @@ K_{H} & =\left[\begin{array}{ccc}
 0 & 0 & 0
 \end{array}\right],\quad d_{1}=d_{2}.
 \end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Paragraph
+Tính toán góc chủ đạo cho keypoint
+\end_layout
+
+\begin_layout Standard
+Bằng cách gắn keypoint cho một góc chủ đạo, không phụ thuộc vào chiều quay
+ của ảnh, ta có thể so khớp ảnh không bị ảnh hưởng bởi góc xoay.
+ Việc tính góc chủ đạo sẽ dựa trên việc thống kê số góc của các điểm lân
+ cận vùng ảnh đó.
+ Bán kính của vùng lân cận được tính bởi
+\begin_inset Formula 
+\[
+m\left(x,y,\sigma\right)=\sqrt{\left(\frac{\partial L\left(x,y,\sigma\right)}{\partial x}\right)^{2}+\left(\frac{\partial L\left(x,y,\sigma\right)}{\partial y}\right)^{2}}.
+\]
+
+\end_inset
+
+Góc của một điểm bất kỳ sẽ được định nghĩa bởi
+\begin_inset Formula 
+\[
+\theta\left(x,y,\sigma\right)=\arctan\left(\frac{\nicefrac{\partial L\left(x,y,\sigma\right)}{\partial y}}{\nicefrac{\partial L\left(x,y,\sigma\right)}{\partial x}}\right).
+\]
+
+\end_inset
+
+Ta xét tất cả các điểm 
+\begin_inset Formula $\left(x_{0},y_{0}\right)$
+\end_inset
+
+ mà
+\begin_inset Formula 
+\[
+d\left(\left(x,y\right),\left(x_{0},y_{0}\right)\right)\le m\left(x,y,\sigma\right)
+\]
+
+\end_inset
+
+
+\begin_inset Float algorithm
+placement H
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{algorithmic}[1]
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+State $R 
+\backslash
+gets 
+\backslash
+mathrm{Vector
+\backslash
+{Int
+\backslash
+}}[36]$
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{algorithmic}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Tính góc chủ đạo cho keypoint
+\begin_inset CommandInset label
+LatexCommand label
+name "alg:orientation-assignment"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
 
 \end_inset
 

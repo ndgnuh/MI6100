@@ -53,8 +53,10 @@ function generate_gaussian_pyramid(s)
             continue
         end
 
-        base = gpyr[octave][layer - 1, :, :]
-        sigma = get_blur(s, layer)
+        #= base = gpyr[octave][layer - 1, :, :] =#
+        base = gpyr[octave][1, :, :]
+        k = s.k
+        sigma = k^(layer) * s.sigma
         gpyr[octave][layer, :, :] .= imfilter(base, Kernel.gaussian(sigma))
     end
     return gpyr
@@ -68,9 +70,3 @@ function generate_dog_pyramid(s)
     return dpyr
 end
 
-function compute_keypoints(s)
-    dpyr = s.dpyr
-    mapreduce(union, dpyr) do Ds
-        return findlocalmaxima(Ds; window=(3, 3, 3)) ∪ findlocalminima(Ds; window=(3, 3, 3))
-    end
-end

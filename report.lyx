@@ -131,6 +131,16 @@
 \end_inset
 
 
+\begin_inset FormulaMacro
+\newcommand{\octave}{\omega}
+\end_inset
+
+
+\begin_inset FormulaMacro
+\newcommand{\layer}{\lambda}
+\end_inset
+
+
 \end_layout
 
 \begin_layout Title
@@ -602,17 +612,7 @@ Không gian bậc có thể được xem như một kim tự tháp, trong đó, 
 .
  Mẫu đầu tiên của mỗi bậc được tính bằng cách giảm kích thước của mẫu cuối
  bậc trước đi một nửa.
- Mẫu đầu tiên của bậc đầu tiên chính là ảnh đầu vào.
-\begin_inset Formula 
-\begin{align*}
-L_{1,1}\left(x,y\right) & =I\left(x,y\right),\\
-L_{k,1} & =\resize\left(L_{k-1,s},\frac{1}{2}\right),\quad k=\overline{1,n}\\
-L_{k,l} & =G\left(x,y,\sigma\right)\ast L_{k,l-1}\left(x,y\right),\quad k=\overline{1,n},l=\overline{2,s}.
-\end{align*}
-
-\end_inset
-
-Theo thực nghiệm, 
+ Mẫu đầu tiên của bậc đầu tiên chính là ảnh đầu vào.Theo thực nghiệm, 
 \begin_inset ERT
 status open
 
@@ -641,205 +641,21 @@ cite{DavidLowe2004}
 \end_inset
 
  mẫu mỗi bậc.
-\end_layout
-
-\begin_layout Standard
-\begin_inset FormulaMacro
-\newcommand{\octave}{\mathrm{octave}}
-\end_inset
-
-
-\begin_inset FormulaMacro
-\newcommand{\layer}{\mathrm{layer}}
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-\begin_inset Float algorithm
-wide false
-sideways false
-status open
-
-\begin_layout Plain Layout
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-begin{algorithmic}[1]
-\end_layout
-
-\begin_layout Plain Layout
-
-
-\backslash
-Require Ảnh $I$, độ mờ $
-\backslash
-sigma$, số lượng mẫu $s$
-\end_layout
-
-\begin_layout Plain Layout
-
-
-\backslash
-Ensure Không gian bậc $L$
-\end_layout
-
-\begin_layout Plain Layout
-
-
-\backslash
-State $k 
-\backslash
-gets 2^{
-\backslash
-nicefrac{1}{s}}$ là hệ số nhân
-\end_layout
-
-\begin_layout Plain Layout
-
-
-\backslash
-For {$
-\backslash
-octave 
-\backslash
-gets 1,n$}
-\end_layout
-
-\begin_layout Plain Layout
-
-	
-\backslash
-For {$
-\backslash
-layer 
-\backslash
-gets 1,s$}
-\end_layout
-
-\begin_layout Plain Layout
-
-		
-\backslash
-If {$
-\backslash
-octave = 
-\backslash
-layer = 1$}
-\end_layout
-
-\begin_layout Plain Layout
-
-			
-\backslash
-State $L_{
-\backslash
-octave}(x, y, 
-\backslash
-sigma_{
-\backslash
-layer}) 
-\backslash
-gets I$
-\end_layout
-
-\begin_layout Plain Layout
-
-		
-\backslash
-EndIf
-\end_layout
-
-\begin_layout Plain Layout
-
-		
-\backslash
-If {$
-\backslash
-layer = 1$}
-\end_layout
-
-\begin_layout Plain Layout
-
-			
-\backslash
-State $L_{
-\backslash
-octave}(x, y, 
-\backslash
-sigma_{
-\backslash
-layer}) 
-\backslash
-gets 
-\backslash
-resize(L(x, y, 
-\backslash
-sigma{
-\backslash
-layer - 1})$
-\end_layout
-
-\begin_layout Plain Layout
-
-		
-\backslash
-EndIf
-\end_layout
-
-\begin_layout Plain Layout
-
-	
-\backslash
-EndFor
-\end_layout
-
-\begin_layout Plain Layout
-
-
-\backslash
-EndFor
-\end_layout
-
-\begin_layout Plain Layout
-
-
-\backslash
-end{algorithmic}
-\end_layout
+\begin_inset Formula 
+\begin{align*}
+L_{1,1}\left(x,y\right) & =I,\\
+L_{\octave,1}\left(x,y\right) & =\resize\left(L_{\octave-1,s}\left(x,y\right),\frac{1}{2}\right),\quad\octave=\overline{1,n},\\
+L_{\octave,\layer}\left(x,y\right) & =L_{\octave,\layer-1}\left(x,y\right)\ast G\left(x,y,\sigma_{\layer}\right),\quad\layer=\overline{1,s+3},\\
+\sigma_{\layer} & =\sqrt{\left(2^{k}\sigma_{\lambda-1}\right)^{2}-\sigma_{\lambda-1}^{2}}.
+\end{align*}
 
 \end_inset
 
-
-\end_layout
-
-\begin_layout Plain Layout
-\begin_inset Caption Standard
-
-\begin_layout Plain Layout
-Tính toán không gian bậc
-\begin_inset CommandInset label
-LatexCommand label
-name "alg:scale-space"
-
-\end_inset
-
-
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Plain Layout
-
-\end_layout
+hoặc
+\begin_inset Formula 
+\[
+L_{\octave,\layer}\left(x,y\right)=L_{\octave,1}\left(x,y\right)\ast G\left(x,y,\sigma\cdot k^{\layer}\right).
+\]
 
 \end_inset
 
@@ -1298,14 +1114,11 @@ gets
 \backslash
 left[
 \backslash
-begin{array}{cc}
-D_{xx} & D_{xy}
+begin{array}{cc}D_{xx} & D_{xy}
 \backslash
 
 \backslash
-
 D_{xy} & D_{yy}
-
 \backslash
 end{array}
 \backslash

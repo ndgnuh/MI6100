@@ -48,7 +48,7 @@ end
     row::Int
     col::Int
     size::Maybe{Float32} = nothing
-    orient::Maybe{Float32} = nothing
+    angle::Maybe{Float32} = nothing
     low_contrast::Maybe{Bool} = nothing
     edge::Maybe{Bool} = nothing
     localized::Maybe{Bool} = false
@@ -95,18 +95,22 @@ function compute_hessians_at_center_3d(w)
             dxz dyz dzz]
 end
 
+include(joinpath(@__DIR__, "diff.jl"))
 function compute_localized_keypoints(s::SIFT)
     Dgrad = map(s.dpyr) do dog
-        return mapwindow(compute_gradients_at_center_3d, dog, (3, 3, 3))
+        return im_gradients(dog)
     end
+    @info "Gradient done"
     Dhess = map(s.dpyr) do dog
         return mapwindow(compute_hessians_at_center_3d, dog, (3, 3, 3))
     end
+    @info "Hessian done"
+    return
     kpts = s.keypoints
     map(kpts) do kpt
         @unpack row, col, octave, layer = kpt
         num_layers, height, width = size(s.dpyr[octave])
-        x = [layer, row, col]
+        x = Float32[layer, row, col]
         num_attempts = 10
         converge = false
         for i in 1:num_attempts

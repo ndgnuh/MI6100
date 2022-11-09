@@ -22,10 +22,17 @@ using ImageCore
 # ╔═╡ 802e9ef8-b3b3-42e3-b313-363a5d236865
 using ImageShow
 
+# ╔═╡ ebc25a46-b08e-4793-b66b-e9d40b8da443
+Draw = let
+	using ImageDraw
+	@ingredients("../SIFT/draw.jl").Draw
+end
+
 # ╔═╡ 29200873-e263-45b2-8ada-0dacd79d34f5
 S = let
 	using ImageFiltering
 	using Parameters
+	using Setfield
 	using UnPack
 	using Accessors
 	using ImageTransformations
@@ -44,32 +51,13 @@ sift = let sift = S.SIFT()
 	sift = S.fit(sift, image)
 end
 
-# ╔═╡ aaa63c93-d5e5-4018-95b1-25ddf6aff0c0
-sift.dpyr |> S.show_pyramid
-
-# ╔═╡ 3b1390ca-908f-4628-825f-0a2edd596cc7
-sift.dpyr[8][1, :, :] |> Matrix{RGB}
-
-# ╔═╡ 3f3be456-c3b0-4005-874e-c2e7b235c025
-sift.keypoints
-
-# ╔═╡ a5a05a2d-de7e-4334-a4c1-f4cf5972dfed
-filter(k -> k.localized && !k.low_contrast, sift.localized_keypoints)
-
-# ╔═╡ d07de91c-62bf-4882-b05b-fbed11bd3442
-sift.dpyr[1] |> size
-
-# ╔═╡ 693405c0-153f-4fca-b1b1-b6e25379e73b
-
-
-# ╔═╡ 5a6e7a52-5f45-4382-89ea-24983740325b
-CartesianIndex(1, 2, 3)[1]
-
-# ╔═╡ 737db356-fdfa-4483-b4a2-92c0e9593a24
-findlocalmaxima([0 0 0; 1 2 1; 0 0 0])
+# ╔═╡ 720e2ce6-2b5c-48dd-97f3-282672528990
+# let image = RGB.(load("../samples/geek.png"))
+# 	Draw.draw_keypoints!(image, sift.localized_keypoints, RGB(1, 0, 0))
+# end
 
 # ╔═╡ 1f6b109f-9b8b-4e30-8dc4-4786a62e8007
-sift.keypoints
+
 
 # ╔═╡ 5b9c9ba3-3bc1-43c8-a1b8-038f775ba360
 findlocalmaxima(rand(9, 9, 10), window=(3, 3, 3))
@@ -107,6 +95,7 @@ Accessors = "7d9f7c33-5ae7-4f3b-8dc6-eff91059b697"
 Chain = "8be319e6-bccf-4806-a6f7-6fae938471bc"
 FileIO = "5789e2e9-d7fb-5bc7-8068-2c6fae9b9549"
 ImageCore = "a09fc81d-aa75-5fe9-8630-4744c3626534"
+ImageDraw = "4381153b-2b60-58ae-a1ba-fd683676385f"
 ImageFiltering = "6a3955dd-da59-5b1f-98d4-e7296123deb5"
 ImageIO = "82e4d734-157c-48bb-816b-45c225c6df19"
 ImageShow = "4e3cecfd-b093-5904-9786-8bbb286a6a31"
@@ -115,6 +104,7 @@ LRUCache = "8ac3fa9e-de4c-5943-b1dc-09c6b5f20637"
 Memoize = "c03570c3-d221-55d1-a50c-7939bbd78826"
 Parameters = "d96e819e-fc66-5662-9728-84c9c7592b0a"
 PlutoLinks = "0ff47ea0-7a50-410d-8455-4348d5de0420"
+Setfield = "efcf1570-3423-57d1-acb7-fd33fddbac46"
 UnPack = "3a884ed6-31ef-47d7-9d2a-63182c4928ed"
 
 [compat]
@@ -122,6 +112,7 @@ Accessors = "~0.1.22"
 Chain = "~0.5.0"
 FileIO = "~1.16.0"
 ImageCore = "~0.9.4"
+ImageDraw = "~0.2.5"
 ImageFiltering = "~0.7.2"
 ImageIO = "~0.6.6"
 ImageShow = "~0.3.6"
@@ -130,6 +121,7 @@ LRUCache = "~1.3.0"
 Memoize = "~0.4.4"
 Parameters = "~0.12.3"
 PlutoLinks = "~0.1.5"
+Setfield = "~1.1.1"
 UnPack = "~1.0.2"
 """
 
@@ -139,7 +131,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.8.2"
 manifest_format = "2.0"
-project_hash = "0e0a9b2921b166e646a71d88a83816dde22798f9"
+project_hash = "393763afea8e8da5adb850521386a115453e2d51"
 
 [[deps.AbstractFFTs]]
 deps = ["ChainRulesCore", "LinearAlgebra"]
@@ -287,6 +279,12 @@ version = "0.18.13"
 deps = ["Printf"]
 uuid = "ade2ca70-3891-5945-98fb-dc099432e06a"
 
+[[deps.Distances]]
+deps = ["LinearAlgebra", "SparseArrays", "Statistics", "StatsAPI"]
+git-tree-sha1 = "3258d0659f812acde79e8a74b11f17ac06d0ca04"
+uuid = "b4f34e82-e78d-54a5-968a-f98e89d6e8f7"
+version = "0.10.7"
+
 [[deps.Distributed]]
 deps = ["Random", "Serialization", "Sockets"]
 uuid = "8ba89e20-285c-5b6f-9357-94700520ee1b"
@@ -335,6 +333,10 @@ git-tree-sha1 = "335bfdceacc84c5cdf16aadc768aa5ddfc5383cc"
 uuid = "53c48c17-4a7d-5ca2-90c5-79b7896eea93"
 version = "0.8.4"
 
+[[deps.Future]]
+deps = ["Random"]
+uuid = "9fa8497b-333b-5362-9e8d-4d0656e87820"
+
 [[deps.Graphics]]
 deps = ["Colors", "LinearAlgebra", "NaNMath"]
 git-tree-sha1 = "d61890399bc535850c4bf08e4e0d3a7ad0f21cbd"
@@ -357,6 +359,12 @@ deps = ["AbstractFFTs", "ColorVectorSpace", "Colors", "FixedPointNumbers", "Grap
 git-tree-sha1 = "acf614720ef026d38400b3817614c45882d75500"
 uuid = "a09fc81d-aa75-5fe9-8630-4744c3626534"
 version = "0.9.4"
+
+[[deps.ImageDraw]]
+deps = ["Distances", "ImageCore", "LinearAlgebra"]
+git-tree-sha1 = "6ed6e945d909f87c3013e391dcd3b2a56e48b331"
+uuid = "4381153b-2b60-58ae-a1ba-fd683676385f"
+version = "0.2.5"
 
 [[deps.ImageFiltering]]
 deps = ["CatIndices", "ComputationalResources", "DataStructures", "FFTViews", "FFTW", "ImageBase", "ImageCore", "LinearAlgebra", "OffsetArrays", "Reexport", "SparseArrays", "StaticArrays", "Statistics", "TiledIteration"]
@@ -717,6 +725,12 @@ version = "0.7.0"
 [[deps.Serialization]]
 uuid = "9e88b42a-f829-5b0c-bbe9-9e923198166b"
 
+[[deps.Setfield]]
+deps = ["ConstructionBase", "Future", "MacroTools", "StaticArraysCore"]
+git-tree-sha1 = "e2cc6d8c88613c05e1defb55170bf5ff211fbeac"
+uuid = "efcf1570-3423-57d1-acb7-fd33fddbac46"
+version = "1.1.1"
+
 [[deps.SharedArrays]]
 deps = ["Distributed", "Mmap", "Random", "Serialization"]
 uuid = "1a1011a3-84de-559e-8e89-a11a2f7dc383"
@@ -766,6 +780,12 @@ version = "1.4.0"
 [[deps.Statistics]]
 deps = ["LinearAlgebra", "SparseArrays"]
 uuid = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
+
+[[deps.StatsAPI]]
+deps = ["LinearAlgebra"]
+git-tree-sha1 = "f9af7f195fb13589dd2e2d57fdb401717d2eb1f6"
+uuid = "82ae8749-77ed-4fe6-ae5f-f523153014b0"
+version = "1.5.0"
 
 [[deps.SuiteSparse]]
 deps = ["Libdl", "LinearAlgebra", "Serialization", "SparseArrays"]
@@ -861,16 +881,10 @@ version = "17.4.0+0"
 # ╠═a9370d52-0ca3-4fb6-b69b-5e8c2c65e213
 # ╠═7eea1deb-fc6e-4f1a-89d1-42e6ff451804
 # ╠═802e9ef8-b3b3-42e3-b313-363a5d236865
+# ╠═ebc25a46-b08e-4793-b66b-e9d40b8da443
 # ╠═29200873-e263-45b2-8ada-0dacd79d34f5
 # ╠═00d7843e-ef48-45c3-b6f4-27ff1c713d1d
-# ╠═aaa63c93-d5e5-4018-95b1-25ddf6aff0c0
-# ╠═3b1390ca-908f-4628-825f-0a2edd596cc7
-# ╠═3f3be456-c3b0-4005-874e-c2e7b235c025
-# ╠═a5a05a2d-de7e-4334-a4c1-f4cf5972dfed
-# ╠═d07de91c-62bf-4882-b05b-fbed11bd3442
-# ╠═693405c0-153f-4fca-b1b1-b6e25379e73b
-# ╠═5a6e7a52-5f45-4382-89ea-24983740325b
-# ╠═737db356-fdfa-4483-b4a2-92c0e9593a24
+# ╠═720e2ce6-2b5c-48dd-97f3-282672528990
 # ╠═1f6b109f-9b8b-4e30-8dc4-4786a62e8007
 # ╠═5b9c9ba3-3bc1-43c8-a1b8-038f775ba360
 # ╠═20ce2d1b-2c26-4de6-8838-c6780c52342a

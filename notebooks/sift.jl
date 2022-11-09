@@ -59,7 +59,7 @@ end
 @bind image_name PlutoUI.Select((@. first(splitext(TestImages.remotefiles))), default="lighthouse")
 
 # ╔═╡ 39110c52-b943-479a-9431-18206c3132db
-ImDraw = @ingredients("ImDraw.jl")
+ImDraw = @ingredients("../SIFT/draw.jl").Draw
 
 # ╔═╡ d2b25caa-f356-40c4-9d79-ce7b05043e8b
 ImDiff = try
@@ -121,13 +121,18 @@ compute_keypoint_orientations(result.g_pyramid, result.keypoints)
 # ╔═╡ 6950f4c7-62a6-4562-9cfa-71fb391c14d0
 let image = RGB.(result.base_image)
 	for kpt in result.keypoints
-		ImDraw.draw_keypoint!(image, kpt, (1, 1, 0); thickness=1, rich=true)
+		kpt_ = (
+		row = kpt.pt[1],
+		col = kpt.pt[2],
+		size = kpt.size,
+		)
+		ImDraw.draw_keypoint!(image, kpt_, RGB(1, 1, 0))
 	end
 	image
 end
 
 # ╔═╡ 3ce2f508-cc1e-44ef-b3aa-729cde297633
-
+result.keypoints[1]
 
 # ╔═╡ 1d783473-dddc-43aa-8126-a8c8ad6ef9a3
 md"# Scale space"

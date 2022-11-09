@@ -1398,78 +1398,8 @@ Ta xét tất cả các điểm
  mà
 \begin_inset Formula 
 \[
-d\left(\left(x,y\right),\left(x_{0},y_{0}\right)\right)\le m\left(x,y,\sigma\right)
+d\left(\left(x,y\right),\left(x_{0},y_{0}\right)\right)\le m\left(x,y,\sigma\right).
 \]
-
-\end_inset
-
-
-\begin_inset Float algorithm
-placement H
-wide false
-sideways false
-status open
-
-\begin_layout Plain Layout
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-begin{algorithmic}[1]
-\end_layout
-
-\begin_layout Plain Layout
-
-
-\backslash
-State $R 
-\backslash
-gets 
-\backslash
-mathrm{Vector
-\backslash
-{Int
-\backslash
-}}[36]$
-\end_layout
-
-\begin_layout Plain Layout
-
-\end_layout
-
-\begin_layout Plain Layout
-
-
-\backslash
-end{algorithmic}
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Plain Layout
-\begin_inset Caption Standard
-
-\begin_layout Plain Layout
-Tính góc chủ đạo cho keypoint
-\begin_inset CommandInset label
-LatexCommand label
-name "alg:orientation-assignment"
-
-\end_inset
-
-
-\end_layout
-
-\end_inset
-
-
-\end_layout
 
 \end_inset
 

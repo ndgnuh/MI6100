@@ -1,4 +1,4 @@
-using Setfield
+using Setfield: @set
 using Base.Iterators: product
 using OffsetArrays
 using ImageFiltering

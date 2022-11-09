@@ -69,43 +69,8 @@ function compute_keypoints(s::SIFT)
     end
 end
 
-function compute_gradients_at_center_3d(w)
-    w = centered(w)
-    dx = (w[1, 0, 0] - w[-1, 0, 0]) / 2
-    dy = (w[0, 1, 0] - w[0, -1, 0]) / 2
-    dz = (w[0, 0, 1] - w[0, 0, -1]) / 2
-    return [dx, dy, dz]
-end
-
-function compute_hessians_at_center_3d(w)
-    w = centered(w)
-    c = 2 * w[0, 0, 0]
-
-    # 1 dims
-    dxx = w[1, 0, 0] - c + w[-1, 0, 0]
-    dyy = w[0, 1, 0] - c + w[0, -1, 0]
-    dzz = w[0, 0, 1] - c + w[0, 0, -1]
-
-    # 2 dims
-    dxy = 0.25 * (w[1, 1, 0] + w[-1, -1, 0] - w[-1, 1, 0] - w[1, -1, 0])
-    dxz = 0.25 * (w[1, 0, 1] + w[-1, 0, -1] - w[-1, 0, 1] - w[1, 0, -1])
-    dyz = 0.25 * (w[0, 1, 1] + w[0, -1, -1] - w[0, -1, 1] - w[0, 1, -1])
-    return [dxx dxy dxz;
-            dxy dyy dyz;
-            dxz dyz dzz]
-end
-
 include(joinpath(@__DIR__, "diff.jl"))
 function compute_localized_keypoints(s::SIFT)
-    Dgrad = map(s.dpyr) do dog
-        return im_gradients(dog)
-    end
-    @info "Gradient done"
-    Dhess = map(s.dpyr) do dog
-        return mapwindow(compute_hessians_at_center_3d, dog, (3, 3, 3))
-    end
-    @info "Hessian done"
-    return
     kpts = s.keypoints
     map(kpts) do kpt
         @unpack row, col, octave, layer = kpt

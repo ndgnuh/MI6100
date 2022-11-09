@@ -22,6 +22,12 @@ using ImageCore
 # ╔═╡ 802e9ef8-b3b3-42e3-b313-363a5d236865
 using ImageShow
 
+# ╔═╡ b588a012-2a8c-43da-83ed-e5f3f3965408
+using StaticArrays
+
+# ╔═╡ 3c874c50-1128-44d3-95b5-b3ed460efd58
+using OffsetArrays
+
 # ╔═╡ ebc25a46-b08e-4793-b66b-e9d40b8da443
 Draw = let
 	using ImageDraw
@@ -44,6 +50,9 @@ end
 
 # ╔═╡ 20ce2d1b-2c26-4de6-8838-c6780c52342a
 using Chain
+
+# ╔═╡ b51a3b28-1b94-45ec-9038-3ece5a48a33d
+@ingredients("../SIFT/sift.jl")
 
 # ╔═╡ 00d7843e-ef48-45c3-b6f4-27ff1c713d1d
 sift = let sift = S.SIFT()
@@ -102,9 +111,11 @@ ImageShow = "4e3cecfd-b093-5904-9786-8bbb286a6a31"
 ImageTransformations = "02fcd773-0e25-5acc-982a-7f6622650795"
 LRUCache = "8ac3fa9e-de4c-5943-b1dc-09c6b5f20637"
 Memoize = "c03570c3-d221-55d1-a50c-7939bbd78826"
+OffsetArrays = "6fe1bfb0-de20-5000-8ca7-80f57d26f881"
 Parameters = "d96e819e-fc66-5662-9728-84c9c7592b0a"
 PlutoLinks = "0ff47ea0-7a50-410d-8455-4348d5de0420"
 Setfield = "efcf1570-3423-57d1-acb7-fd33fddbac46"
+StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 UnPack = "3a884ed6-31ef-47d7-9d2a-63182c4928ed"
 
 [compat]
@@ -119,9 +130,11 @@ ImageShow = "~0.3.6"
 ImageTransformations = "~0.9.5"
 LRUCache = "~1.3.0"
 Memoize = "~0.4.4"
+OffsetArrays = "~1.12.8"
 Parameters = "~0.12.3"
 PlutoLinks = "~0.1.5"
 Setfield = "~1.1.1"
+StaticArrays = "~1.5.9"
 UnPack = "~1.0.2"
 """
 
@@ -131,7 +144,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.8.2"
 manifest_format = "2.0"
-project_hash = "393763afea8e8da5adb850521386a115453e2d51"
+project_hash = "f240de025ceeb367edc7033cf6e0ab80cb461b0f"
 
 [[deps.AbstractFFTs]]
 deps = ["ChainRulesCore", "LinearAlgebra"]
@@ -881,7 +894,10 @@ version = "17.4.0+0"
 # ╠═a9370d52-0ca3-4fb6-b69b-5e8c2c65e213
 # ╠═7eea1deb-fc6e-4f1a-89d1-42e6ff451804
 # ╠═802e9ef8-b3b3-42e3-b313-363a5d236865
+# ╠═b588a012-2a8c-43da-83ed-e5f3f3965408
+# ╠═3c874c50-1128-44d3-95b5-b3ed460efd58
 # ╠═ebc25a46-b08e-4793-b66b-e9d40b8da443
+# ╠═b51a3b28-1b94-45ec-9038-3ece5a48a33d
 # ╠═29200873-e263-45b2-8ada-0dacd79d34f5
 # ╠═00d7843e-ef48-45c3-b6f4-27ff1c713d1d
 # ╠═720e2ce6-2b5c-48dd-97f3-282672528990

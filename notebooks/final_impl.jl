@@ -62,31 +62,64 @@ using StaticArrays
 # ╔═╡ b51a3b28-1b94-45ec-9038-3ece5a48a33d
 @ingredients("../SIFT/sift.jl")
 
+# ╔═╡ 5d125872-ec3e-4788-9020-9df08cc4bbc7
+@SVector zeros(Float32, 3)
+
+# ╔═╡ 906037fa-3603-4b4b-8e57-fecf33bfc210
+@MVector zeros(3)
+
+# ╔═╡ 18111ae3-71f3-48e5-a79c-43ebb11714c5
+
+
 # ╔═╡ 323dc098-9199-4681-9f8d-9dda0d75973a
 g = S.Hessian(rand(3, 3))
 
+# ╔═╡ 78ca30a2-c9de-457b-99bf-2b60fdd88dcf
+input_image = "../samples/box.png"
+
+# ╔═╡ be1186af-891d-4a0c-a0c9-379234d1f0b4
+kpts = let image = load(input_image)
+	S.sift(image, 1.6, 3, 0.5)
+end
+
+# ╔═╡ 59b4878b-e334-478c-9dba-bcd4fc3816ff
+let image = RGB.(load(input_image))
+	Draw.draw_keypoints!(image, kpts, RGB(0, 1, 0))
+end
+
 # ╔═╡ 00d7843e-ef48-45c3-b6f4-27ff1c713d1d
+# ╠═╡ disabled = true
+#=╠═╡
 sift = let sift = S.SIFT()
-	image = reinterpret(N0f8, load("../samples/geek.png"))
+	image = reinterpret(N0f8, load(input_image))
 	sift = S.fit(sift, image)
 	sift.keypoints
 	sift
 end
+  ╠═╡ =#
 
 # ╔═╡ 4401cbf1-91fe-4bcf-8f79-7da4986f8bc3
+#=╠═╡
 sift.base_image
+  ╠═╡ =#
 
 # ╔═╡ b277219f-db5d-42a8-830a-8f9d46448a26
+# ╠═╡ disabled = true
+#=╠═╡
 hessian = Dict(
 	octave => S.Hessian(sift.dpyr[octave])
-	for octave in 1:9
+	for octave in 1:8
 );
+  ╠═╡ =#
 
 # ╔═╡ 3b368e6b-1d11-491b-a1d5-15542ead67d8
+# ╠═╡ disabled = true
+#=╠═╡
 gradient = Dict(
 	octave => S.Gradient(sift.dpyr[octave])
-	for octave in 1:9
+	for octave in 1:8
 );
+  ╠═╡ =#
 
 # ╔═╡ 334d5d38-d5bb-4bd6-a841-8ca92c9133b6
 function localize_keypoint(s, gradient, hessian, octave, layer, row, col)
@@ -138,6 +171,7 @@ function localize_keypoint(s, gradient, hessian, octave, layer, row, col)
 	layer, row, col = trunc.(Int, x)
 
 	# More check if localized
+	contrast::Float32 = 0
 	if converge
 		# Calculate contrast
 		g = grad(layer, row, col) 
@@ -155,19 +189,25 @@ function localize_keypoint(s, gradient, hessian, octave, layer, row, col)
 	# Calculate angle if
 	# keypoint is high contrast and
 	# keypoint is not on any edge
+	sigma = 1
+	kptsize = s.sigma * (2^(layer - 1 / (mlayer - 3)) * (2^(octave - 1)))
 	
 	(
-	outside=outside,
-	converge=converge, 
-	low_contrast=low_contrast,
-	on_edge=on_edge,
-	layer=layer, row=row, col=col)
+		outside=outside,
+		size=3,
+		converge=converge, 
+		contrast=abs(contrast),
+		low_contrast=low_contrast,
+		on_edge=on_edge,
+		layer=layer, 
+		angle = nothing,
+		row=trunc(Int, row * 2.0^(octave - 2)),
+		col=trunc(Int, col * 2.0^(octave - 2))
+	) # row = row, col=col
 end
 
-# ╔═╡ 02f3a314-1ac7-4bcd-9f0c-a7c7dddc2155
-sift.keypoints[2]
-
 # ╔═╡ c4c99a3a-c6c6-4cde-b681-66d25a861625
+#=╠═╡
 let
 	kpt = sift.keypoints[400]
 	octave = kpt.octave
@@ -176,9 +216,11 @@ let
 	col = kpt.col
 	localize_keypoint(sift, gradient, hessian, octave, layer, row, col)
 end
+  ╠═╡ =#
 
 # ╔═╡ 0bf8b317-e22f-4d25-9d6c-759bb662c67c
-@chain begin
+#=╠═╡
+kpts = @chain begin
 	map(sift.keypoints) do kpt
 		octave = kpt.octave
 		layer = kpt.layer
@@ -190,17 +232,23 @@ end
 		kpt.converge && !kpt.outside && !kpt.low_contrast && !kpt.on_edge
 	end
 end
+  ╠═╡ =#
 
 # ╔═╡ 2926d7da-248f-491b-93d3-5d0e457ed323
-StackedView
+
 
 # ╔═╡ 8954eab8-c7e1-47df-98d6-bd1d09b47cb3
 
 
 # ╔═╡ 720e2ce6-2b5c-48dd-97f3-282672528990
-# let image = RGB.(load("../samples/geek.png"))
-# 	Draw.draw_keypoints!(image, sift.localized_keypoints, RGB(1, 0, 0))
-# end
+#=╠═╡
+let image = RGB.(load(input_image))
+	Draw.draw_keypoints!(image, kpts, RGB(1, 0, 0))
+end
+  ╠═╡ =#
+
+# ╔═╡ 2e73cc5d-bccc-4fb3-94b1-f4cd51a63f06
+
 
 # ╔═╡ 1f6b109f-9b8b-4e30-8dc4-4786a62e8007
 
@@ -215,13 +263,17 @@ using Chain
   ╠═╡ =#
 
 # ╔═╡ 7d5eecc1-a144-49f7-b378-498bbcedd166
+#=╠═╡
 kpt = sift.keypoints[1]
+  ╠═╡ =#
 
 # ╔═╡ f6fda39e-c72d-41e7-b4c4-f68a8cc51e41
+#=╠═╡
 let 
 	@unpack row = kpt
 	print(row)
 end
+  ╠═╡ =#
 
 # ╔═╡ dd6091da-7801-4fb7-878b-935101ebfa98
 function show_pyramid(pyr)
@@ -1044,19 +1096,25 @@ version = "17.4.0+0"
 # ╠═b51a3b28-1b94-45ec-9038-3ece5a48a33d
 # ╠═5c16d793-4e0a-43dc-987d-2bb8ffefcd5b
 # ╠═29200873-e263-45b2-8ada-0dacd79d34f5
+# ╠═5d125872-ec3e-4788-9020-9df08cc4bbc7
+# ╠═906037fa-3603-4b4b-8e57-fecf33bfc210
+# ╠═be1186af-891d-4a0c-a0c9-379234d1f0b4
+# ╠═59b4878b-e334-478c-9dba-bcd4fc3816ff
+# ╠═18111ae3-71f3-48e5-a79c-43ebb11714c5
 # ╠═323dc098-9199-4681-9f8d-9dda0d75973a
+# ╠═78ca30a2-c9de-457b-99bf-2b60fdd88dcf
 # ╠═00d7843e-ef48-45c3-b6f4-27ff1c713d1d
 # ╠═4401cbf1-91fe-4bcf-8f79-7da4986f8bc3
 # ╠═b277219f-db5d-42a8-830a-8f9d46448a26
 # ╠═3b368e6b-1d11-491b-a1d5-15542ead67d8
 # ╠═260ab7c7-8743-4040-8d4b-6860f1240dbc
 # ╠═334d5d38-d5bb-4bd6-a841-8ca92c9133b6
-# ╠═02f3a314-1ac7-4bcd-9f0c-a7c7dddc2155
 # ╠═c4c99a3a-c6c6-4cde-b681-66d25a861625
 # ╠═0bf8b317-e22f-4d25-9d6c-759bb662c67c
 # ╠═2926d7da-248f-491b-93d3-5d0e457ed323
 # ╠═8954eab8-c7e1-47df-98d6-bd1d09b47cb3
 # ╠═720e2ce6-2b5c-48dd-97f3-282672528990
+# ╠═2e73cc5d-bccc-4fb3-94b1-f4cd51a63f06
 # ╠═1f6b109f-9b8b-4e30-8dc4-4786a62e8007
 # ╠═5b9c9ba3-3bc1-43c8-a1b8-038f775ba360
 # ╠═20ce2d1b-2c26-4de6-8838-c6780c52342a

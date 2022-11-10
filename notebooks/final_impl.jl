@@ -50,6 +50,15 @@ S = let
 	@ingredients("../SIFT/sift.jl")
 end
 
+# ╔═╡ af3787c9-cc02-4999-9b94-763967383bcc
+using BenchmarkTools
+
+# ╔═╡ cbfdbb4c-f3e0-450b-b0ea-1eec1526a6c3
+using Random
+
+# ╔═╡ d4d261c8-1522-4ce6-bea1-2b848cc4e42f
+using DataStructures
+
 # ╔═╡ 260ab7c7-8743-4040-8d4b-6860f1240dbc
 using LinearAlgebra
 
@@ -67,6 +76,139 @@ using StaticArrays
 
 # ╔═╡ 906037fa-3603-4b4b-8e57-fecf33bfc210
 @MVector zeros(3)
+
+# ╔═╡ 67bff29b-0796-401e-8d40-73624b5fb51a
+n = 2
+
+# ╔═╡ 8132a218-28b9-4eaa-abc4-5849a811a2ff
+m= 3
+
+# ╔═╡ a4c577ab-2963-4024-8081-e45b41d39a49
+SMatrix{n,m}(i for i in 1:n, j in 1:m)
+
+# ╔═╡ c3a6814f-33ee-4c7b-9e66-8390cd07032e
+function dynamic2(n)
+	x = Deque{Int}()
+	# sizehint!(x, n)
+	for i in 1:n
+		if rand([true, false])
+			x = push!(x, i)
+		end
+	end
+	x
+end
+
+
+# ╔═╡ f2983f37-ab88-4a4b-8329-6a3a9a6cd265
+# ╠═╡ disabled = true
+# ╠═╡ skip_as_script = true
+#=╠═╡
+let
+	Random.seed!(0)
+	@btime dynamic2(20000)
+end
+  ╠═╡ =#
+
+# ╔═╡ 4361e5e0-7f12-4fa5-8aed-ebf8c306d67d
+mutable struct LinkedList{T}
+	value::T
+	index::Int
+	next::Union{Nothing, LinkedList}
+	prev::Union{Nothing, LinkedList}
+	function LinkedList(value::T) where T
+		lst = new{T}(value, 1, nothing, nothing)
+		lst.next = lst
+		lst.prev = lst
+		lst
+	end
+end
+
+# ╔═╡ 340ee4e6-714a-47e2-8f63-06d2791d1ff1
+methodswith(list() |> typeof)
+
+# ╔═╡ a0a5cc94-2bfc-47f9-9f64-40bcda4b56b3
+function f1(n)
+	l2 = MutableLinkedList{Int}()
+end
+
+# ╔═╡ 9537618d-7379-44f4-9299-ebaa668de4e9
+
+
+# ╔═╡ 52d7a918-a6eb-44e4-896b-489d5e19981d
+
+
+# ╔═╡ 079156fc-513c-4cd5-ba15-d53abe5d7751
+
+
+# ╔═╡ 54805733-420d-4489-81bf-8d405c8fbaa3
+
+
+# ╔═╡ f30ca828-4822-4d1a-9f7d-b3632d3b1c56
+
+
+# ╔═╡ cba302d6-e01f-420d-aa36-a5e6cd16c295
+
+
+# ╔═╡ 966737b2-c718-486d-b10e-27e7230c6b2b
+
+
+# ╔═╡ b9c3c7b1-ca62-49cf-bdb9-0c90931aa112
+
+
+# ╔═╡ c5a9ccb5-8eaa-450c-b143-83cd684ab790
+
+
+# ╔═╡ 4d1eb2d4-b1a4-4dc8-80af-3d67a3249c53
+function Base.length(l::LinkedList)
+	orig_idx = l.index
+	len = 1
+	cur = l.next
+	while orig_idx != cur.index
+		cur = l.next
+		len += 1
+	end
+	len
+end
+
+# ╔═╡ a834c6ea-06f6-4514-81cd-cc7b0fa2146b
+function dynamic(n)
+	x = Int[]
+	# sizehint!(x, n)
+	for i in 1:n
+		if rand([true, false])
+			push!(x, i)
+		end
+	end
+	resize!(x, length(x))
+end
+
+# ╔═╡ 4ccfa22f-6776-456f-94cd-98184e44c04f
+# ╠═╡ disabled = true
+# ╠═╡ skip_as_script = true
+#=╠═╡
+let
+	Random.seed!(0)
+	@btime dynamic(20000)
+end
+  ╠═╡ =#
+
+# ╔═╡ cfb684bd-9c32-4126-8266-f0f540ef232c
+length(l2)
+
+# ╔═╡ 0cf896fe-c543-40a3-8ad6-6f4cc63763d2
+l =  LinkedList(2)
+
+# ╔═╡ 306e0a0c-7c21-4d94-bd2d-32d8fdaabcce
+length(l)
+
+# ╔═╡ c016a338-8a52-4d2c-9f06-9dc4df8ef098
+
+
+# ╔═╡ 09b5e2eb-b4c8-44b4-9492-f07b2d1f8956
+L
+
+# ╔═╡ edb6e742-cdd3-4d9e-bd38-a979f19589f8
+rad2
 
 # ╔═╡ 18111ae3-71f3-48e5-a79c-43ebb11714c5
 
@@ -219,8 +361,7 @@ end
   ╠═╡ =#
 
 # ╔═╡ 0bf8b317-e22f-4d25-9d6c-759bb662c67c
-#=╠═╡
-kpts = @chain begin
+@chain begin
 	map(sift.keypoints) do kpt
 		octave = kpt.octave
 		layer = kpt.layer
@@ -232,7 +373,6 @@ kpts = @chain begin
 		kpt.converge && !kpt.outside && !kpt.low_contrast && !kpt.on_edge
 	end
 end
-  ╠═╡ =#
 
 # ╔═╡ 2926d7da-248f-491b-93d3-5d0e457ed323
 
@@ -241,11 +381,9 @@ end
 
 
 # ╔═╡ 720e2ce6-2b5c-48dd-97f3-282672528990
-#=╠═╡
 let image = RGB.(load(input_image))
 	Draw.draw_keypoints!(image, kpts, RGB(1, 0, 0))
 end
-  ╠═╡ =#
 
 # ╔═╡ 2e73cc5d-bccc-4fb3-94b1-f4cd51a63f06
 
@@ -268,12 +406,10 @@ kpt = sift.keypoints[1]
   ╠═╡ =#
 
 # ╔═╡ f6fda39e-c72d-41e7-b4c4-f68a8cc51e41
-#=╠═╡
 let 
 	@unpack row = kpt
 	print(row)
 end
-  ╠═╡ =#
 
 # ╔═╡ dd6091da-7801-4fb7-878b-935101ebfa98
 function show_pyramid(pyr)
@@ -296,7 +432,9 @@ end
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 Accessors = "7d9f7c33-5ae7-4f3b-8dc6-eff91059b697"
+BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
 Chain = "8be319e6-bccf-4806-a6f7-6fae938471bc"
+DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
 FileIO = "5789e2e9-d7fb-5bc7-8068-2c6fae9b9549"
 ImageCore = "a09fc81d-aa75-5fe9-8630-4744c3626534"
 ImageDraw = "4381153b-2b60-58ae-a1ba-fd683676385f"
@@ -310,13 +448,16 @@ Memoize = "c03570c3-d221-55d1-a50c-7939bbd78826"
 OffsetArrays = "6fe1bfb0-de20-5000-8ca7-80f57d26f881"
 Parameters = "d96e819e-fc66-5662-9728-84c9c7592b0a"
 PlutoLinks = "0ff47ea0-7a50-410d-8455-4348d5de0420"
+Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 Setfield = "efcf1570-3423-57d1-acb7-fd33fddbac46"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 UnPack = "3a884ed6-31ef-47d7-9d2a-63182c4928ed"
 
 [compat]
 Accessors = "~0.1.22"
+BenchmarkTools = "~1.3.2"
 Chain = "~0.5.0"
+DataStructures = "~0.18.13"
 FileIO = "~1.16.0"
 ImageCore = "~0.9.4"
 ImageDraw = "~0.2.5"
@@ -340,7 +481,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.8.2"
 manifest_format = "2.0"
-project_hash = "43e734fde65b9b45ebd1d51eaa72b7c7aa44404d"
+project_hash = "437f7c867f849432ceb0a190d4bd77604fbf1fa1"
 
 [[deps.AbstractFFTs]]
 deps = ["ChainRulesCore", "LinearAlgebra"]
@@ -387,6 +528,12 @@ version = "1.0.1"
 
 [[deps.Base64]]
 uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
+
+[[deps.BenchmarkTools]]
+deps = ["JSON", "Logging", "Printf", "Profile", "Statistics", "UUIDs"]
+git-tree-sha1 = "d9a9701b899b30332bbcb3e1679c41cce81fb0e8"
+uuid = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
+version = "1.3.2"
 
 [[deps.CEnum]]
 git-tree-sha1 = "eb4cb44a499229b3b8426dcfb5dd85333951ff90"
@@ -648,6 +795,12 @@ git-tree-sha1 = "abc9885a7ca2052a736a600f7fa66209f96506e1"
 uuid = "692b3bcd-3c85-4b1f-b108-f13ce0eb3210"
 version = "1.4.1"
 
+[[deps.JSON]]
+deps = ["Dates", "Mmap", "Parsers", "Unicode"]
+git-tree-sha1 = "3c837543ddb02250ef42f4738347454f95079d4e"
+uuid = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
+version = "0.21.3"
+
 [[deps.JpegTurbo]]
 deps = ["CEnum", "FileIO", "ImageCore", "JpegTurbo_jll", "TOML"]
 git-tree-sha1 = "a77b273f1ddec645d1b7c4fd5fb98c8f90ad10a5"
@@ -839,6 +992,12 @@ git-tree-sha1 = "34c0e9ad262e5f7fc75b10a9952ca7692cfc5fbe"
 uuid = "d96e819e-fc66-5662-9728-84c9c7592b0a"
 version = "0.12.3"
 
+[[deps.Parsers]]
+deps = ["Dates"]
+git-tree-sha1 = "6c01a9b494f6d2a9fc180a08b182fcb06f0958a0"
+uuid = "69de0a69-1ddd-5017-9359-2bf0b02dc9f0"
+version = "2.4.2"
+
 [[deps.Pkg]]
 deps = ["Artifacts", "Dates", "Downloads", "LibGit2", "Libdl", "Logging", "Markdown", "Printf", "REPL", "Random", "SHA", "Serialization", "TOML", "Tar", "UUIDs", "p7zip_jll"]
 uuid = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
@@ -871,6 +1030,10 @@ version = "1.3.0"
 [[deps.Printf]]
 deps = ["Unicode"]
 uuid = "de0858da-6303-5e67-8744-51eddeeeb8d7"
+
+[[deps.Profile]]
+deps = ["Printf"]
+uuid = "9abbd945-dff8-562f-b5e8-e1ebf5ef1b79"
 
 [[deps.ProgressMeter]]
 deps = ["Distributed", "Printf"]
@@ -1098,7 +1261,36 @@ version = "17.4.0+0"
 # ╠═29200873-e263-45b2-8ada-0dacd79d34f5
 # ╠═5d125872-ec3e-4788-9020-9df08cc4bbc7
 # ╠═906037fa-3603-4b4b-8e57-fecf33bfc210
+# ╠═67bff29b-0796-401e-8d40-73624b5fb51a
+# ╠═8132a218-28b9-4eaa-abc4-5849a811a2ff
+# ╠═a4c577ab-2963-4024-8081-e45b41d39a49
 # ╠═be1186af-891d-4a0c-a0c9-379234d1f0b4
+# ╠═a834c6ea-06f6-4514-81cd-cc7b0fa2146b
+# ╠═c3a6814f-33ee-4c7b-9e66-8390cd07032e
+# ╠═af3787c9-cc02-4999-9b94-763967383bcc
+# ╠═cbfdbb4c-f3e0-450b-b0ea-1eec1526a6c3
+# ╠═f2983f37-ab88-4a4b-8329-6a3a9a6cd265
+# ╠═4ccfa22f-6776-456f-94cd-98184e44c04f
+# ╠═4361e5e0-7f12-4fa5-8aed-ebf8c306d67d
+# ╠═d4d261c8-1522-4ce6-bea1-2b848cc4e42f
+# ╠═340ee4e6-714a-47e2-8f63-06d2791d1ff1
+# ╠═a0a5cc94-2bfc-47f9-9f64-40bcda4b56b3
+# ╠═cfb684bd-9c32-4126-8266-f0f540ef232c
+# ╠═9537618d-7379-44f4-9299-ebaa668de4e9
+# ╠═52d7a918-a6eb-44e4-896b-489d5e19981d
+# ╠═079156fc-513c-4cd5-ba15-d53abe5d7751
+# ╠═54805733-420d-4489-81bf-8d405c8fbaa3
+# ╠═f30ca828-4822-4d1a-9f7d-b3632d3b1c56
+# ╠═cba302d6-e01f-420d-aa36-a5e6cd16c295
+# ╠═966737b2-c718-486d-b10e-27e7230c6b2b
+# ╠═b9c3c7b1-ca62-49cf-bdb9-0c90931aa112
+# ╠═c5a9ccb5-8eaa-450c-b143-83cd684ab790
+# ╠═4d1eb2d4-b1a4-4dc8-80af-3d67a3249c53
+# ╠═0cf896fe-c543-40a3-8ad6-6f4cc63763d2
+# ╠═306e0a0c-7c21-4d94-bd2d-32d8fdaabcce
+# ╠═c016a338-8a52-4d2c-9f06-9dc4df8ef098
+# ╠═09b5e2eb-b4c8-44b4-9492-f07b2d1f8956
+# ╠═edb6e742-cdd3-4d9e-bd38-a979f19589f8
 # ╠═59b4878b-e334-478c-9dba-bcd4fc3816ff
 # ╠═18111ae3-71f3-48e5-a79c-43ebb11714c5
 # ╠═323dc098-9199-4681-9f8d-9dda0d75973a

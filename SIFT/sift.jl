@@ -176,10 +176,11 @@ function localize_keypoint(dpyr, gradient, hessian, σ, octave, layer, row, col)
             contrast=abs(contrast),
             low_contrast=low_contrast,
             on_edge=on_edge,
-            layer=layer,
             angle=nothing,
-            row=trunc(Int, row * 2.0^(octave - 2)),
-            col=trunc(Int, col * 2.0^(octave - 2))) # row = row, col=col
+            octave=octave,
+            layer=layer,
+            row=trunc(Int, row),#  * 2.0^(octave - 2)
+            col=trunc(Int, col))#  * 2.0^(octave - 2) # row = row, col=col
 end
 
 function find_scale_extremas(dpyr, σ)
@@ -196,6 +197,46 @@ function find_scale_extremas(dpyr, σ)
             return localize_keypoint(dpyr, dog_grad, dog_hess, σ, octave, layer, row, col)
         end
     end
+end
+
+function compute_keypoints_with_orientation(grad, kpt, octave, layer, row, col, nbins=36)
+    histogram = @MVector zeros(nbins)
+    rad = trunc(Int, kpt.size) * 3
+
+    surround_idx = ((kpt.row + i, kpt.col + j)
+                    for i in (-rad):rad, j in (-rad):rad
+                    if i^2 + j^2 <= rad^2)
+    for (row, col) in surround_idx
+        m = magnitude_at(grad[octave, layer], row, col)
+        rad = angle_at(grad[octave, layer], row, col)
+        deg = rad2deg(rad)
+        bin = (360 + trunc(Int, deg)) % nbins + 1
+        histogram[bin] += m
+    end
+    histogram /= sum(histogram)
+    @info histogram
+
+    return SVector(kpt)
+end
+
+function compute_keypoints_with_orientation(gpyr, keypoints)
+    num_octaves = length(gpyr)
+    num_samples = size(gpyr[1])[1]
+    grad = SMatrix{num_octaves,num_samples}(Gradient(gpyr[octave][layer, :, :])
+                                            for octave in 1:num_octaves,
+                                                layer in 1:num_samples)
+    kpt = first(keypoints)
+    compute_keypoints_with_orientation(grad,
+                                       kpt,
+                                       kpt.octave, kpt.layer,
+                                       kpt.row, kpt.col)
+    #= keypoints2 = mapreduce(union, keypoints) do kpt =#
+    #=     return compute_keypoints_with_orientation(grad, =#
+    #=                                               kpt, =#
+    #=                                               kpt.octave, kpt.layer, =#
+    #=                                               kpt.row, kpt.col) =#
+    #= end =#
+    return keypoints
 end
 
 function sift(image, σ::F=1.6, num_layers=3, assume_blur=0.5) where {F}
@@ -215,8 +256,8 @@ function sift(image, σ::F=1.6, num_layers=3, assume_blur=0.5) where {F}
         return kpt.converge && !kpt.outside && !kpt.low_contrast && !kpt.on_edge
     end
     @info "filtered keypoints $(length(filtered_keypoints)), $(eltype(filtered_keypoints))"
-    #= keypoints = find_keypoints_with_orientation(gpyr, base_keypoints) =#
-    #= @info "keypoints with orientation: $(length(keypoints))" =#
+    keypoints = compute_keypoints_with_orientation(gpyr, filtered_keypoints)
+    @info "keypoints with orientation: $(length(keypoints))"
     #= keypoints_ = compute_keypoints_descriptor(gpyr, keypoints) =#
     return filtered_keypoints
 end
@@ -270,8 +311,7 @@ function multiply_factor(s::SIFT)
     return 2^(1 / s.num_layers)
 end
 
-function localize_keypoint(s, octave, row, col, layer)
-end
+function localize_keypoint(s, octave, row, col, layer) end
 
 function compute_keypoints(s::SIFT)
     mapreduce(union, enumerate(s.dpyr)) do (octave, dog)

@@ -5,8 +5,8 @@ using OffsetArrays
 struct Gradient{T,N}
     x::Array{T,N}
     cache::IdDict{CartesianIndex{N},SVector{N,T}}
-    magnitude::IdDict{CartesianIndex{N},SVector{N,T}}
-    angle::IdDict{CartesianIndex{N},SVector{N,T}}
+    magnitude::IdDict{CartesianIndex{N},T}
+    angle::IdDict{CartesianIndex{N},T}
     Gradient(image::Array{T,N}) where {T,N} = new{T,N}(image, Dict(), Dict(), Dict())
 end
 

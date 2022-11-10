@@ -3,6 +3,8 @@ using Memoize
 using Base: IdDict
 using Parameters
 using UnPack
+using StaticArrays
+using Chain: @chain
 
 macro lazy_context(dispatch_e, T)
     dispatch = eval(dispatch_e)
@@ -19,7 +21,8 @@ end
 
 include(joinpath(@__DIR__, "struct.jl"))
 include(joinpath(@__DIR__, "gaussian.jl"))
-include(joinpath(@__DIR__, "visualize.jl"))
+include(joinpath(@__DIR__, "gradient.jl"))
+include(joinpath(@__DIR__, "hessian.jl"))
 
 function multiply_factor(s)
     return 2.0f0^(1 / s.num_layers)
@@ -56,6 +59,9 @@ end
 
 function multiply_factor(s::SIFT)
     return 2^(1 / s.num_layers)
+end
+
+function localize_keypoint(s, octave, row, col, layer)
 end
 
 function compute_keypoints(s::SIFT)

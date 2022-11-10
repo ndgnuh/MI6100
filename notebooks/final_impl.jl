@@ -22,9 +22,6 @@ using ImageCore
 # ╔═╡ 802e9ef8-b3b3-42e3-b313-363a5d236865
 using ImageShow
 
-# ╔═╡ b588a012-2a8c-43da-83ed-e5f3f3965408
-using StaticArrays
-
 # ╔═╡ 3c874c50-1128-44d3-95b5-b3ed460efd58
 using OffsetArrays
 
@@ -34,9 +31,14 @@ Draw = let
 	@ingredients("../SIFT/draw.jl").Draw
 end
 
+# ╔═╡ 5c16d793-4e0a-43dc-987d-2bb8ffefcd5b
+using Chain
+
 # ╔═╡ 29200873-e263-45b2-8ada-0dacd79d34f5
 S = let
 	using ImageFiltering
+
+	using StaticArrays
 	using Parameters
 	using Setfield
 	using UnPack
@@ -48,17 +50,152 @@ S = let
 	@ingredients("../SIFT/sift.jl")
 end
 
-# ╔═╡ 20ce2d1b-2c26-4de6-8838-c6780c52342a
-using Chain
+# ╔═╡ 260ab7c7-8743-4040-8d4b-6860f1240dbc
+using LinearAlgebra
+
+# ╔═╡ b588a012-2a8c-43da-83ed-e5f3f3965408
+# ╠═╡ disabled = true
+#=╠═╡
+using StaticArrays
+  ╠═╡ =#
 
 # ╔═╡ b51a3b28-1b94-45ec-9038-3ece5a48a33d
 @ingredients("../SIFT/sift.jl")
+
+# ╔═╡ 323dc098-9199-4681-9f8d-9dda0d75973a
+g = S.Hessian(rand(3, 3))
 
 # ╔═╡ 00d7843e-ef48-45c3-b6f4-27ff1c713d1d
 sift = let sift = S.SIFT()
 	image = reinterpret(N0f8, load("../samples/geek.png"))
 	sift = S.fit(sift, image)
+	sift.keypoints
+	sift
 end
+
+# ╔═╡ 4401cbf1-91fe-4bcf-8f79-7da4986f8bc3
+sift.base_image
+
+# ╔═╡ b277219f-db5d-42a8-830a-8f9d46448a26
+hessian = Dict(
+	octave => S.Hessian(sift.dpyr[octave])
+	for octave in 1:9
+);
+
+# ╔═╡ 3b368e6b-1d11-491b-a1d5-15542ead67d8
+gradient = Dict(
+	octave => S.Gradient(sift.dpyr[octave])
+	for octave in 1:9
+);
+
+# ╔═╡ 334d5d38-d5bb-4bd6-a841-8ca92c9133b6
+function localize_keypoint(s, gradient, hessian, octave, layer, row, col)
+	dog = s.dpyr[octave]
+	grad = gradient[octave]
+	hess = hessian[octave]
+	mlayer::Int, mrow::Int, mcol::Int = size(grad.x)
+
+	# Candidate property
+	low_contrast::Bool = true
+	on_edge::Bool = true
+	outside::Bool = false
+
+	
+	# Localize via quadratic fit
+	x = @MVector Float32[layer, row, col]
+	x̂ = @MVector zeros(Float32, 3)
+	converge = false
+	for i = 1:10
+		layer, row, col = trunc.(Int, x)
+
+		# Check if the coordinate is inside the image
+		if (layer < 2 || layer > mlayer - 1
+			|| row < 2 || row > mrow - 1
+			|| col < 2 || col > mcol - 1)
+			outside = true
+			break
+		end
+
+		# Solve for x̂
+		g = grad(layer, row, col) 
+		h = hess(layer, row, col)
+		if det(h) == 0
+			break
+		end
+		x̂ .= -inv(h) * g
+
+		# Check if the changes is small
+		if any(@. abs(x̂) <= 0.5)
+			converge = true
+			break
+		end
+
+		# Update coordinate
+		x .= x + x̂
+	end
+
+	# True coordinate (maybe)
+	layer, row, col = trunc.(Int, x)
+
+	# More check if localized
+	if converge
+		# Calculate contrast
+		g = grad(layer, row, col) 
+		contrast =  dog[layer, row, col] + sum(g .* x̂) / 2
+		low_contrast = abs(contrast) * mlayer < 0.04
+		
+		# Calcuate edge response
+		h::Matrix{Float32} = @view hess(layer, row, col)[2:3, 2:3]
+		dh::Float32 = det(h)
+		th::Float32 = tr(h)
+		r = 10
+		on_edge = th^2 * r >= dh * (r + 1)^2
+	end
+
+	# Calculate angle if
+	# keypoint is high contrast and
+	# keypoint is not on any edge
+	
+	(
+	outside=outside,
+	converge=converge, 
+	low_contrast=low_contrast,
+	on_edge=on_edge,
+	layer=layer, row=row, col=col)
+end
+
+# ╔═╡ 02f3a314-1ac7-4bcd-9f0c-a7c7dddc2155
+sift.keypoints[2]
+
+# ╔═╡ c4c99a3a-c6c6-4cde-b681-66d25a861625
+let
+	kpt = sift.keypoints[400]
+	octave = kpt.octave
+	layer = kpt.layer
+	row = kpt.row
+	col = kpt.col
+	localize_keypoint(sift, gradient, hessian, octave, layer, row, col)
+end
+
+# ╔═╡ 0bf8b317-e22f-4d25-9d6c-759bb662c67c
+@chain begin
+	map(sift.keypoints) do kpt
+		octave = kpt.octave
+		layer = kpt.layer
+		row = kpt.row
+		col = kpt.col
+		localize_keypoint(sift, gradient, hessian, octave, layer, row, col)
+	end
+	filter(_) do kpt
+		kpt.converge && !kpt.outside && !kpt.low_contrast && !kpt.on_edge
+	end
+end
+
+# ╔═╡ 2926d7da-248f-491b-93d3-5d0e457ed323
+StackedView
+
+# ╔═╡ 8954eab8-c7e1-47df-98d6-bd1d09b47cb3
+
 
 # ╔═╡ 720e2ce6-2b5c-48dd-97f3-282672528990
 # let image = RGB.(load("../samples/geek.png"))
@@ -70,6 +207,12 @@ end
 
 # ╔═╡ 5b9c9ba3-3bc1-43c8-a1b8-038f775ba360
 findlocalmaxima(rand(9, 9, 10), window=(3, 3, 3))
+
+# ╔═╡ 20ce2d1b-2c26-4de6-8838-c6780c52342a
+# ╠═╡ disabled = true
+#=╠═╡
+using Chain
+  ╠═╡ =#
 
 # ╔═╡ 7d5eecc1-a144-49f7-b378-498bbcedd166
 kpt = sift.keypoints[1]
@@ -110,6 +253,7 @@ ImageIO = "82e4d734-157c-48bb-816b-45c225c6df19"
 ImageShow = "4e3cecfd-b093-5904-9786-8bbb286a6a31"
 ImageTransformations = "02fcd773-0e25-5acc-982a-7f6622650795"
 LRUCache = "8ac3fa9e-de4c-5943-b1dc-09c6b5f20637"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Memoize = "c03570c3-d221-55d1-a50c-7939bbd78826"
 OffsetArrays = "6fe1bfb0-de20-5000-8ca7-80f57d26f881"
 Parameters = "d96e819e-fc66-5662-9728-84c9c7592b0a"
@@ -144,7 +288,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.8.2"
 manifest_format = "2.0"
-project_hash = "f240de025ceeb367edc7033cf6e0ab80cb461b0f"
+project_hash = "43e734fde65b9b45ebd1d51eaa72b7c7aa44404d"
 
 [[deps.AbstractFFTs]]
 deps = ["ChainRulesCore", "LinearAlgebra"]
@@ -898,8 +1042,20 @@ version = "17.4.0+0"
 # ╠═3c874c50-1128-44d3-95b5-b3ed460efd58
 # ╠═ebc25a46-b08e-4793-b66b-e9d40b8da443
 # ╠═b51a3b28-1b94-45ec-9038-3ece5a48a33d
+# ╠═5c16d793-4e0a-43dc-987d-2bb8ffefcd5b
 # ╠═29200873-e263-45b2-8ada-0dacd79d34f5
+# ╠═323dc098-9199-4681-9f8d-9dda0d75973a
 # ╠═00d7843e-ef48-45c3-b6f4-27ff1c713d1d
+# ╠═4401cbf1-91fe-4bcf-8f79-7da4986f8bc3
+# ╠═b277219f-db5d-42a8-830a-8f9d46448a26
+# ╠═3b368e6b-1d11-491b-a1d5-15542ead67d8
+# ╠═260ab7c7-8743-4040-8d4b-6860f1240dbc
+# ╠═334d5d38-d5bb-4bd6-a841-8ca92c9133b6
+# ╠═02f3a314-1ac7-4bcd-9f0c-a7c7dddc2155
+# ╠═c4c99a3a-c6c6-4cde-b681-66d25a861625
+# ╠═0bf8b317-e22f-4d25-9d6c-759bb662c67c
+# ╠═2926d7da-248f-491b-93d3-5d0e457ed323
+# ╠═8954eab8-c7e1-47df-98d6-bd1d09b47cb3
 # ╠═720e2ce6-2b5c-48dd-97f3-282672528990
 # ╠═1f6b109f-9b8b-4e30-8dc4-4786a62e8007
 # ╠═5b9c9ba3-3bc1-43c8-a1b8-038f775ba360

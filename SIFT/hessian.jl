@@ -1,15 +1,15 @@
 using ImageFiltering
 using OffsetArrays
 
-struct Hessian{T, N}
-    x::Array{T, N}
-    cache::IdDict{CartesianIndex{N}, SVector{N, T}}
-    Hessian(image::Array{T, N}) where {T, N} = new{T, N}(image, Dict())
+struct Hessian{T,N}
+    x::Array{T,N}
+    cache::IdDict{CartesianIndex{N},SMatrix{N,N,T}}
+    Hessian(image::Array{T,N}) where {T,N} = new{T,N}(image, Dict())
 end
 
-function (h::Hessian)(idx::CartesianIndex{2})
-    w = centered(h.x, idx)
-    c = 2 * w[0, 0, 0]
+function hessian_at(x, idx::CartesianIndex{2})
+    w = centered(x, idx)
+    c = 2 * w[0, 0]
 
     # 1 dims
     dxx = w[1, 0] - c + w[-1, 0]
@@ -21,8 +21,8 @@ function (h::Hessian)(idx::CartesianIndex{2})
                      dxy dyy]
 end
 
-function (h::Hessian)(idx::CartesianIndex{3})
-    w = centered(h.x, idx)
+function hessian_at(x, idx::CartesianIndex{3})
+    w = centered(x, idx)
     c = 2 * w[0, 0, 0]
 
     # 1 dims
@@ -39,9 +39,10 @@ function (h::Hessian)(idx::CartesianIndex{3})
                      dxz dyz dzz]
 end
 
-
-function Base.get!(h::Hessian, idx::CartesianIndex)
-    Base.get!(() -> g(idx), g.cache, idx)
+function (h::Hessian)(idx::CartesianIndex)
+    return Base.get!(() -> hessian_at(h.x, idx), h.cache, idx)
 end
-function compute_hessians_at_center_3d(w, idx)
+
+function (h::Hessian)(idx::Integer...)
+    return h(CartesianIndex(idx))
 end

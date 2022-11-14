@@ -25,6 +25,9 @@
 \usepackage{nicefrac}
 \end_preamble
 \use_default_options true
+\begin_modules
+todonotes
+\end_modules
 \maintain_unincluded_children false
 \language vietnamese
 \language_package default
@@ -141,10 +144,36 @@
 \end_inset
 
 
+\begin_inset FormulaMacro
+\newcommand{\row}{r}
+\end_inset
+
+
+\begin_inset FormulaMacro
+\newcommand{\col}{c}
+\end_inset
+
+
 \end_layout
 
 \begin_layout Title
 Đối sánh ảnh sử dụng phương pháp của David Lowe
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+listoftodos
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Chapter
@@ -308,6 +337,19 @@ Trong đa số trường hợp, những điểm ảnh được xếp trên một
 Lượng hoá giá trị pixel?
 \end_layout
 
+\begin_layout Standard
+\begin_inset Flex TODO Note (inline)
+status open
+
+\begin_layout Plain Layout
+Lượng hoá Pixel
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Subsection
 Biểu diễn dạng sóng
 \end_layout
@@ -348,12 +390,335 @@ trong đó
 .
 \end_layout
 
+\begin_layout Standard
+\begin_inset Flex TODO Note (inline)
+status open
+
+\begin_layout Plain Layout
+Biểu diễn trong ảnh trong miền khác
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Đạo hàm của ảnh
+\end_layout
+
+\begin_layout Standard
+Khi sử dụng SIFT, cần tính gradient và hessian của ảnh.
+ Khi tìm cực trị của không gian bậc, đó là ảnh ba chiều (layer, hàng, cột).
+ Khi tìm hướng chủ đạo, đó là ảnh hai chiều (hàng, cột).
+ Tuy nhiên, cách tính trong cả hai trường hợp này đều tương tự nhau.
+ Việc tính gradient, hessian sẽ sử dụng công thức tính sai phân 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:diff-grad"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ và 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:diff-hess"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ Để đơn giản hoá, những chỉ số không liên quan sẽ được lược bớt.
+\begin_inset Formula 
+\begin{align}
+\frac{\partial f}{\partial x}\left(x_{0}\right)=f_{x}\left(x_{0}\right) & =\frac{f\left(x_{0}+h\right)-f\left(x_{0}-h\right)}{2h},\label{eq:diff-grad}\\
+\frac{\partial^{2}f}{\partial x\partial y}=f_{xy}\left(x_{0},y_{0}\right) & =\frac{1}{2h}\left[\frac{\partial f}{\partial x}\left(x_{0},y_{0}+h\right)-\frac{\partial f}{\partial x}\left(x_{0},y_{0}-h\right)\right]\nonumber\\
+ & =\frac{1}{4h^{2}}\left[f\left(x_{0}+h,y_{0}+h\right)-f\left(x_{0}-h,y_{0}+h\right)\right]\nonumber\\
+ & \phantom{={}}-\frac{1}{4h^{2}}\left[f\left(x_{0}+h,y_{0}-h\right)-f\left(x_{0}-h,y_{0}-h\right)\right],\label{eq:diff-hess}
+\end{align}
+
+\end_inset
+
+Để tính toán với ảnh, ta cần các toạ độ là nguyên, do đó lựa chọn 
+\begin_inset Formula $h$
+\end_inset
+
+ bé nhất có thể sao cho 
+\begin_inset Formula $x\pm h$
+\end_inset
+
+ nguyên.
+ Như vậy 
+\begin_inset Formula $h=1$
+\end_inset
+
+.
+ Công thức 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:diff-grad"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ và 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:diff-hess"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ trở thành
+\begin_inset Formula 
+\begin{align*}
+f_{x}\left(x_{0}\right) & =\frac{1}{2}\left[f\left(x_{0}+1\right)-f\left(x_{0}-1\right)\right],\\
+f_{xy}\left(x_{0},y_{0}\right) & =\frac{1}{4}[f\left(x_{0}+1,y_{0}+1\right)-f\left(x_{0}-1,y_{0}+1\right)\\
+ & \phantom{=\frac{1}{4}[}-f\left(x_{0}+1,y_{0}-1\right)+f\left(x_{0}-1,y_{0}-1\right)].
+\end{align*}
+
+\end_inset
+
+Xét 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:diff-hess"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+, riêng trường hợp 
+\begin_inset Formula $x=y$
+\end_inset
+
+:
+\begin_inset Formula 
+\[
+f_{xx}\left(x_{0}\right)=\frac{1}{4h^{2}}\left[f\left(x_{0}+2h\right)-2f\left(x_{0}\right)+f\left(x_{0}-2h\right)\right],
+\]
+
+\end_inset
+
+ở đây ta có thể chọn 
+\begin_inset Formula $h=0.5$
+\end_inset
+
+, khi đó công thức 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:diff-hess"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ cho trường hợp 
+\begin_inset Formula $x=y$
+\end_inset
+
+ là:
+\begin_inset Formula 
+\[
+f_{xx}\left(x_{0}\right)=f\left(x_{0}+1\right)-2f\left(x_{0}\right)+f\left(x_{0}-1\right).
+\]
+
+\end_inset
+
+
+\begin_inset Note Comment
+status collapsed
+
+\begin_layout Plain Layout
+Đạo hàm bậc 1 (gradient) của ảnh được tính theo công thức sai phân
+\begin_inset Formula 
+\begin{equation}
+\frac{\partial I}{\partial d}\left(\mathbf{x}\right)=\frac{I\left(\next\left(\mathbf{x},d\right)\right)-I\left(\prev\left(\mathbf{x},d\right)\right)}{2h}\label{eq:grad}
+\end{equation}
+
+\end_inset
+
+trong đó 
+\begin_inset Formula $\mathbf{x}$
+\end_inset
+
+ là tọa độ của điểm ảnh, 
+\begin_inset Formula $\next$
+\end_inset
+
+ và 
+\begin_inset Formula $\prev$
+\end_inset
+
+ là các hàm được định nghĩa bởi
+\begin_inset Formula 
+\begin{align*}
+\next\left(\mathbf{x},d\right) & =\left[x_{i}+h\cdot\mathbf{1}\left(d,i\right)\right],\\
+\prev\left(\mathbf{x},d\right) & =\left[x_{i}-h\cdot\mathbf{1}\left(d,i\right)\right],\\
+\mathbf{1}\left(d,i\right) & =\begin{cases}
+1 & d=i,\\
+0 & d\ne i.
+\end{cases}
+\end{align*}
+
+\end_inset
+
+và 
+\begin_inset Formula $h$
+\end_inset
+
+ được chọn sao cho 
+\begin_inset Formula $\next\left(\mathbf{x},d\right)$
+\end_inset
+
+ và 
+\series bold
+
+\begin_inset Formula $\prev\left(\mathbf{x},d\right)$
+\end_inset
+
+ 
+\series default
+nguyên.
+ Theo định nghĩa hessian, đạo hàm bậc hai được
+\begin_inset Formula 
+\begin{align}
+\frac{\partial^{2}I}{\partial d_{2}\partial d_{1}}\left(\mathbf{x}\right) & =\frac{1}{2h}\left[\frac{\partial I}{\partial d_{2}}\next\left(\mathbf{x},d_{1}\right)-\frac{\partial I}{\partial d_{2}}\left(\prev\left(\mathbf{x},d_{1}\right)\right)\right]\nonumber \\
+ & =\frac{1}{4h^{2}}\left[I\left(\next\left(\next\left(\mathbf{x},d_{1}\right),d_{2}\right)\right)-I\left(\prev\left(\next\left(\mathbf{x},d_{1}\right),d_{2}\right)\right)-I\left(\next\left(\prev\left(\mathbf{x},d_{1}\right),d_{2}\right)\right)+I\left(\prev\left(\prev\left(\mathbf{x},d_{1}\right),d_{2}\right)\right)\right].\label{eq:hess}
+\end{align}
+
+\end_inset
+
+Trong trường hợp 
+\begin_inset Formula $d_{1}=d_{2}$
+\end_inset
+
+, ta được công thức đơn giản hơn
+\begin_inset Formula 
+\[
+\frac{\partial^{2}I}{\partial d^{2}}=\frac{1}{4h^{2}}\left[I\left(\next^{2}\left(\mathbf{x},d\right)\right)-2I\left(\mathbf{x}\right)+\beta^{2}\left(\mathbf{x},d_{2}\right)\right],
+\]
+
+\end_inset
+
+đặt 
+\begin_inset Formula $h'=2h$
+\end_inset
+
+, ta có
+\begin_inset Formula 
+\[
+\frac{\partial^{2}I}{\partial d^{2}}=\frac{1}{\left(h'\right)^{2}}\left[I\left(\next_{h^{'}}\left(\mathbf{x},d\right)\right)-2I\left(\mathbf{x}\right)+\beta_{h'}\left(\mathbf{x},d_{2}\right)\right].
+\]
+
+\end_inset
+
+Thay 
+\begin_inset Formula $h$
+\end_inset
+
+ và 
+\begin_inset Formula $h'$
+\end_inset
+
+ phù hợp, ta có công thức tính các gradients và hessians của ảnh theo chiều
+ 
+\begin_inset Formula $d$
+\end_inset
+
+:
+\begin_inset Formula 
+\begin{align}
+\frac{\partial I}{\partial d} & =\frac{1}{2}I\left(\next_{1}\left(\mathbf{x},d\right)\right)-\frac{1}{2}I\left(\prev_{1}\left(\mathbf{x},d\right)\right),\label{eq:grad-d}\\
+\frac{\partial^{2}I}{\partial d^{2}} & =I\left(\next_{1}\left(\mathbf{x},d\right)\right)-2I\left(\mathbf{x}\right)+\beta_{1}\left(\mathbf{x},d_{2}\right),\label{eq:hess-d}\\
+\frac{\partial I}{\partial d_{1}\partial d_{2}} & =\frac{1}{4}I\left(\next_{1}\left(\next_{1}\left(\mathbf{x},d_{1}\right),d_{2}\right)\right)+\frac{1}{4}I\left(\prev_{1}\left(\prev_{1}\left(\mathbf{x},d_{1}\right),d_{2}\right)\right)\nonumber \\
+ & -\frac{1}{4}I\left(\prev\left(\next\left(\mathbf{x},d_{1}\right),d_{2}\right)\right)-\frac{1}{4}I\left(\next\left(\prev\left(\mathbf{x},d_{1}\right),d_{2}\right)\right).\label{eq:hess-d1-d2}
+\end{align}
+
+\end_inset
+
+Như vậy, việc tính gradient và hessian của ảnh có thể được đưa về thao tác
+ nhân chập các chiều tương ứng của ảnh.
+ Nhân để tính gradient và hessian lần lượt là:
+\begin_inset Formula 
+\begin{align*}
+K_{G} & =\left[\begin{array}{ccc}
+-\frac{1}{2} & 0 & \frac{1}{2}\end{array}\right],\\
+K_{H} & =\left[\begin{array}{ccc}
+-\frac{1}{2} & 0 & \frac{1}{2}\\
+0 & 0 & 0\\
+\frac{1}{2} & 0 & -\frac{1}{2}
+\end{array}\right],\quad d_{1}\ne d_{2},\\
+K_{H} & =\left[\begin{array}{ccc}
+0 & 0 & 0\\
+1 & -2 & 1\\
+0 & 0 & 0
+\end{array}\right],\quad d_{1}=d_{2}.
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Flex TODO Note (inline)
+status open
+
+\begin_layout Plain Layout
+Viết thêm về đạo hàm ảnh, không có SIFT trong context
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Section
 Đặc trưng của ảnh
 \end_layout
 
+\begin_layout Standard
+\begin_inset Flex TODO Note (inline)
+status open
+
+\begin_layout Plain Layout
+Đặc trưng của ảnh
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Chapter
 Đối sánh ảnh
+\end_layout
+
+\begin_layout Standard
+\begin_inset Flex TODO Note (inline)
+status open
+
+\begin_layout Plain Layout
+Các phương pháp đối sánh ảnh, các vấn đề về locality và invariants...
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Section
@@ -467,27 +832,336 @@ Các sai phân của các mẫu này được dùng để xấp xỉ gradient c�
 Sau khi thu được các mẫu, với mỗi điểm ảnh, SIFT tiến hành so sánh nó với
  các lân cận.
  Nếu điểm được xét là điểm dừng (lớn hơn hoặc nhỏ hơn tất cả các lân cận),
- nó được xếp vào tập các điểm nhấn.
+ nó được xếp vào tập các keypoint.
 \end_layout
 
 \begin_layout Itemize
-Sau khi thu được tập các điểm nhấn, bước tiếp theo là xác định vị trí và
- cấp độ của các điểm nhấn trên ảnh gốc.
+Sau khi thu được tập các keypoint, bước tiếp theo là xác định vị trí và
+ cấp độ của các keypoint trên ảnh gốc.
  Trong quá trình đó, ta cũng tính được những thông số quan trọng như độ
- tương phản của điểm nhấn, những điểm nhấn có độ tương phản thấp sẽ được
- lọc bỏ.
+ tương phản của keypoint, những keypoint có độ tương phản thấp sẽ được lọc
+ bỏ.
  
 \end_layout
 
 \begin_layout Itemize
-Với những điểm nhấn còn lại, ta xác định hai số đo là góc chủ đạo và độ
- lớn của điểm nhấn.
+Với những keypoint còn lại, ta xác định hai số đo là góc chủ đạo và độ lớn
+ của keypoint.
  
 \end_layout
 
 \begin_layout Itemize
 Sau tất cả những bước trên, ta tiến hành tính toán biểu diễn số cho những
- điểm nhấn.
+ keypoint.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float algorithm
+placement H
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{algorithmic}[1]
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Require
+\end_layout
+
+\end_inset
+
+ ảnh đầu vào 
+\begin_inset Formula $I$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Ensure
+\end_layout
+
+\end_inset
+
+ tập keypoint 
+\begin_inset Formula $K$
+\end_inset
+
+ và véc tơ số tương ứng cho tập các keypoint
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Function{SIFT}{
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula $I$
+\end_inset
+
+, 
+\begin_inset Formula $\sigma_{0}=1.6$
+\end_inset
+
+, 
+\begin_inset Formula $s=3$
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+State
+\end_layout
+
+\end_inset
+
+ Xử lý ảnh đầu vào 
+\begin_inset Formula $I$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+State
+\end_layout
+
+\end_inset
+
+ Tính không gian bậc của 
+\begin_inset Formula $I_{0}$
+\end_inset
+
+ với 
+\begin_inset Formula $\sigma_{0}$
+\end_inset
+
+ và 
+\begin_inset Formula $s$
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+State
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset Formula $K_{c}\gets$
+\end_inset
+
+ Tập các điểm cực trị không gian bậc
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+State
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset Formula $K\gets\left\{ K_{\octave,\layer,r,c}\in K_{c}\colon K_{\octave,\layer,r,c}\text{ địa phương hoá}\right\} $
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+State
+\end_layout
+
+\end_inset
+
+ Tính góc chủ đạo của mỗi 
+\begin_inset Formula $K_{\octave,\layer,\row,\col}$
+\end_inset
+
+ trong 
+\begin_inset Formula $K$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+State
+\end_layout
+
+\end_inset
+
+ Tính biểu diễn số của mỗi 
+\begin_inset Formula $K_{\octave,\layer,\row,\col}$
+\end_inset
+
+ trong 
+\begin_inset Formula $K$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+State 
+\backslash
+Return
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset Formula $K$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+EndFunction
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{algorithmic}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Tổng quan quy trình SIFT
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Subsection
@@ -679,18 +1353,18 @@ D_{k,i}=L_{k,i+1}-L_{k,i},\quad k=\overline{1,n},i=\overline{1,s+2}.
 
 \end_inset
 
-Sau đó ta coi mỗi bậc như một ảnh ba chiều, ta so sánh mỗi voxel với các
- điểm thuộc khối pixel lân cận nó (26 điểm tất cả).
- Nếu điểm nằm ở tâm là cực trị, ta đánh dấu nó là điểm nhấn tiềm năng.
+Sau đó ta coi mỗi bậc như một ảnh ba chiều, ta so sánh mỗi điểm ảnh với
+ các điểm thuộc khối pixel lân cận nó (26 điểm tất cả).
+ Nếu điểm nằm ở tâm là cực trị, ta đánh dấu nó là keypoint tiềm năng.
 \end_layout
 
 \begin_layout Paragraph
-Địa phương hóa điểm nhấn
+Địa phương hóa keypoint
 \end_layout
 
 \begin_layout Standard
-Xét một điểm nhấn bất kỳ với các tọa độ: hàng, cột, bậc và tọa độ mẫu.
- Ta cần xác định xem điểm nhấn đó có vị trí chính xác ở đâu trên ảnh, cụ
+Xét một keypoint bất kỳ với các tọa độ: hàng, cột, bậc và tọa độ mẫu.
+ Ta cần xác định xem keypoint đó có vị trí chính xác ở đâu trên ảnh, cụ
  thể hơn là với ba tọa độ hàng cột và mẫu.
  Việc địa phương hóa được thực hiện qua thủ tục lặp trong 
 \begin_inset CommandInset ref
@@ -971,9 +1645,9 @@ Lọc keypoint tương phản kém
 \end_layout
 
 \begin_layout Standard
-Sau khi địa phương hóa điểm nhấn, ta loại bỏ các điểm ảnh với độ tương phản
- thấp và các điểm nhấn nằm trên cạnh (do các điểm nhấn nằm trên cạnh sẽ
- bị ảnh hưởng bởi góc quay của ảnh).
+Sau khi địa phương hóa keypoint, ta loại bỏ các điểm ảnh với độ tương phản
+ thấp và các keypoint nằm trên cạnh (do các keypoint nằm trên cạnh sẽ bị
+ ảnh hưởng bởi góc quay của ảnh).
  Việc loại bỏ được tính sử dụng 
 \begin_inset CommandInset ref
 LatexCommand formatted
@@ -986,6 +1660,7 @@ noprefix "false"
 
 .
 \begin_inset Float algorithm
+placement H
 wide false
 sideways false
 status open
@@ -1231,142 +1906,6 @@ name "alg:keypoint-filter"
 \end_layout
 
 \begin_layout Paragraph
-Đạo hàm của ảnh
-\end_layout
-
-\begin_layout Standard
-Đạo hàm bậc 1 (gradient) của ảnh được tính theo công thức sai phân
-\begin_inset Formula 
-\begin{equation}
-\frac{\partial I}{\partial d}\left(\mathbf{x}\right)=\frac{I\left(\next\left(\mathbf{x},d\right)\right)-I\left(\prev\left(\mathbf{x},d\right)\right)}{2h}\label{eq:grad}
-\end{equation}
-
-\end_inset
-
-trong đó 
-\begin_inset Formula $\mathbf{x}$
-\end_inset
-
- là tọa độ của điểm ảnh, 
-\begin_inset Formula $\next$
-\end_inset
-
- và 
-\begin_inset Formula $\prev$
-\end_inset
-
- là các hàm được định nghĩa bởi
-\begin_inset Formula 
-\begin{align*}
-\next\left(\mathbf{x},d\right) & =\left[x_{i}+h\cdot\mathbf{1}\left(d,i\right)\right],\\
-\prev\left(\mathbf{x},d\right) & =\left[x_{i}-h\cdot\mathbf{1}\left(d,i\right)\right],\\
-\mathbf{1}\left(d,i\right) & =\begin{cases}
-1 & d=i,\\
-0 & d\ne i.
-\end{cases}
-\end{align*}
-
-\end_inset
-
-và 
-\begin_inset Formula $h$
-\end_inset
-
- được chọn sao cho 
-\begin_inset Formula $\next\left(\mathbf{x},d\right)$
-\end_inset
-
- và 
-\series bold
-
-\begin_inset Formula $\prev\left(\mathbf{x},d\right)$
-\end_inset
-
- 
-\series default
-nguyên.
- Theo định nghĩa hessian, đạo hàm bậc hai được
-\begin_inset Formula 
-\begin{align}
-\frac{\partial^{2}I}{\partial d_{2}\partial d_{1}}\left(\mathbf{x}\right) & =\frac{1}{2h}\left[\frac{\partial I}{\partial d_{2}}\next\left(\mathbf{x},d_{1}\right)-\frac{\partial I}{\partial d_{2}}\left(\prev\left(\mathbf{x},d_{1}\right)\right)\right]\nonumber \\
- & =\frac{1}{4h^{2}}\left[I\left(\next\left(\next\left(\mathbf{x},d_{1}\right),d_{2}\right)\right)-I\left(\prev\left(\next\left(\mathbf{x},d_{1}\right),d_{2}\right)\right)-I\left(\next\left(\prev\left(\mathbf{x},d_{1}\right),d_{2}\right)\right)+I\left(\prev\left(\prev\left(\mathbf{x},d_{1}\right),d_{2}\right)\right)\right].\label{eq:hess}
-\end{align}
-
-\end_inset
-
-Trong trường hợp 
-\begin_inset Formula $d_{1}=d_{2}$
-\end_inset
-
-, ta được công thức đơn giản hơn
-\begin_inset Formula 
-\[
-\frac{\partial^{2}I}{\partial d^{2}}=\frac{1}{4h^{2}}\left[I\left(\next^{2}\left(\mathbf{x},d\right)\right)-2I\left(\mathbf{x}\right)+\beta^{2}\left(\mathbf{x},d_{2}\right)\right],
-\]
-
-\end_inset
-
-đặt 
-\begin_inset Formula $h'=2h$
-\end_inset
-
-, ta có
-\begin_inset Formula 
-\[
-\frac{\partial^{2}I}{\partial d^{2}}=\frac{1}{\left(h'\right)^{2}}\left[I\left(\next_{h^{'}}\left(\mathbf{x},d\right)\right)-2I\left(\mathbf{x}\right)+\beta_{h'}\left(\mathbf{x},d_{2}\right)\right].
-\]
-
-\end_inset
-
-Thay 
-\begin_inset Formula $h$
-\end_inset
-
- và 
-\begin_inset Formula $h'$
-\end_inset
-
- phù hợp, ta có công thức tính các gradients và hessians của ảnh theo chiều
- 
-\begin_inset Formula $d$
-\end_inset
-
-:
-\begin_inset Formula 
-\begin{align}
-\frac{\partial I}{\partial d} & =\frac{1}{2}I\left(\next_{1}\left(\mathbf{x},d\right)\right)-\frac{1}{2}I\left(\prev_{1}\left(\mathbf{x},d\right)\right),\label{eq:grad-d}\\
-\frac{\partial^{2}I}{\partial d^{2}} & =I\left(\next_{1}\left(\mathbf{x},d\right)\right)-2I\left(\mathbf{x}\right)+\beta_{1}\left(\mathbf{x},d_{2}\right),\label{eq:hess-d}\\
-\frac{\partial I}{\partial d_{1}\partial d_{2}} & =\frac{1}{4}I\left(\next_{1}\left(\next_{1}\left(\mathbf{x},d_{1}\right),d_{2}\right)\right)+\frac{1}{4}I\left(\prev_{1}\left(\prev_{1}\left(\mathbf{x},d_{1}\right),d_{2}\right)\right)\nonumber \\
- & -\frac{1}{4}I\left(\prev\left(\next\left(\mathbf{x},d_{1}\right),d_{2}\right)\right)-\frac{1}{4}I\left(\next\left(\prev\left(\mathbf{x},d_{1}\right),d_{2}\right)\right).\label{eq:hess-d1-d2}
-\end{align}
-
-\end_inset
-
-Như vậy, việc tính gradient và hessian của ảnh có thể được đưa về thao tác
- nhân chập các chiều tương ứng của ảnh.
- Nhân để tính gradient và hessian lần lượt là:
-\begin_inset Formula 
-\begin{align*}
-K_{G} & =\left[\begin{array}{ccc}
--\frac{1}{2} & 0 & \frac{1}{2}\end{array}\right],\\
-K_{H} & =\left[\begin{array}{ccc}
--\frac{1}{2} & 0 & \frac{1}{2}\\
-0 & 0 & 0\\
-\frac{1}{2} & 0 & -\frac{1}{2}
-\end{array}\right],\quad d_{1}\ne d_{2},\\
-K_{H} & =\left[\begin{array}{ccc}
-0 & 0 & 0\\
-1 & -2 & 1\\
-0 & 0 & 0
-\end{array}\right],\quad d_{1}=d_{2}.
-\end{align*}
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Paragraph
 Tính toán góc chủ đạo cho keypoint
 \end_layout
 
@@ -1403,72 +1942,39 @@ d\left(\left(x,y\right),\left(x_{0},y_{0}\right)\right)\le m\left(x,y,\sigma\rig
 
 \end_inset
 
+Với mỗi keypoint, một histogram với số lượng bin là 
+\begin_inset Formula $36$
+\end_inset
 
-\begin_inset Float algorithm
-placement H
-wide false
-sideways false
+ sẽ được dùng để thống kê lại góc chủ đạo của các điểm quanh nó một bán
+ kính
+\begin_inset Formula 
+\[
+r=1.5\cdot\sigma_{0}\cdot m\left(x,y,\sigma\right).
+\]
+
+\end_inset
+
+Góc ứng với đỉnh histogram sẽ là góc chủ đạo của keypoint này.
+ Bất kỳ góc nào với thống kê nằm trong khoảng 
+\begin_inset Formula $80\%$
+\end_inset
+
+ của góc chủ đạo cũng sẽ được xét tới.
+ Nếu có góc như vậy, một keypoint khác giống hệt keypoint hiện tại nhưng
+ với góc đang xét sẽ được thêm vào tập keypoint.
+\end_layout
+
+\begin_layout Paragraph
+Tính toán biểu diễn của keypoint
+\end_layout
+
+\begin_layout Standard
+\begin_inset Flex TODO Note (inline)
 status open
 
 \begin_layout Plain Layout
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-begin{algorithmic}[1]
-\end_layout
-
-\begin_layout Plain Layout
-
-
-\backslash
-State $R 
-\backslash
-gets 
-\backslash
-mathrm{Vector
-\backslash
-{Int
-\backslash
-}}[36]$
-\end_layout
-
-\begin_layout Plain Layout
-
-\end_layout
-
-\begin_layout Plain Layout
-
-
-\backslash
-end{algorithmic}
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Plain Layout
-\begin_inset Caption Standard
-
-\begin_layout Plain Layout
-Tính góc chủ đạo cho keypoint
-\begin_inset CommandInset label
-LatexCommand label
-name "alg:orientation-assignment"
-
-\end_inset
-
-
-\end_layout
-
-\end_inset
-
-
+Biểu diễn số keypoint (descriptor)
 \end_layout
 
 \end_inset
@@ -1480,15 +1986,41 @@ name "alg:orientation-assignment"
 Thử nghiệm
 \end_layout
 
+\begin_layout Standard
+\begin_inset Flex TODO Note (inline)
+status open
+
+\begin_layout Plain Layout
+Thử nghiệm trên ảnh
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Section
 Kết quả và nhận xét
 \end_layout
 
-\begin_layout Section
+\begin_layout Standard
+\begin_inset Flex TODO Note (inline)
+status open
+
+\begin_layout Plain Layout
+Ưu nhược điểm, phương pháp mở rộng
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Chapter
 Kết luận
 \end_layout
 
-\begin_layout Section
+\begin_layout Chapter
 Tài liệu tham khảo
 \end_layout
 

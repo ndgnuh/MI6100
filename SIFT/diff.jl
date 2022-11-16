@@ -1,106 +1,60 @@
-using Setfield: @set
-using Base.Iterators: product
-using OffsetArrays
 using ImageFiltering
-using StaticArrays
 
-struct DiffCtx{T,N}
-    image::Array{T,N}
-    grad_cache::Dict{CartesianIndex{N},SVector{N,T}}
-    hess_cache::Dict{CartesianIndex{N},SMatrix{N,N,T}}
-
-    DiffCtx(image::Array{T,N}) where {T,N} = new{T,N}(image, Dict(), Dict())
+function shift(array::Array{T,3}, s::Int, y::Int, x::Int) where {T}
+    """ Takes a 3D tensor and shifts it in a specified direction.
+    Args:
+        array: The 3D array that is to be shifted.
+        shift_spec: The shift specification for each of
+            the 3 axes. E.g., [1, 0, 0] will make the
+            element (x,x,x) equal element (x+1, x+1, x+1) in
+            the original image, effectively shifting the
+            image "to the left", along the first axis.
+    Returns:
+        shifted: The shifted array.
+    """
+    padded = padarray(array, Pad(:replicate, 1, 1, 1))
+    shifted = padded[(begin + 1 + s):(end - 1 + s),
+                     (begin + 1 + y):(end - 1 + y),
+                     (begin + 1 + x):(end - 1 + x)]
+    return shifted
 end
 
-function compute_gradients_at_center_3d(w, idx)
-    w = centered(w, idx)
-    dx = (w[1, 0, 0] - w[-1, 0, 0]) / 2
-    dy = (w[0, 1, 0] - w[0, -1, 0]) / 2
-    dz = (w[0, 0, 1] - w[0, 0, -1]) / 2
-    return @SVector [dx, dy, dz]
+function shift(array::Array{T,2}, y::Int, x::Int) where {T}
+    padded = padarray(array, Pad(:replicate, 1, 1))
+    shifted = padded[(begin + 1 + y):(end - 1 + y),
+                     (begin + 1 + x):(end - 1 + x)]
+    return shifted
 end
 
-function compute_hessians_at_center_3d(w, idx)
-    w = centered(w, idx)
-    c = 2 * w[0, 0, 0]
-
-    # 1 dims
-    dxx = w[1, 0, 0] - c + w[-1, 0, 0]
-    dyy = w[0, 1, 0] - c + w[0, -1, 0]
-    dzz = w[0, 0, 1] - c + w[0, 0, -1]
-
-    # 2 dims
-    dxy = 0.25 * (w[1, 1, 0] + w[-1, -1, 0] - w[-1, 1, 0] - w[1, -1, 0])
-    dxz = 0.25 * (w[1, 0, 1] + w[-1, 0, -1] - w[-1, 0, 1] - w[1, 0, -1])
-    dyz = 0.25 * (w[0, 1, 1] + w[0, -1, -1] - w[0, -1, 1] - w[0, 1, -1])
-    return @SMatrix [dxx dxy dxz;
-                     dxy dyy dyz;
-                     dxz dyz dzz]
+function shift(array::Array{T,1}, x::Int) where {T}
+    padded = padarray(array, Pad(:replicate, 1, 1))
+    shifted = padded[(begin + 1 + x):(end - 1 + x)]
+    return shifted
 end
 
-function im_gradients(ctx::DiffCtx, idx::CartesianIndex)
-    if !haskey(ctx.grad_cache, idx)
-        ctx.grad_cache[idx] = compute_gradients_at_center_3d(ctx.image, idx)
-    end
-    return ctx.grad_cache[idx]
-end
+function derivatives(octave)
+    o = octave
 
-function im_hessians(ctx::DiffCtx, idx::CartesianIndex)
-    if !haskey(ctx.hess_cache, idx)
-        ctx.hess_cache[idx] = compute_hessians_at_center_3d(ctx.image, idx)
-    end
-    return ctx.hess_cache[idx]
-end
+    # Gradient
+    ds = (shift(o, 1, 0, 0) - shift(o, -1, 0, 0)) / 2
+    dr = (shift(o, 0, 1, 0) - shift(o, 0, -1, 0)) / 2
+    dc = (shift(o, 0, 0, 1) - shift(o, 1, 0, -1)) / 2
 
-function offset(idx, dim, by)
-    for (d, b) in zip(dim, by)
-        idx = @set idx[d] = idx[d] + b
-    end
-    return idx
-end
+    # Hessian
+    dss = (shift(o, 1, 0, 0) + shift(o, -1, 0, 0) - 2 * o)
+    drr = (shift(o, 0, 1, 0) + shift(o, 0, -1, 0) - 2 * o)
+    dcc = (shift(o, 0, 0, 1) + shift(o, 0, 0, -1) - 2 * o)
+    dsr = (shift(o, 1, 1, 0) - shift(o, 1, -1, 0) - shift(o, -1, 1, 0) +
+           shift(o, -1, -1, 0)) / 4
+    dsc = (shift(o, 1, 0, 1) - shift(o, 1, 0, -1) - shift(o, -1, 0, 1) +
+           shift(o, -1, 0, -1)) / 4
+    drc = (shift(o, 0, 1, 1) - shift(o, 0, 1, -1) - shift(o, 0, -1, 1) +
+           shift(o, 0, -1, -1)) / 4
 
-function compute_diff_kernel(coefs, n, dims)
-    kernel = zeros(fill(n, dims)...)
-    idx = CartesianIndex(fill(div(n, 2) + 1, dims)...)
-    for (dim, dt, c) in coefs
-        kernel[offset(idx, dim, dt)] += c
-    end
-    return kernel
-end
-
-function compute_hessian_kernels(dims)
-    coefs = map(product(1:dims, 1:dims)) do (d1, d2)
-        if d1 != d2
-            c1 = ([d1, d2], [1, 1], 1 / 4)
-            c2 = ([d1, d2], [1, -1], -1 / 4)
-            c3 = ([d1, d2], [-1, 1], -1 / 4)
-            c4 = ([d1, d2], [-1, -1], 1 / 4)
-            (c1, c2, c3, c4)
-        else
-            c1 = (d1, 1, 1)
-            c2 = (d1, 0, -2)
-            c3 = (d1, -1, 1)
-            (c1, c2, c3)
-        end
-    end
-    return compute_diff_kernel.(coefs, 3, dims)
-end
-
-function compute_gradient_kernels(dims)
-    coefs = map(1:dims) do d
-        c1 = (d, 1, 1 / 2)
-        c2 = (d, -1, -1 / 2)
-        return (c1, c2)
-    end
-    return compute_diff_kernel.(coefs, 3, dims)
-end
-
-function im_gradients(img)
-    kernels = compute_gradient_kernels(ndims(img))
-    @. imfilter((img,), kernels)
-end
-
-function im_hessians(img)
-    kernels = compute_hessian_kernels(ndims(img))
-    @. imfilter((img,), kernels)
+    grad = cat(ds, dr, dc; dims=4)
+    hess = cat(cat(dss, dsr, dsc; dims=4),
+               cat(dsr, drr, drc; dims=4),
+               cat(dsc, drc, dcc; dims=4);
+               dims=5)
+    return grad, hess
 end

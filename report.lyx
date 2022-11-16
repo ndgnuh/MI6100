@@ -23,12 +23,40 @@
 \newcommand{\abs}[1]{\left\lvert#1\right\rvert}
 \newcommand{\trace}{\operatorname{tr}}
 \usepackage{nicefrac}
+\usepackage{minted}
+\newcommand{\jlfile}[1]{\inputminted[numbersep=5pt,breaklines,mathescape,linenos=true]{julia}{/home/hung/Project/HUST/MI6100/#1}}
 \end_preamble
 \use_default_options true
 \begin_modules
 todonotes
 \end_modules
 \maintain_unincluded_children false
+\begin_local_layout
+Style JuliaMinted
+Category              MainText
+Margin                Static
+LatexType             Environment
+LatexName             juliacode
+NextNoIndent          1
+LeftMargin            MMM
+RightMargin           MMM
+PassThru              1
+ParbreakIsNewline     1
+ParIndent             M
+ParSkip               0
+ItemSep               0
+TopSep                0.5
+BottomSep             0.5
+ParSep                0
+Align                 Block
+AlignPossible         Block, Left, Right, Center
+Font Monospace
+Preamble
+        \usepackage{minted}
+        \newminted{julia}{fontsize=\footnotesize,breaklines,mathescape,linenos=true}
+    EndPreamble
+End
+\end_local_layout
 \language vietnamese
 \language_package default
 \inputencoding utf8x
@@ -437,8 +465,8 @@ noprefix "false"
 \begin_inset Formula 
 \begin{align}
 \frac{\partial f}{\partial x}\left(x_{0}\right)=f_{x}\left(x_{0}\right) & =\frac{f\left(x_{0}+h\right)-f\left(x_{0}-h\right)}{2h},\label{eq:diff-grad}\\
-\frac{\partial^{2}f}{\partial x\partial y}=f_{xy}\left(x_{0},y_{0}\right) & =\frac{1}{2h}\left[\frac{\partial f}{\partial x}\left(x_{0},y_{0}+h\right)-\frac{\partial f}{\partial x}\left(x_{0},y_{0}-h\right)\right]\nonumber\\
- & =\frac{1}{4h^{2}}\left[f\left(x_{0}+h,y_{0}+h\right)-f\left(x_{0}-h,y_{0}+h\right)\right]\nonumber\\
+\frac{\partial^{2}f}{\partial x\partial y}=f_{xy}\left(x_{0},y_{0}\right) & =\frac{1}{2h}\left[\frac{\partial f}{\partial x}\left(x_{0},y_{0}+h\right)-\frac{\partial f}{\partial x}\left(x_{0},y_{0}-h\right)\right]\nonumber \\
+ & =\frac{1}{4h^{2}}\left[f\left(x_{0}+h,y_{0}+h\right)-f\left(x_{0}-h,y_{0}+h\right)\right]\nonumber \\
  & \phantom{={}}-\frac{1}{4h^{2}}\left[f\left(x_{0}+h,y_{0}-h\right)-f\left(x_{0}-h,y_{0}-h\right)\right],\label{eq:diff-hess}
 \end{align}
 
@@ -692,11 +720,172 @@ Viết thêm về đạo hàm ảnh, không có SIFT trong context
 \end_layout
 
 \begin_layout Standard
+Đặc trưng của ảnh không có định nghĩa cụ thể, đặc trưng có thể hiểu là một
+ đoạn thông tin về một phần của ảnh, thường theo dạng 
+\begin_inset Quotes eld
+\end_inset
+
+phần 
+\begin_inset Formula $x$
+\end_inset
+
+ của ảnh có thông tin gì
+\begin_inset Quotes erd
+\end_inset
+
+.
+ Việc đặc trưng của ảnh là gì thường đi đôi với tác vụ cụ thể cần được xử
+ lý.
+ Đặc trưng ảnh nên có tính lặp lại, có nghĩa đặc trưng đó sẽ xuất hiện trong
+ nhiều ảnh của cùng một vật thể từ nhiều góc độ hay điều kiện khác nhau.
+\end_layout
+
+\begin_layout Standard
+Để tìm ra các đặc trưng của ảnh, ta sử dụng các phương pháp phát hiện đặc
+ trưng.
+ Vì đa số những tác vụ xử lý ảnh dùng đặc trưng làm đầu vào, có rất nhiều
+ phương pháp phát hiện đặc trưng đã được nghiên cứu và phát triển.
+ Các đặc trưng phát hiện bởi những phương pháp như vậy có thể được chia
+ thành một số loại như sau:
+\end_layout
+
+\begin_layout Description
+Cạnh.
+ Cạnh là những vùng trong ảnh mà có sự thay đổi đột ngột về độ sáng của
+ các điểm ảnh.
+ Điều đó có nghĩa gradient của ảnh trong vùng có cạnh sẽ có giá trị lớn.
+ Cạnh là đặc trưng có cấu trúc một chiều.
+\end_layout
+
+\begin_layout Description
+Điểm
+\begin_inset space ~
+\end_inset
+
+đặc
+\begin_inset space ~
+\end_inset
+
+trưng/góc.
+ Các điểm đặc trưng là những đặc trưng có dạng điểm ở trong ảnh.
+ Chúng còn được gọi là góc vì những thuật toán sơ khai để tìm điểm đặc trưng
+ sẽ phát hiện cạnh trước, sau đó phát hiện sự thay đổi đột ngột trong hướng
+ của cạnh–tạo thành một góc.
+ Điểm đặc trưng có thể không phải là góc theo nghĩa thông thường (ví dụ:
+ một chấm trắng trên nền đen).
+ Điểm đặc trưng là đặc trưng có cấu trúc hai chiều.
+\end_layout
+
+\begin_layout Description
+Miền
+\begin_inset space ~
+\end_inset
+
+đặc
+\begin_inset space ~
+\end_inset
+
+trưng/khối.
+ Miền đặc trưng là đặc trưng giống với điểm đặc trưng, nhưng thay vì cung
+ cấp thông tin về một trên ảnh, miền đặc trưng cung cấp thông tin mang tính
+ cấu trúc về một miền ở trong ảnh.
+ Miền đặc trưng thường chứa một điểm tâm miền.
+ Những phương pháp phát hiện miền đặc trưng thường có thể phát hiện những
+ miền quá 
+\begin_inset Quotes eld
+\end_inset
+
+mượt
+\begin_inset Quotes erd
+\end_inset
+
+ để có thể được phát hiện bởi phương pháp phát hiện góc.
+ Tuy nhiên, sự phân biệt này nhập nhằng khi bàn tới tỉ lệ ảnh.
+ Nếu một ảnh được thu nhỏ lại, một điểm đặc trưng trên đó có thể tương ứng
+ với một miền đặc trưng trên ảnh gốc.
+\end_layout
+
+\begin_layout Standard
+Khi phát hiện được đặc trưng của ảnh, một thao tác hay được làm là tập hợp
+ các thông tin của đặc trưng đó thành một véc tơ, gọi là véc tơ đặc trưng.
+ Tập danh sách tất cả véc tơ đặc trưng có thể gọi là không gian đặc trưng.
+ Khi đặc trưng của ảnh được xác định nhưng không để phục vụ một tác vụ cụ
+ thể mà để phục vụ như một bước trung gian, ta có thể coi kết quả đầu ra
+ như một ảnh (theo nghĩa là ánh xạ từ không gian tới một giá trị), ảnh này
+ được gọi là ảnh đặc trưng.
+\end_layout
+
+\begin_layout Subsection
+Kim tự tháp và không gian mức tỷ lệ
+\end_layout
+
+\begin_layout Standard
 \begin_inset Flex TODO Note (inline)
 status open
 
 \begin_layout Plain Layout
-Đặc trưng của ảnh
+Chuyển dịch thuật từ không gian bậc 
+\begin_inset Formula $\to$
+\end_inset
+
+ không gian tỷ lệ
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Một (biểu diễn) kim tự tháp là một loại biểu diễn đa mức trong xử lý tín
+ hiệu.
+ Trong biểu diễn kim tự tháp, một ảnh được liên tục làm mịn và thu nhỏ
+\begin_inset Foot
+status collapsed
+
+\begin_layout Plain Layout
+Nguyên văn: 
+\emph on
+subsample
+\emph default
+, tức lấy mẫu con.
+ Trong ngữ cảnh tính toán biểu diễn kim tự tháp của ảnh, khi lấy mẫu con
+ của ảnh ta thu được một ảnh nhỏ hơn.
+\end_layout
+
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Flex TODO Note (inline)
+status open
+
+\begin_layout Plain Layout
+Nói thêm về các loại nhân để làm mờ, thêm ảnh minh họa
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Biểu diễn kim tự tháp là tiền đề của một loại biểu diễn khác–biểu diễn không
+ gian tỷ lệ.
+ Không gian tỷ lệ là một dạng biểu diễn nhằm xử lý cấu trúc của ảnh ở nhiều
+ mức tỷ lệ khác nhau, bằng cách biểu diễn ảnh dưới dạng các ảnh được làm
+ mờ của nó.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Flex TODO Note (inline)
+status open
+
+\begin_layout Plain Layout
+scale space
 \end_layout
 
 \end_inset
@@ -1189,11 +1378,11 @@ Quy trình cụ thể
 \end_layout
 
 \begin_layout Paragraph
-Chuyển ảnh thành đen trắng
+Xử lý ảnh đầu vào
 \end_layout
 
 \begin_layout Standard
-Ảnh màu được chuyển thành đen trắng sử dụng công thức
+Ảnh đầu vào đầu tiên được chuyển thành sang thang độ xám sử dụng công thức
 \begin_inset Formula 
 \[
 \text{gray}=0.2126\cdot\text{red}+0.7152\cdot\text{green}+0.0722\cdot\text{blue},
@@ -1216,6 +1405,20 @@ cite{RGB2Gray}
 \end_inset
 
 .
+ 
+\end_layout
+
+\begin_layout Standard
+[*] Trong 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Lowe2004"
+literal "false"
+
+\end_inset
+
+ chỉ ra rằng, khi làm mờ ảnh để tìm thang mở rộng ảnh lên, số lượng keypoint
+ thu được là 
 \end_layout
 
 \begin_layout Paragraph
@@ -1287,15 +1490,10 @@ Không gian bậc có thể được xem như một kim tự tháp, trong đó, 
  Mẫu đầu tiên của mỗi bậc được tính bằng cách giảm kích thước của mẫu cuối
  bậc trước đi một nửa.
  Mẫu đầu tiên của bậc đầu tiên chính là ảnh đầu vào.Theo thực nghiệm, 
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-cite{DavidLowe2004}
-\end_layout
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Lowe2004"
+literal "false"
 
 \end_inset
 
@@ -1363,13 +1561,31 @@ Sau đó ta coi mỗi bậc như một ảnh ba chiều, ta so sánh mỗi đi�
 \end_layout
 
 \begin_layout Standard
-Xét một keypoint bất kỳ với các tọa độ: hàng, cột, bậc và tọa độ mẫu.
+Sau khi các điểm có tiềm năng trở thành keypoint được tìm ra, việc tiếp
+ theo là tìm chính xác tọa độ, thang, tỉ lệ của keypoint.
+ Xét một ứng viên keypoint bất kỳ với các tọa độ: hàng 
+\begin_inset Formula $\row$
+\end_inset
+
+, cột 
+\begin_inset Formula $\col$
+\end_inset
+
+, bậc 
+\begin_inset Formula $\octave$
+\end_inset
+
+ và chỉ số mẫu 
+\begin_inset Formula $\layer$
+\end_inset
+
+.
  Ta cần xác định xem keypoint đó có vị trí chính xác ở đâu trên ảnh, cụ
- thể hơn là với ba tọa độ hàng cột và mẫu.
- Việc địa phương hóa được thực hiện qua thủ tục lặp trong 
+ thể hơn là với ba tọa độ hàng, cột và mẫu.
+ Việc xác định vị trí keypoint được thực hiện qua thủ tục lặp trong 
 \begin_inset CommandInset ref
 LatexCommand formatted
-reference "alg:localize-kpt"
+reference "alg:localize-kpt-location"
 plural "false"
 caps "false"
 noprefix "false"
@@ -1377,11 +1593,7 @@ noprefix "false"
 \end_inset
 
 .
- Trong đó, 
-\begin_inset Formula $\operatorname{IsValidPoint}$
-\end_inset
-
- kiểm tra xem 
+ Trong đó, việc kiểm tra xem 
 \begin_inset Formula $\mathbf{x}$
 \end_inset
 
@@ -1391,9 +1603,73 @@ noprefix "false"
 
  hay không.
 \begin_inset Float algorithm
+placement H
 wide false
 sideways false
-status collapsed
+status open
+
+\begin_layout JuliaMinted
+function is_valid_keypoint(height::Int, width::Int, num_layers::Int,
+\end_layout
+
+\begin_layout JuliaMinted
+                           row::Int, col::Int, layer::Int)
+\end_layout
+
+\begin_layout JuliaMinted
+    return (row < 2 ||
+\end_layout
+
+\begin_layout JuliaMinted
+            col < 2 ||
+\end_layout
+
+\begin_layout JuliaMinted
+            layer < 2 ||
+\end_layout
+
+\begin_layout JuliaMinted
+            row > height - 1 ||
+\end_layout
+
+\begin_layout JuliaMinted
+            col > width - 1 ||
+\end_layout
+
+\begin_layout JuliaMinted
+            layer > num_layers - 1)
+\end_layout
+
+\begin_layout JuliaMinted
+end
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Kiểm tra tọa độ keypoint 
+\begin_inset CommandInset label
+LatexCommand label
+name "alg:localize-kpt-valid-keypoint"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Float algorithm
+wide false
+sideways false
+status open
 
 \begin_layout Plain Layout
 \begin_inset ERT
@@ -1623,7 +1899,7 @@ end{algorithmic}
 Địa phương hóa keypoint
 \begin_inset CommandInset label
 LatexCommand label
-name "alg:localize-kpt"
+name "alg:localize-kpt-location"
 
 \end_inset
 
@@ -1758,7 +2034,7 @@ mathbf{
 \backslash
 hat{x}}
 \backslash
-right))}< 0.03$}
+right)}< 0.03$}
 \end_layout
 
 \begin_layout Plain Layout
@@ -2022,6 +2298,18 @@ Kết luận
 
 \begin_layout Chapter
 Tài liệu tham khảo
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset bibtex
+LatexCommand bibtex
+btprint "btPrintCited"
+bibfiles "latex/refs"
+options "bibtotoc,plain"
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Section*

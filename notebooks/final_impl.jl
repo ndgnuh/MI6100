@@ -37,7 +37,7 @@ using Chain
 # ╔═╡ 29200873-e263-45b2-8ada-0dacd79d34f5
 S = let
 	using ImageFiltering
-
+	using StatsBase
 	using StaticArrays
 	using Parameters
 	using Setfield
@@ -62,223 +62,44 @@ using StaticArrays
 # ╔═╡ b51a3b28-1b94-45ec-9038-3ece5a48a33d
 @ingredients("../SIFT/sift.jl")
 
-# ╔═╡ 323dc098-9199-4681-9f8d-9dda0d75973a
-g = S.Hessian(rand(3, 3))
+# ╔═╡ 3649348d-1b2f-4694-ac02-5d0b445561d4
+begin
+	magnitude_thresh = 0.015 * ((2 ^ (1 / 3) - 1) / (2 ^ (1 / 3) - 1))
+	# Before attempting to interpolate a DoG extrema's value, it must have
+	# a magnitude larger than this threshold.
+	coarse_magnitude_thresh = 0.85 * magnitude_thresh
+end
+
+# ╔═╡ 4acfdb4e-bdf6-4611-8b50-1399292a7e6c
+function shift(x::Vector, s::Int)
+	@assert abs(s) <= 1
+	padded = padarray(x, Pad(:reflect, 1))
+	padded[begin] = padded[end] = 99
+	padded[begin + 1 + s:end - 1 + s]
+end
+
+# ╔═╡ 84123b57-daf2-46c7-bd96-994e03e87881
+# let image = load(input_image)
+# 	@code_warntype S.sift(image, 1.6, 3, 0.5)
+# end
+
+# ╔═╡ 811ff56b-71b7-4e8e-8379-058d51ce2bdd
+@which det
 
 # ╔═╡ 78ca30a2-c9de-457b-99bf-2b60fdd88dcf
-input_image = "../samples/box.png"
+input_image = "../samples/geek.png"
 
 # ╔═╡ be1186af-891d-4a0c-a0c9-379234d1f0b4
-kpts = let image = load(input_image)
-	S.sift(image, 1.6, 3, 0.5)
+kpts = let image = Float32.(reinterpret(UInt8, load(input_image)) /255)
+	keypoints = S.sift(image, 1.6f0)
+	@info length(keypoints)
+	keypoints
 end
 
 # ╔═╡ 59b4878b-e334-478c-9dba-bcd4fc3816ff
 let image = RGB.(load(input_image))
+	@info size(image)
 	Draw.draw_keypoints!(image, kpts, RGB(0, 1, 0))
-end
-
-# ╔═╡ 00d7843e-ef48-45c3-b6f4-27ff1c713d1d
-# ╠═╡ disabled = true
-#=╠═╡
-sift = let sift = S.SIFT()
-	image = reinterpret(N0f8, load(input_image))
-	sift = S.fit(sift, image)
-	sift.keypoints
-	sift
-end
-  ╠═╡ =#
-
-# ╔═╡ 4401cbf1-91fe-4bcf-8f79-7da4986f8bc3
-#=╠═╡
-sift.base_image
-  ╠═╡ =#
-
-# ╔═╡ b277219f-db5d-42a8-830a-8f9d46448a26
-# ╠═╡ disabled = true
-#=╠═╡
-hessian = Dict(
-	octave => S.Hessian(sift.dpyr[octave])
-	for octave in 1:8
-);
-  ╠═╡ =#
-
-# ╔═╡ 3b368e6b-1d11-491b-a1d5-15542ead67d8
-# ╠═╡ disabled = true
-#=╠═╡
-gradient = Dict(
-	octave => S.Gradient(sift.dpyr[octave])
-	for octave in 1:8
-);
-  ╠═╡ =#
-
-# ╔═╡ 334d5d38-d5bb-4bd6-a841-8ca92c9133b6
-function localize_keypoint(s, gradient, hessian, octave, layer, row, col)
-	dog = s.dpyr[octave]
-	grad = gradient[octave]
-	hess = hessian[octave]
-	mlayer::Int, mrow::Int, mcol::Int = size(grad.x)
-
-	# Candidate property
-	low_contrast::Bool = true
-	on_edge::Bool = true
-	outside::Bool = false
-
-	
-	# Localize via quadratic fit
-	x = @MVector Float32[layer, row, col]
-	x̂ = @MVector zeros(Float32, 3)
-	converge = false
-	for i = 1:10
-		layer, row, col = trunc.(Int, x)
-
-		# Check if the coordinate is inside the image
-		if (layer < 2 || layer > mlayer - 1
-			|| row < 2 || row > mrow - 1
-			|| col < 2 || col > mcol - 1)
-			outside = true
-			break
-		end
-
-		# Solve for x̂
-		g = grad(layer, row, col) 
-		h = hess(layer, row, col)
-		if det(h) == 0
-			break
-		end
-		x̂ .= -inv(h) * g
-
-		# Check if the changes is small
-		if any(@. abs(x̂) <= 0.5)
-			converge = true
-			break
-		end
-
-		# Update coordinate
-		x .= x + x̂
-	end
-
-	# True coordinate (maybe)
-	layer, row, col = trunc.(Int, x)
-
-	# More check if localized
-	contrast::Float32 = 0
-	if converge
-		# Calculate contrast
-		g = grad(layer, row, col) 
-		contrast =  dog[layer, row, col] + sum(g .* x̂) / 2
-		low_contrast = abs(contrast) * mlayer < 0.04
-		
-		# Calcuate edge response
-		h::Matrix{Float32} = @view hess(layer, row, col)[2:3, 2:3]
-		dh::Float32 = det(h)
-		th::Float32 = tr(h)
-		r = 10
-		on_edge = th^2 * r >= dh * (r + 1)^2
-	end
-
-	# Calculate angle if
-	# keypoint is high contrast and
-	# keypoint is not on any edge
-	sigma = 1
-	kptsize = s.sigma * (2^(layer - 1 / (mlayer - 3)) * (2^(octave - 1)))
-	
-	(
-		outside=outside,
-		size=3,
-		converge=converge, 
-		contrast=abs(contrast),
-		low_contrast=low_contrast,
-		on_edge=on_edge,
-		layer=layer, 
-		angle = nothing,
-		row=trunc(Int, row * 2.0^(octave - 2)),
-		col=trunc(Int, col * 2.0^(octave - 2))
-	) # row = row, col=col
-end
-
-# ╔═╡ c4c99a3a-c6c6-4cde-b681-66d25a861625
-#=╠═╡
-let
-	kpt = sift.keypoints[400]
-	octave = kpt.octave
-	layer = kpt.layer
-	row = kpt.row
-	col = kpt.col
-	localize_keypoint(sift, gradient, hessian, octave, layer, row, col)
-end
-  ╠═╡ =#
-
-# ╔═╡ 0bf8b317-e22f-4d25-9d6c-759bb662c67c
-#=╠═╡
-@chain begin
-	map(sift.keypoints) do kpt
-		octave = kpt.octave
-		layer = kpt.layer
-		row = kpt.row
-		col = kpt.col
-		localize_keypoint(sift, gradient, hessian, octave, layer, row, col)
-	end
-	filter(_) do kpt
-		kpt.converge && !kpt.outside && !kpt.low_contrast && !kpt.on_edge
-	end
-end
-  ╠═╡ =#
-
-# ╔═╡ 2926d7da-248f-491b-93d3-5d0e457ed323
-
-
-# ╔═╡ 8954eab8-c7e1-47df-98d6-bd1d09b47cb3
-
-
-# ╔═╡ 720e2ce6-2b5c-48dd-97f3-282672528990
-let image = RGB.(load(input_image))
-	Draw.draw_keypoints!(image, kpts, RGB(1, 0, 0))
-end
-
-# ╔═╡ 2e73cc5d-bccc-4fb3-94b1-f4cd51a63f06
-
-
-# ╔═╡ 1f6b109f-9b8b-4e30-8dc4-4786a62e8007
-
-
-# ╔═╡ 5b9c9ba3-3bc1-43c8-a1b8-038f775ba360
-findlocalmaxima(rand(9, 9, 10), window=(3, 3, 3))
-
-# ╔═╡ 20ce2d1b-2c26-4de6-8838-c6780c52342a
-# ╠═╡ disabled = true
-#=╠═╡
-using Chain
-  ╠═╡ =#
-
-# ╔═╡ 7d5eecc1-a144-49f7-b378-498bbcedd166
-#=╠═╡
-kpt = sift.keypoints[1]
-  ╠═╡ =#
-
-# ╔═╡ f6fda39e-c72d-41e7-b4c4-f68a8cc51e41
-#=╠═╡
-let 
-	@unpack row = kpt
-	print(row)
-end
-  ╠═╡ =#
-
-# ╔═╡ dd6091da-7801-4fb7-878b-935101ebfa98
-function show_pyramid(pyr)
-	layer, height, width = size(pyr[1])
-	@chain begin
-		map(pyr) do octave
-			map(eachslice(octave, dims=1)) do layer
-				@chain begin
-					convert(Matrix{Gray}, layer)
-					transpose(_)
-				end
-			end
-		end
-		reduce(hcat, _)
-		transpose(_)
-	end
 end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -301,6 +122,7 @@ Parameters = "d96e819e-fc66-5662-9728-84c9c7592b0a"
 PlutoLinks = "0ff47ea0-7a50-410d-8455-4348d5de0420"
 Setfield = "efcf1570-3423-57d1-acb7-fd33fddbac46"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
+StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 UnPack = "3a884ed6-31ef-47d7-9d2a-63182c4928ed"
 
 [compat]
@@ -320,6 +142,7 @@ Parameters = "~0.12.3"
 PlutoLinks = "~0.1.5"
 Setfield = "~1.1.1"
 StaticArrays = "~1.5.9"
+StatsBase = "~0.33.21"
 UnPack = "~1.0.2"
 """
 
@@ -329,7 +152,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.8.2"
 manifest_format = "2.0"
-project_hash = "f505c45e353e4129d6201afd9af0fb60829765aa"
+project_hash = "f2ddbdae6f6d49b1ff9ae1f0796a60187df0a0d7"
 
 [[deps.AbstractFFTs]]
 deps = ["ChainRulesCore", "LinearAlgebra"]
@@ -466,6 +289,11 @@ version = "0.6.2"
 git-tree-sha1 = "1a3f97f907e6dd8983b744d2642651bb162a3f7a"
 uuid = "dc8bdbbb-1ca9-579f-8c36-e416f6a65cce"
 version = "1.0.2"
+
+[[deps.DataAPI]]
+git-tree-sha1 = "46d2680e618f8abd007bce0c3026cb0c4a8f2032"
+uuid = "9a962f9c-6df0-11e9-0e5d-c546b8b5ee8a"
+version = "1.12.0"
 
 [[deps.DataStructures]]
 deps = ["Compat", "InteractiveUtils", "OrderedCollections"]
@@ -742,6 +570,12 @@ git-tree-sha1 = "2b1dfcba103de714d31c033b5dacc2e4a12c7caa"
 uuid = "c03570c3-d221-55d1-a50c-7939bbd78826"
 version = "0.4.4"
 
+[[deps.Missings]]
+deps = ["DataAPI"]
+git-tree-sha1 = "bf210ce90b6c9eed32d25dbcae1ebc565df2687f"
+uuid = "e1d29d7a-bbdc-5cf2-9ac0-f12de2c33e28"
+version = "1.0.2"
+
 [[deps.Mmap]]
 uuid = "a63ad114-7e13-5084-954f-fe012c677804"
 
@@ -942,6 +776,12 @@ version = "0.1.2"
 [[deps.Sockets]]
 uuid = "6462fe0b-24de-5631-8697-dd941f90decc"
 
+[[deps.SortingAlgorithms]]
+deps = ["DataStructures"]
+git-tree-sha1 = "a4ada03f999bd01b3a25dcaa30b2d929fe537e00"
+uuid = "a2af1166-a08f-5f64-846c-94a0d3cef48c"
+version = "1.1.0"
+
 [[deps.SparseArrays]]
 deps = ["LinearAlgebra", "Random"]
 uuid = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
@@ -984,6 +824,12 @@ deps = ["LinearAlgebra"]
 git-tree-sha1 = "f9af7f195fb13589dd2e2d57fdb401717d2eb1f6"
 uuid = "82ae8749-77ed-4fe6-ae5f-f523153014b0"
 version = "1.5.0"
+
+[[deps.StatsBase]]
+deps = ["DataAPI", "DataStructures", "LinearAlgebra", "LogExpFunctions", "Missings", "Printf", "Random", "SortingAlgorithms", "SparseArrays", "Statistics", "StatsAPI"]
+git-tree-sha1 = "d1bf48bfcc554a3761a133fe3a9bb01488e06916"
+uuid = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
+version = "0.33.21"
 
 [[deps.SuiteSparse]]
 deps = ["Libdl", "LinearAlgebra", "Serialization", "SparseArrays"]
@@ -1085,27 +931,13 @@ version = "17.4.0+0"
 # ╠═b51a3b28-1b94-45ec-9038-3ece5a48a33d
 # ╠═5c16d793-4e0a-43dc-987d-2bb8ffefcd5b
 # ╠═29200873-e263-45b2-8ada-0dacd79d34f5
+# ╠═3649348d-1b2f-4694-ac02-5d0b445561d4
+# ╠═4acfdb4e-bdf6-4611-8b50-1399292a7e6c
+# ╠═84123b57-daf2-46c7-bd96-994e03e87881
+# ╠═811ff56b-71b7-4e8e-8379-058d51ce2bdd
 # ╠═be1186af-891d-4a0c-a0c9-379234d1f0b4
 # ╠═59b4878b-e334-478c-9dba-bcd4fc3816ff
-# ╠═323dc098-9199-4681-9f8d-9dda0d75973a
 # ╠═78ca30a2-c9de-457b-99bf-2b60fdd88dcf
-# ╠═00d7843e-ef48-45c3-b6f4-27ff1c713d1d
-# ╠═4401cbf1-91fe-4bcf-8f79-7da4986f8bc3
-# ╠═b277219f-db5d-42a8-830a-8f9d46448a26
-# ╠═3b368e6b-1d11-491b-a1d5-15542ead67d8
 # ╠═260ab7c7-8743-4040-8d4b-6860f1240dbc
-# ╠═334d5d38-d5bb-4bd6-a841-8ca92c9133b6
-# ╠═c4c99a3a-c6c6-4cde-b681-66d25a861625
-# ╠═0bf8b317-e22f-4d25-9d6c-759bb662c67c
-# ╠═2926d7da-248f-491b-93d3-5d0e457ed323
-# ╠═8954eab8-c7e1-47df-98d6-bd1d09b47cb3
-# ╠═720e2ce6-2b5c-48dd-97f3-282672528990
-# ╠═2e73cc5d-bccc-4fb3-94b1-f4cd51a63f06
-# ╠═1f6b109f-9b8b-4e30-8dc4-4786a62e8007
-# ╠═5b9c9ba3-3bc1-43c8-a1b8-038f775ba360
-# ╠═20ce2d1b-2c26-4de6-8838-c6780c52342a
-# ╠═7d5eecc1-a144-49f7-b378-498bbcedd166
-# ╠═f6fda39e-c72d-41e7-b4c4-f68a8cc51e41
-# ╠═dd6091da-7801-4fb7-878b-935101ebfa98
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

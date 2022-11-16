@@ -14,6 +14,6 @@ end
     magnitude::T
 end
 
-function isinframe(coord::NTuple{N,T}, shape::NTuple{N,T}) where {N,T}
-    return all(@. (coord > 2) && (coord < shape - 1))
+function isinframe(coord::NTuple{N,T}, shape::NTuple{N,T}, border=zeros(T, N)) where {N,T}
+    return all(@. (coord > border) && (coord <= shape - border))
 end

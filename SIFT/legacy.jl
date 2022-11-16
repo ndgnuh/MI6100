@@ -1,3 +1,38 @@
+function generate_gaussian_pyramid(base_image,
+                                   blur_values,
+                                   num_octaves::Integer,
+                                   num_layers::Integer)
+    T = eltype(base_image)
+    base_height, base_width = size(base_image)
+    num_samples = num_layers + 3
+
+    gpyr = map(1:num_octaves) do octave
+        scale = 2^(octave - 1)
+        height = trunc(Int, ceil(base_height / scale))
+        width = trunc(Int, ceil(base_width / scale))
+        return zeros(T, num_samples, height, width)
+    end
+
+    for octave in 1:num_octaves, layer in 1:num_samples
+        if octave == layer == 1
+            gpyr[octave][layer, :, :] .= base_image
+            continue
+        end
+
+        if octave != 1 && layer == 1
+            base = gpyr[octave - 1][end - 2, :, :]
+            gpyr[octave][layer, :, :] .= imresize(base; ratio=1 // 2)
+            continue
+        end
+
+        #= base = gpyr[octave][layer - 1, :, :] =#
+        base = gpyr[octave][1, :, :]
+        sigma = blur_values[layer]
+        gpyr[octave][layer, :, :] .= imfilter(base, Kernel.gaussian(sigma))
+    end
+    return gpyr
+end
+
 function compute_keypoints_with_orientation(gpyr::Vector, keypoints)
     num_octaves = length(gpyr)
     num_samples = size(gpyr[1])[1]

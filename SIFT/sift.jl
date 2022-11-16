@@ -34,16 +34,14 @@ function compute_num_octaves(image::Matrix)
     return compute_num_octaves(size(image))
 end
 
-function compute_progression_sigma(σ::F, num_octaves::Integer,
-                                   num_layers::Integer) where {F}
+function compute_progression_sigma(σ::F, num_scales::Integer, num_aux_scales::Integer) where {F}
     # Sigma
-    num_samples = num_layers + 3
-    blur_values = @MVector zeros(F, num_samples)
+    blur_values = @MVector zeros(F, num_scales + num_aux_scales)
     blur_values[begin] = σ
 
     # Compute σ values
-    k = 2^(1 / num_layers)
-    for i in 1:(num_samples - 1)
+    k = 2^(1 / num_scales)
+    for i in 1:(num_scales + num_aux_scales - 1)
         σ_prev = k^(i - 1) * σ
         σ_total = σ_prev * k
         blur_values[i + 1] = sqrt(σ_total^2 - σ_prev^2)
@@ -52,40 +50,37 @@ function compute_progression_sigma(σ::F, num_octaves::Integer,
     return blur_values
 end
 
-function generate_gaussian_pyramid(base_image,
-                                   blur_values,
-                                   num_octaves::Integer,
-                                   num_layers::Integer)
-    T = eltype(base_image)
-    base_height, base_width = size(base_image)
-    num_samples = num_layers + 3
+function compute_gaussian_pyramid(base::Matrix{T}, init_σ::T, num_octaves::Integer,
+                                  num_scales::Integer, num_aux_scales::Integer = 3;
+                                  assume_σ::T=0.5f0) where T
+    num_total_scales = num_scales + num_aux_scales
+    gpyr = Vector{Array{T, 3}}(undef, num_octaves)
+    progression_sigmas = compute_progression_sigma(init_σ, num_scales, num_aux_scales)
+    @info progression_sigmas
 
-    gpyr = map(1:num_octaves) do octave
-        scale = 2^(octave - 1)
-        height = trunc(Int, ceil(base_height / scale))
-        width = trunc(Int, ceil(base_width / scale))
-        return zeros(T, num_samples, height, width)
-    end
-
-    for octave in 1:num_octaves, layer in 1:num_samples
-        if octave == layer == 1
-            gpyr[octave][layer, :, :] .= base_image
-            continue
+    for octave_idx in 1:num_octaves
+        # Compute octave base
+        octave_base = if octave_idx == 1 
+            first_σ = sqrt(init_σ^2 - 4 * assume_σ^2)
+            imfilter(imresize(base, ratio=2), Kernel.gaussian(first_σ))
+        else
+            imresize(gpyr[octave_idx - 1][end - 2, :, :], ratio=1//2)
         end
+        height, width = size(octave_base)
+        gpyr[octave_idx] = ones(T, num_total_scales, height, width)
+        gpyr[octave_idx][begin, :, :] .= octave_base
 
-        if octave != 1 && layer == 1
-            base = gpyr[octave - 1][end - 2, :, :]
-            gpyr[octave][layer, :, :] .= imresize(base; ratio=1 // 2)
-            continue
+        # Compute the scale space associated with the octave
+        for scale_idx in 2:num_total_scales
+            σ = progression_sigmas[scale_idx]
+            L_prev = gpyr[octave_idx][scale_idx - 1, :, :]
+            L_next = imfilter(L_prev, Kernel.gaussian(σ))
+            gpyr[octave_idx][scale_idx, :, :] .= L_next
         end
-
-        #= base = gpyr[octave][layer - 1, :, :] =#
-        base = gpyr[octave][1, :, :]
-        sigma = blur_values[layer]
-        gpyr[octave][layer, :, :] .= imfilter(base, Kernel.gaussian(sigma))
     end
     return gpyr
 end
+
 
 function interpolate(dog_octave, coord, grad, hess, max_tries=10)
     x = SVector{3,Float32}(i for i in coord.I)
@@ -105,7 +100,7 @@ function interpolate(dog_octave, coord, grad, hess, max_tries=10)
         scale, row, col = trunc.(Int, x + dx)
         value = value + dvalue
 
-        inframe = isinframe((scale, row, col), shape)
+        inframe = isinframe((scale, row, col), shape, (0, 1, 1))
         if all(@. abs(dx < 0.5)) && inframe
             success = true
             break
@@ -131,10 +126,8 @@ end
 function findkeypoints(dog_octave, extrema)
     grad, hess = derivatives(dog_octave)
     Iterators.filter(extrema) do coord
-
-        # Contrast
         success, new_coord, value = interpolate(dog_octave, coord, grad, hess)
-        success = success && abs(value) > 0.001 && test_edge(hess, new_coord)
+        success = success && abs(value) > 0.03f0 && test_edge(hess, new_coord)
         return success
     end
 end
@@ -165,33 +158,54 @@ function assign_orientations(gaussian_octave, octave_index, coords, nbins::Int=3
         dom_orientations = findall(smooth) do weight
             return abs((dom_weight - weight) / dom_weight) <= 0.8
         end
-        map(dom_orientations) do orientation
+        Iterators.map(dom_orientations) do orientation
             return Keypoint{Float32}(; scale=scale,
                                      row=trunc(Int, row * 2.0f0^(octave_index - 2)),
                                      col=trunc(Int, col * 2.0f0^(octave_index - 2)),
-                                     magnitude=4.0f0,
+                                     magnitude=4,
                                      orientation=deg2rad(nbins * orientation))
         end
     end
 end
 
-function sift(image_::Matrix, σ::F=1.6, num_layers::Int=3, assume_blur::F=0.5f0) where {F}
-    image = convert(Matrix{F}, image_)
-    base_image = generate_base_image(image, σ, assume_blur)
-    @info typeof(base_image)
-    num_octaves = compute_num_octaves(base_image)
-    @info "num octave = $num_octaves, $(typeof(num_octaves))"
-    blur_values = compute_progression_sigma(σ, num_octaves, num_layers)
-    @info "blurs: $blur_values"
+function find_extrema(o)
+	# First one is (0, 0, 0)
+	shifts = Iterators.drop(Iterators.product(-1:1, -1:1, -1:1), 1)
+	shape = size(o)
+	maxima = ones(Bool, shape)
+	minima = ones(Bool, shape)
+	for spec in shifts
+		shifted = shift(o, spec...) 
+		@. maxima = maxima && o >= shifted
+		@. minima = minima && o <= shifted
+	end
+    findall(maxima .|| minima)
+end
 
-    gpyr = generate_gaussian_pyramid(base_image, blur_values,
-                                     num_octaves, num_layers)
+function sift(image_::Matrix, init_σ::F=1.6, num_scales::Int=3, assume_blur::F=0.5f0) where {F}
+    image = convert(Matrix{F}, image_)
+
+    gpyr = compute_gaussian_pyramid(image, init_σ,
+                                    compute_num_octaves(image),
+                                    num_scales)
     @info "gpyr: $(typeof(gpyr))"
     keypoints = mapreduce(union, enumerate(gpyr)) do (octave_index,
                                                       gaussian_octave)
         dog_octave = diff(gaussian_octave; dims=1)
-        extrema = (findlocalmaxima(dog_octave; edges=false) ∪
-                   findlocalmaxima(dog_octave; edges=false))
+        #= extrema = find_extrema(dog_octave) =#
+        extrema = [findlocalmaxima(dog_octave); findlocalminima(dog_octave)]
+        shape = size(gaussian_octave)
+
+        # Short cut for debug
+        #= kpts_wo = map(extrema) do (coord) =#
+        #=     scale, row, col = coord.I =#
+        #=     Keypoint{Float32}(; scale=scale, =#
+        #=                              row=trunc(Int, row * 2.0f0^(octave_index - 2)), =#
+        #=                              col=trunc(Int, col * 2.0f0^(octave_index - 2)), =#
+        #=                              magnitude=4, =#
+        #=                              orientation=0) =#
+        #= end =#
+
         kpts = findkeypoints(dog_octave, extrema)
         kpts_wo = assign_orientations(gaussian_octave, octave_index, kpts)
         return kpts_wo

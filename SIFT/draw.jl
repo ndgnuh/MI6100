@@ -42,8 +42,10 @@ end
 #=     return image =#
 #= end =#
 
-function draw_keypoint!(image, keypoint, color)
-    @assert isinframe((keypoint.row, keypoint.col), size(image))
+function draw_keypoint!(image, keypoint, color; assert=true)
+    if assert
+        @assert isinframe((keypoint.row, keypoint.col), size(image))
+    end
     radius = something(keypoint.magnitude, 3)
     circle!(image, keypoint.row, keypoint.col, radius, color)
     ImageDraw.draw!(image, ImageDraw.Point(keypoint.col, keypoint.row), color)
@@ -59,8 +61,8 @@ function draw_keypoint!(image, keypoint, color)
     return image
 end
 
-function draw_keypoints!(image, keypoints, color)
-    foreach(kpt -> draw_keypoint!(image, kpt, color), keypoints)
+function draw_keypoints!(image, keypoints, color; assert=true)
+    foreach(kpt -> draw_keypoint!(image, kpt, color; assert=assert), keypoints)
     return image
 end
 

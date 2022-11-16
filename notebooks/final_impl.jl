@@ -78,16 +78,19 @@ function shift(x::Vector, s::Int)
 	padded[begin + 1 + s:end - 1 + s]
 end
 
-# ╔═╡ 84123b57-daf2-46c7-bd96-994e03e87881
-# let image = load(input_image)
-# 	@code_warntype S.sift(image, 1.6, 3, 0.5)
-# end
+# ╔═╡ a675ec88-5eb5-430a-a6a1-97e77fc97882
+fill(true, 3, 3)
 
-# ╔═╡ 811ff56b-71b7-4e8e-8379-058d51ce2bdd
-@which det
+# ╔═╡ 33e36d3d-92b2-448a-ba88-68af4ebf3b39
+
 
 # ╔═╡ 78ca30a2-c9de-457b-99bf-2b60fdd88dcf
-input_image = "../samples/geek.png"
+input_image = "../samples/box.png"
+
+# ╔═╡ 84123b57-daf2-46c7-bd96-994e03e87881
+let image = Float32.(reinterpret(UInt8, load(input_image)) /255)
+	@code_warntype S.sift(image, 1.6f0)
+end
 
 # ╔═╡ be1186af-891d-4a0c-a0c9-379234d1f0b4
 kpts = let image = Float32.(reinterpret(UInt8, load(input_image)) /255)
@@ -99,8 +102,51 @@ end
 # ╔═╡ 59b4878b-e334-478c-9dba-bcd4fc3816ff
 let image = RGB.(load(input_image))
 	@info size(image)
-	Draw.draw_keypoints!(image, kpts, RGB(0, 1, 0))
+	Draw.draw_keypoints!(image, kpts, RGB(0, 1, 0); assert=false)
 end
+
+# ╔═╡ 91950fd2-2a4c-42fc-8808-a611a1290a4f
+let (S, H, W) = size(x)
+	is_extrema = mapwindow(x, (3, 3, 3); indices=(2:S, 2:H, 2:W)) do w
+		center = w[1, 1, 1]
+		
+	end
+	findall(is_extrema)
+end
+
+# ╔═╡ 539cd1d7-250d-48f7-afae-69830ec1673b
+gpyr = let image = Float32.(reinterpret(UInt8, load(input_image)) / 255)
+# S.compute_gaussian_pyramid
+	p = S.compute_gaussian_pyramid(image, 1.6f0, 8, 3)
+	@info size(p)
+	map(p) do p
+		p[begin+1:end, :, :] - p[begin:end-1, :, :]
+	end
+end;
+
+# ╔═╡ da11475c-134f-4cb0-812d-5c4ccac9c492
+
+
+# ╔═╡ 73555116-1d40-49fa-a570-2f89627878c1
+function show_pyramid(pyr)
+    layer, height, width = size(pyr[1])
+    @chain begin
+        map(pyr) do octave
+            map(eachslice(octave; dims=1)) do layer
+                @chain begin
+                    convert(Matrix{Gray}, layer)
+                    transpose(_)
+                end
+            end
+        end
+        reduce(hcat, _)
+        transpose(_)
+    end
+end
+
+
+# ╔═╡ 2a6dfd43-acf3-4197-ba68-dc623bd784ba
+show_pyramid(gpyr)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -152,7 +198,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.8.2"
 manifest_format = "2.0"
-project_hash = "f2ddbdae6f6d49b1ff9ae1f0796a60187df0a0d7"
+project_hash = "7cec2157f498e5aad60df1901518141d66b274fb"
 
 [[deps.AbstractFFTs]]
 deps = ["ChainRulesCore", "LinearAlgebra"]
@@ -934,10 +980,16 @@ version = "17.4.0+0"
 # ╠═3649348d-1b2f-4694-ac02-5d0b445561d4
 # ╠═4acfdb4e-bdf6-4611-8b50-1399292a7e6c
 # ╠═84123b57-daf2-46c7-bd96-994e03e87881
-# ╠═811ff56b-71b7-4e8e-8379-058d51ce2bdd
+# ╠═a675ec88-5eb5-430a-a6a1-97e77fc97882
+# ╠═33e36d3d-92b2-448a-ba88-68af4ebf3b39
 # ╠═be1186af-891d-4a0c-a0c9-379234d1f0b4
 # ╠═59b4878b-e334-478c-9dba-bcd4fc3816ff
 # ╠═78ca30a2-c9de-457b-99bf-2b60fdd88dcf
+# ╠═91950fd2-2a4c-42fc-8808-a611a1290a4f
+# ╠═539cd1d7-250d-48f7-afae-69830ec1673b
+# ╠═da11475c-134f-4cb0-812d-5c4ccac9c492
+# ╠═2a6dfd43-acf3-4197-ba68-dc623bd784ba
+# ╠═73555116-1d40-49fa-a570-2f89627878c1
 # ╠═260ab7c7-8743-4040-8d4b-6860f1240dbc
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

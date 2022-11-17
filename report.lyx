@@ -233,6 +233,15 @@ listoftodos
 
 \end_layout
 
+\begin_layout Standard
+\begin_inset CommandInset toc
+LatexCommand tableofcontents
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Chapter
 Yêu cầu
 \end_layout
@@ -854,7 +863,7 @@ Kim tự tháp và không gian mức tỷ lệ
 status open
 
 \begin_layout Plain Layout
-Chuyển dịch thuật từ không gian tỷ lệ 
+Chuyển dịch thuật từ không gian bậc 
 \begin_inset Formula $\to$
 \end_inset
 

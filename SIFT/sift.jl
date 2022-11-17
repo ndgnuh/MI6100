@@ -41,30 +41,30 @@ function compute_progression_sigma(σ::F, num_scales::Integer, num_aux_scales::I
 
     # Compute σ values
     k = 2^(1 / num_scales)
-    for i in 1:(num_scales + num_aux_scales - 1)
+    for i in 1:(num_scales+num_aux_scales-1)
         σ_prev = k^(i - 1) * σ
         σ_total = σ_prev * k
-        blur_values[i + 1] = sqrt(σ_total^2 - σ_prev^2)
+        blur_values[i+1] = sqrt(σ_total^2 - σ_prev^2)
     end
 
     return blur_values
 end
 
 function compute_gaussian_pyramid(base::Matrix{T}, init_σ::T, num_octaves::Integer,
-                                  num_scales::Integer, num_aux_scales::Integer = 3;
-                                  assume_σ::T=0.5f0) where T
+    num_scales::Integer, num_aux_scales::Integer=3;
+    assume_σ::T=0.5f0) where {T}
     num_total_scales = num_scales + num_aux_scales
-    gpyr = Vector{Array{T, 3}}(undef, num_octaves)
+    gpyr = Vector{Array{T,3}}(undef, num_octaves)
     progression_sigmas = compute_progression_sigma(init_σ, num_scales, num_aux_scales)
     @info progression_sigmas
 
     for octave_idx in 1:num_octaves
         # Compute octave base
-        octave_base = if octave_idx == 1 
+        octave_base = if octave_idx == 1
             first_σ = sqrt(init_σ^2 - 4 * assume_σ^2)
             imfilter(imresize(base, ratio=2), Kernel.gaussian(first_σ))
         else
-            imresize(gpyr[octave_idx - 1][end - 2, :, :], ratio=1//2)
+            imresize(gpyr[octave_idx-1][end-2, :, :], ratio=1 // 2)
         end
         height, width = size(octave_base)
         gpyr[octave_idx] = ones(T, num_total_scales, height, width)
@@ -73,7 +73,7 @@ function compute_gaussian_pyramid(base::Matrix{T}, init_σ::T, num_octaves::Inte
         # Compute the scale space associated with the octave
         for scale_idx in 2:num_total_scales
             σ = progression_sigmas[scale_idx]
-            L_prev = gpyr[octave_idx][scale_idx - 1, :, :]
+            L_prev = gpyr[octave_idx][scale_idx-1, :, :]
             L_next = imfilter(L_prev, Kernel.gaussian(σ))
             gpyr[octave_idx][scale_idx, :, :] .= L_next
         end
@@ -145,13 +145,13 @@ function assign_orientations(gaussian_octave, octave_index, coords, nbins::Int=3
     # TODO: calculate radius
     radius = 4
     orientation_bins = padarray((@. trunc(Int, nbins / 2 / pi * orientations)),
-                                Pad(:reflect, radius, radius, radius))
+        Pad(:reflect, radius, radius, radius))
     return mapreduce(union, coords; init=NamedTuple[]) do coord
         scale, row, col = coord.I
-        ori = orientation_bins[scale, (row - radius):(row + radius),
-                               (col - radius):(col + radius)]
-        mag = orientation_bins[scale, (row - radius):(row + radius),
-                               (col - radius):(col + radius)]
+        ori = orientation_bins[scale, (row-radius):(row+radius),
+            (col-radius):(col+radius)]
+        mag = orientation_bins[scale, (row-radius):(row+radius),
+            (col-radius):(col+radius)]
         hist = fit(Histogram, view(ori, :); nbins=nbins).weights
         smooth = imfilter(hist, (@SVector [1 // 3, 1 // 3, 1 // 3]))
         dom_weight, dom_orientation = findmax(smooth)
@@ -160,25 +160,25 @@ function assign_orientations(gaussian_octave, octave_index, coords, nbins::Int=3
         end
         Iterators.map(dom_orientations) do orientation
             return Keypoint{Float32}(; scale=scale,
-                                     row=trunc(Int, row * 2.0f0^(octave_index - 2)),
-                                     col=trunc(Int, col * 2.0f0^(octave_index - 2)),
-                                     magnitude=4,
-                                     orientation=deg2rad(nbins * orientation))
+                row=trunc(Int, row * 2.0f0^(octave_index - 2)),
+                col=trunc(Int, col * 2.0f0^(octave_index - 2)),
+                magnitude=4,
+                orientation=deg2rad(nbins * orientation))
         end
     end
 end
 
 function find_extrema(o)
-	# First one is (0, 0, 0)
-	shifts = Iterators.drop(Iterators.product(-1:1, -1:1, -1:1), 1)
-	shape = size(o)
-	maxima = ones(Bool, shape)
-	minima = ones(Bool, shape)
-	for spec in shifts
-		shifted = shift(o, spec...) 
-		@. maxima = maxima && o >= shifted
-		@. minima = minima && o <= shifted
-	end
+    # First one is (0, 0, 0)
+    shifts = Iterators.drop(Iterators.product(-1:1, -1:1, -1:1), 1)
+    shape = size(o)
+    maxima = ones(Bool, shape)
+    minima = ones(Bool, shape)
+    for spec in shifts
+        shifted = shift(o, spec...)
+        @. maxima = maxima && o >= shifted
+        @. minima = minima && o <= shifted
+    end
     findall(maxima .|| minima)
 end
 
@@ -186,11 +186,11 @@ function sift(image_::Matrix, init_σ::F=1.6, num_scales::Int=3, assume_blur::F=
     image = convert(Matrix{F}, image_)
 
     gpyr = compute_gaussian_pyramid(image, init_σ,
-                                    compute_num_octaves(image),
-                                    num_scales)
+        compute_num_octaves(image),
+        num_scales)
     @info "gpyr: $(typeof(gpyr))"
     keypoints = mapreduce(union, enumerate(gpyr)) do (octave_index,
-                                                      gaussian_octave)
+        gaussian_octave)
         dog_octave = diff(gaussian_octave; dims=1)
         #= extrema = find_extrema(dog_octave) =#
         extrema = [findlocalmaxima(dog_octave); findlocalminima(dog_octave)]

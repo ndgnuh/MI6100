@@ -1,8 +1,5 @@
-using Accessors
-using Memoize
-using Base: IdDict
-using Parameters
-using UnPack
+module SIFT
+
 using StaticArrays
 using Chain: @chain
 using ImageTransformations
@@ -143,7 +140,7 @@ function assign_orientations(gaussian_octave, octave_index, coords, nbins::Int=3
     shape = size(gaussian_octave)
 
     # TODO: calculate radius
-    radius = 4
+    radius = 3
     orientation_bins = padarray((@. trunc(Int, nbins / 2 / pi * orientations)),
         Pad(:reflect, radius, radius, radius))
     return mapreduce(union, coords; init=NamedTuple[]) do coord
@@ -155,9 +152,10 @@ function assign_orientations(gaussian_octave, octave_index, coords, nbins::Int=3
         hist = fit(Histogram, view(ori, :); nbins=nbins).weights
         smooth = imfilter(hist, (@SVector [1 // 3, 1 // 3, 1 // 3]))
         dom_weight, dom_orientation = findmax(smooth)
-        dom_orientations = findall(smooth) do weight
-            return abs((dom_weight - weight) / dom_weight) <= 0.8
-        end
+        #= dom_orientations = findall(smooth) do weight =#
+        #=     return abs((dom_weight - weight) / dom_weight) <= 0.8 =#
+        #= end =#
+        dom_orientations = [dom_orientation]
         Iterators.map(dom_orientations) do orientation
             return Keypoint{Float32}(; scale=scale,
                 row=trunc(Int, row * 2.0f0^(octave_index - 2)),
@@ -193,7 +191,7 @@ function sift(image_::Matrix, init_σ::F=1.6, num_scales::Int=3, assume_blur::F=
         gaussian_octave)
         dog_octave = diff(gaussian_octave; dims=1)
         #= extrema = find_extrema(dog_octave) =#
-        extrema = [findlocalmaxima(dog_octave); findlocalminima(dog_octave)]
+        extrema = Set([findlocalmaxima(dog_octave); findlocalminima(dog_octave)])
         shape = size(gaussian_octave)
 
         # Short cut for debug
@@ -214,3 +212,9 @@ function sift(image_::Matrix, init_σ::F=1.6, num_scales::Int=3, assume_blur::F=
     return keypoints
 end
 
+#= if PROGRAM_FILE == @__FILE__ =#
+#=     @info 123 =#
+#= end =#
+
+
+end

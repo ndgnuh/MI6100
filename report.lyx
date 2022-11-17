@@ -25,6 +25,11 @@
 \usepackage{nicefrac}
 \usepackage{minted}
 \newcommand{\jlfile}[1]{\inputminted[numbersep=5pt,breaklines,mathescape,linenos=true]{julia}{/home/hung/Project/HUST/MI6100/#1}}
+
+\newcommand{\Continue}{\textbf{continue}}
+\newcommand{\Break}{\textbf{break}}
+
+\newrefformat{alg}{Thuật toán \ref{#1}}
 \end_preamble
 \use_default_options true
 \begin_modules
@@ -179,6 +184,26 @@ End
 
 \begin_inset FormulaMacro
 \newcommand{\col}{c}
+\end_inset
+
+
+\begin_inset FormulaMacro
+\newcommand{\numscale}{\text{\ensuremath{\#\mathrm{scales}}}}
+\end_inset
+
+
+\begin_inset FormulaMacro
+\newcommand{\numoctave}{\text{\ensuremath{\#\mathrm{octaves}}}}
+\end_inset
+
+
+\begin_inset FormulaMacro
+\newcommand{\height}{\mathrm{\#rows}}
+\end_inset
+
+
+\begin_inset FormulaMacro
+\newcommand{\width}{\mathrm{\#cols}}
 \end_inset
 
 
@@ -437,7 +462,8 @@ Biểu diễn trong ảnh trong miền khác
 
 \begin_layout Standard
 Khi sử dụng SIFT, cần tính gradient và hessian của ảnh.
- Khi tìm cực trị của không gian bậc, đó là ảnh ba chiều (layer, hàng, cột).
+ Khi tìm cực trị của không gian tỷ lệ, đó là ảnh ba chiều (layer, hàng,
+ cột).
  Khi tìm hướng chủ đạo, đó là ảnh hai chiều (hàng, cột).
  Tuy nhiên, cách tính trong cả hai trường hợp này đều tương tự nhau.
  Việc tính gradient, hessian sẽ sử dụng công thức tính sai phân 
@@ -824,7 +850,7 @@ Kim tự tháp và không gian mức tỷ lệ
 status open
 
 \begin_layout Plain Layout
-Chuyển dịch thuật từ không gian bậc 
+Chuyển dịch thuật từ không gian tỷ lệ 
 \begin_inset Formula $\to$
 \end_inset
 
@@ -912,6 +938,11 @@ Các phương pháp đối sánh ảnh, các vấn đề về locality và invar
 
 \begin_layout Section
 Đặt vấn đề
+\end_layout
+
+\begin_layout Standard
+Tìm các đặc trưng giống nhau giữa hai ảnh của cùng một sự vật từ nhiều góc
+ chụp khác nhau.
 \end_layout
 
 \begin_layout Subsection
@@ -1179,19 +1210,11 @@ State
 
 \end_inset
 
- Tính không gian bậc của 
-\begin_inset Formula $I_{0}$
-\end_inset
-
- với 
-\begin_inset Formula $\sigma_{0}$
-\end_inset
-
- và 
-\begin_inset Formula $s$
-\end_inset
-
  
+\begin_inset Formula $\#\mathrm{octave}\gets$
+\end_inset
+
+ tìm số bậc kim tự tháp
 \end_layout
 
 \begin_layout Plain Layout
@@ -1208,27 +1231,7 @@ State
 \end_inset
 
  
-\begin_inset Formula $K_{c}\gets$
-\end_inset
-
- Tập các điểm cực trị không gian bậc
-\end_layout
-
-\begin_layout Plain Layout
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-State
-\end_layout
-
-\end_inset
-
- 
-\begin_inset Formula $K\gets\left\{ K_{\octave,\layer,r,c}\in K_{c}\colon K_{\octave,\layer,r,c}\text{ địa phương hoá}\right\} $
+\begin_inset Formula $\mathcal{L}\gets\left\{ L_{\octave}\left(x,y,\sigma\right)\colon\octave=\overline{1,\#\mathrm{octave}}\right\} $
 \end_inset
 
 
@@ -1247,12 +1250,209 @@ State
 
 \end_inset
 
- Tính góc chủ đạo của mỗi 
-\begin_inset Formula $K_{\octave,\layer,\row,\col}$
+ 
+\begin_inset Formula $\mathcal{K}\gets\varnothing$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+For{
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula $L_{\octave}\left(x,y,\octave\right)\in\mathcal{L}$
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+State
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset Formula $\mathcal{C}\gets\left\{ \mathbf{x}\colon\mathbf{x}\text{ là cực trị }L_{\octave}\left(x,y,\sigma\right)\right\} $
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+For{
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula $\mathbf{x\in\mathcal{C}}$
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+State
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset Formula $\mathbf{x}\gets$
+\end_inset
+
+ tìm vị trí chính xác của 
+\begin_inset Formula $\mathbf{x}$
 \end_inset
 
  trong 
-\begin_inset Formula $K$
+\begin_inset Formula $L_{\octave}\left(x,y,\sigma\right)$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+State
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset Formula $\mathrm{check1}\gets\mathbf{x}$
+\end_inset
+
+ là tọa độ hợp lệ
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+State
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset Formula $\mathrm{check2}\gets\mathbf{x}$
+\end_inset
+
+ tương phản đủ lớn
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+State
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset Formula $\mathrm{check3}\gets\mathbf{x}$
+\end_inset
+
+ không nằm trên cạnh
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+If{
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula $\mathrm{check1\land check2\land check3}$
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
 \end_inset
 
 
@@ -1271,12 +1471,100 @@ State
 
 \end_inset
 
- Tính biểu diễn số của mỗi 
-\begin_inset Formula $K_{\octave,\layer,\row,\col}$
+ 
+\begin_inset Formula $K\gets$
 \end_inset
 
- trong 
-\begin_inset Formula $K$
+ tập keypoint ứng với tọa độ 
+\begin_inset Formula $\mathbf{x}$
+\end_inset
+
+ và các góc chủ đạo
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+State
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset Formula $\mathcal{K}\gets\mathcal{K}\cup K$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+EndIf
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+EndFor
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+EndFor
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+State
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset Formula $\mathcal{D}\gets\left\{ \text{biểu diễn số của }k\colon k\in\mathcal{K}\right\} $
 \end_inset
 
 
@@ -1298,7 +1586,7 @@ Return
 \end_inset
 
  
-\begin_inset Formula $K$
+\begin_inset Formula $\mathcal{K},\mathcal{D}$
 \end_inset
 
 
@@ -1358,7 +1646,7 @@ Phân tích
 \end_layout
 
 \begin_layout Paragraph
-Không gian bậc (Scale space)
+không gian tỷ lệ (Scale space)
 \end_layout
 
 \begin_layout Paragraph
@@ -1418,78 +1706,99 @@ literal "false"
 \end_inset
 
  chỉ ra rằng, khi làm mờ ảnh để tìm thang mở rộng ảnh lên, số lượng keypoint
- thu được là 
+ thu được sẽ lớn hơn ban đầu
 \end_layout
 
 \begin_layout Paragraph
-Tính toán không gian bậc
+Tìm số bậc kim tự tháp
 \end_layout
 
 \begin_layout Standard
-Không gian bậc của ảnh 
-\begin_inset Formula $I$
+Ở mỗi bậc của biểu diễn kim tự tháp, ảnh bị thu nhỏ đi với tỷ lệ 
+\begin_inset Formula $\nicefrac{1}{2}$
 \end_inset
 
- là một ma trận chứa 
-\begin_inset Formula $n\times m$
+, do đó số bậc tối đa của kim tự tháp phụ thuộc vào kích thước ảnh đầu vào.
+ Kích thước đó được tính bằng 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:num_octaves"
+plural "false"
+caps "false"
+noprefix "false"
+
 \end_inset
 
- ảnh, trong đó 
-\begin_inset Formula $n$
-\end_inset
-
- là số bậc, 
-\begin_inset Formula $s$
-\end_inset
-
- là số mẫu.
-\end_layout
-
-\begin_layout Standard
+:
 \begin_inset Formula 
-\[
-n=\left\lfloor \frac{\ln\left(\min\left(\operatorname{size}\left(I\right)\right)\right)}{\ln\left(2\right)}-1\right\rfloor .
-\]
+\begin{equation}
+\#\mathrm{octave}=\left\lfloor \frac{\log\left(\min\left(\mathrm{height},\mathrm{width}\right)\right)}{\log\left(2\right)}-1\right\rfloor .\label{eq:num_octaves}
+\end{equation}
 
 \end_inset
 
-Không gian bậc có thể được xem như một kim tự tháp, trong đó, ảnh 
-\begin_inset Formula $G_{k,\cdot}$
+Công thức 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:num_octaves"
+plural "false"
+caps "false"
+noprefix "false"
+
 \end_inset
 
- ở bậc thứ 
+ chỉ đưa ra cận trên, trong thực tiễn ta hoàn toàn có thể tham số hóa số
+ bậc của kim tự tháp.
+\end_layout
+
+\begin_layout Paragraph
+Tìm không gian tỷ lệ
+\end_layout
+
+\begin_layout Standard
+Với mỗi bậc 
+\begin_inset Formula $\octave$
+\end_inset
+
+, 
+\begin_inset Formula $L_{\octave}\left(x,y,\sigma_{t}\right)$
+\end_inset
+
+ được tính bằng cách làm mờ dần dần các ảnh 
+\begin_inset Formula $L_{\octave}\left(x,y,\sigma_{t}\right)$
+\end_inset
+
+.
+\begin_inset Formula 
+\begin{align*}
+L_{\octave}\left(x,y,\sigma_{t+1}\right) & =L_{\octave}\left(x,y,\sigma_{t}\right)\ast G\left(x,y,\text{d}\sigma_{t+1}\right),\\
+\text{d}\sigma_{t+1} & =\sqrt{\left(2^{k}\sigma_{\lambda-1}\right)^{2}-\sigma_{\lambda-1}^{2}},
+\end{align*}
+
+\end_inset
+
+trong đó 
 \begin_inset Formula $k$
 \end_inset
 
- có kích thước bằng một nửa ảnh 
-\begin_inset Formula $G_{k-1,\cdot}$
+ là hệ số nhân được tính bởi 
+\begin_inset Formula $2^{\nicefrac{1}{\numscale}}$
 \end_inset
 
- ở bậc thứ 
-\begin_inset Formula $k-1$
+, và ảnh ứng với 
+\begin_inset Formula $t=1$
 \end_inset
 
-.
- Mỗi bậc sẽ bao gồm 
-\begin_inset Formula $m$
+ được tính như sau:
+\begin_inset Formula 
+\begin{align*}
+L_{1}\left(x,y,\sigma_{1}\right) & =I,\\
+L_{\octave}\left(x,y,\sigma_{1}\right) & =\resize\left(L_{\octave-1}\left(x,y,\sigma_{\numscale}\right),0.5\right).
+\end{align*}
+
 \end_inset
 
- mẫu, ảnh mẫu thứ 
-\begin_inset Formula $G_{i,j+1}$
-\end_inset
-
- được tính bằng cách mờ ảnh 
-\begin_inset Formula $G_{i,j}$
-\end_inset
-
- bằng lọc Gauss với 
-\begin_inset Formula $\sigma_{j}$
-\end_inset
-
-.
- Mẫu đầu tiên của mỗi bậc được tính bằng cách giảm kích thước của mẫu cuối
- bậc trước đi một nửa.
- Mẫu đầu tiên của bậc đầu tiên chính là ảnh đầu vào.Theo thực nghiệm, 
+Qua thực nghiệm, 
 \begin_inset CommandInset citation
 LatexCommand cite
 key "Lowe2004"
@@ -1497,175 +1806,146 @@ literal "false"
 
 \end_inset
 
- thấy rằng lấy 
-\begin_inset Formula $3$
+ cho rằng 
+\begin_inset Formula $\numscale=3$
 \end_inset
 
- mẫu mỗi octave cho ra số lượng keypoint nhiều nhất.
- Do đó ta sử dụng 
-\begin_inset Formula $s=3$
+ đưa ra kết quả với số lượng keypoint nhiều nhất.
+ 
+\end_layout
+
+\begin_layout Paragraph
+Tìm cực trị của không gian tỷ lệ
+\end_layout
+
+\begin_layout Standard
+Sau khi có biểu diễn kim tự tháp 
+\begin_inset Formula $\mathcal{L}$
+\end_inset
+
+, ta tìm cực trị của mỗi bậc trong 
+\begin_inset Formula $\mathcal{L}$
 \end_inset
 
 .
- Tuy nhiên ở bước tìm cực trị của không gian bậc, ta cần so sánh ba mẫu
- liên tiếp trên một bậc, do đó thực chất ta sẽ lấy 
-\begin_inset Formula $s+3$
+ Với 
+\begin_inset Formula $\octave$
 \end_inset
 
- mẫu mỗi bậc.
+ bất kỳ, ta có các ảnh sai phân Gauss của bậc 
+\begin_inset Formula $\octave$
+\end_inset
+
+:
+\begin_inset Formula 
+\[
+D_{\octave}\left(x,y,\sigma_{t}\right)=L_{\octave}\left(x,y,\sigma_{t+1}\right)-L_{\octave}\left(x,y,\sigma_{t}\right),\quad t=\overline{1,\numscale-1}.
+\]
+
+\end_inset
+
+Xét tọa độ 
+\begin_inset Formula $\mathbf{x}=\left(x,y,t\right)$
+\end_inset
+
+ sao cho 
+\begin_inset Formula $D_{\octave}\left(\mathbf{x}\right)=D_{\octave}\left(x,y,\sigma_{t}\right)$
+\end_inset
+
+.
+ Một điểm 
+\begin_inset Formula $\mathbf{x}^{*}$
+\end_inset
+
+ được coi là cực tiểu không gian tỷ lệ nếu
+\begin_inset Formula 
+\[
+D_{\octave}\left(\mathbf{x}^{*}\right)\le D_{\octave}\left(\mathbf{x}^{*}+\Delta\mathbf{x}\right)\forall\,\Delta\mathbf{x}\in\left(\left\{ -1,0,1\right\} ^{3}\backslash\left\{ \left(0,0,0\right)\right\} \right).
+\]
+
+\end_inset
+
+Trường hợp cực đại được định nghĩa tương tự.
+ Ở đây, vì ta cần so sánh ba mẫu liên tiếp trên một bậc, do đó khi tính
+ không gian tỷ lệ, ta sẽ tạo ra thêm ba ảnh khác (tức 
+\begin_inset Formula $\numscale'=\numscale+3$
+\end_inset
+
+).
+\end_layout
+
+\begin_layout Paragraph
+Kiểm tra tọa độ hợp lệ
+\end_layout
+
+\begin_layout Standard
+Xét tọa độ 
+\begin_inset Formula $\mathbf{x}=\left(x,y,t\right)$
+\end_inset
+
+ bất kỳ, không gian tỷ lệ 
+\begin_inset Formula $L_{\octave}\left(x,y,\sigma_{t}\right)$
+\end_inset
+
+.
+ Điểm 
+\begin_inset Formula $\mathbf{x}$
+\end_inset
+
+ được coi là hợp lệ nếu
 \begin_inset Formula 
 \begin{align*}
-L_{1,1}\left(x,y\right) & =I,\\
-L_{\octave,1}\left(x,y\right) & =\resize\left(L_{\octave-1,s}\left(x,y\right),\frac{1}{2}\right),\quad\octave=\overline{1,n},\\
-L_{\octave,\layer}\left(x,y\right) & =L_{\octave,\layer-1}\left(x,y\right)\ast G\left(x,y,\sigma_{\layer}\right),\quad\layer=\overline{1,s+3},\\
-\sigma_{\layer} & =\sqrt{\left(2^{k}\sigma_{\lambda-1}\right)^{2}-\sigma_{\lambda-1}^{2}}.
+ & \left(x<\width-1\right)\land\left(y<\height-1\right)\land\left(t<\numscale-1\right)\\
+\text{và} & \left(x>1\right)\land\left(y>1\right)\land\left(t>1\right).
 \end{align*}
 
 \end_inset
 
-hoặc
-\begin_inset Formula 
-\[
-L_{\octave,\layer}\left(x,y\right)=L_{\octave,1}\left(x,y\right)\ast G\left(x,y,\sigma\cdot k^{\layer}\right).
-\]
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Paragraph
-Tìm cực trị của không gian bậc
-\end_layout
-
-\begin_layout Standard
-Sau khi tìm các ảnh 
-\begin_inset Formula $L_{k,l}$
-\end_inset
-
-, ta tìm không gian bậc với các hàm sai phân Gauss theo công thức
-\begin_inset Formula 
-\[
-D_{k,i}=L_{k,i+1}-L_{k,i},\quad k=\overline{1,n},i=\overline{1,s+2}.
-\]
-
-\end_inset
-
-Sau đó ta coi mỗi bậc như một ảnh ba chiều, ta so sánh mỗi điểm ảnh với
- các điểm thuộc khối pixel lân cận nó (26 điểm tất cả).
- Nếu điểm nằm ở tâm là cực trị, ta đánh dấu nó là keypoint tiềm năng.
-\end_layout
-
-\begin_layout Paragraph
-Địa phương hóa keypoint
-\end_layout
-
-\begin_layout Standard
-Sau khi các điểm có tiềm năng trở thành keypoint được tìm ra, việc tiếp
- theo là tìm chính xác tọa độ, thang, tỉ lệ của keypoint.
- Xét một ứng viên keypoint bất kỳ với các tọa độ: hàng 
-\begin_inset Formula $\row$
-\end_inset
-
-, cột 
-\begin_inset Formula $\col$
-\end_inset
-
-, bậc 
-\begin_inset Formula $\octave$
-\end_inset
-
- và chỉ số mẫu 
-\begin_inset Formula $\layer$
+Lý do biên ảnh bị thu hẹp đi 1 đơn vị vì ở bước tìm tọa độ chính xác, ta
+ cần tính gradient và hessian của 
+\begin_inset Formula $D_{\octave}\left(\mathbf{x}\right)$
 \end_inset
 
 .
- Ta cần xác định xem keypoint đó có vị trí chính xác ở đâu trên ảnh, cụ
- thể hơn là với ba tọa độ hàng, cột và mẫu.
- Việc xác định vị trí keypoint được thực hiện qua thủ tục lặp trong 
+ 
+\end_layout
+
+\begin_layout Paragraph
+Tìm tọa độ chính xác của keypoint
+\end_layout
+
+\begin_layout Standard
+Xét điểm cực trị 
+\begin_inset Formula $\mathbf{x}=\left(x,y,t\right)$
+\end_inset
+
+ bất kỳ trong không gian tỉ lệ tại bậc 
+\begin_inset Formula $\octave$
+\end_inset
+
+ hàm ảnh sai phân 
+\begin_inset Formula $D_{\octave}\left(\mathbf{x}\right)$
+\end_inset
+
+.
+ Việc tìm tọa độ chính xác của một keypoint được trình bày trong 
 \begin_inset CommandInset ref
 LatexCommand formatted
-reference "alg:localize-kpt-location"
+reference "alg:candidate-coord-algorithm"
 plural "false"
 caps "false"
 noprefix "false"
 
 \end_inset
 
-.
- Trong đó, việc kiểm tra xem 
-\begin_inset Formula $\mathbf{x}$
+, trong đó 
+\begin_inset Formula $\#\mathrm{trials}$
 \end_inset
 
- có phải một tọa độ nằm trong miền ảnh 
-\begin_inset Formula $D$
-\end_inset
-
- hay không.
-\begin_inset Float algorithm
-placement H
-wide false
-sideways false
-status open
-
-\begin_layout JuliaMinted
-function is_valid_keypoint(height::Int, width::Int, num_layers::Int,
+ là số vòng lặp tối đa, mặc định được đặt là mười.
 \end_layout
 
-\begin_layout JuliaMinted
-                           row::Int, col::Int, layer::Int)
-\end_layout
-
-\begin_layout JuliaMinted
-    return (row < 2 ||
-\end_layout
-
-\begin_layout JuliaMinted
-            col < 2 ||
-\end_layout
-
-\begin_layout JuliaMinted
-            layer < 2 ||
-\end_layout
-
-\begin_layout JuliaMinted
-            row > height - 1 ||
-\end_layout
-
-\begin_layout JuliaMinted
-            col > width - 1 ||
-\end_layout
-
-\begin_layout JuliaMinted
-            layer > num_layers - 1)
-\end_layout
-
-\begin_layout JuliaMinted
-end
-\end_layout
-
-\begin_layout Plain Layout
-\begin_inset Caption Standard
-
-\begin_layout Plain Layout
-Kiểm tra tọa độ keypoint 
-\begin_inset CommandInset label
-LatexCommand label
-name "alg:localize-kpt-valid-keypoint"
-
-\end_inset
-
-
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\end_inset
-
-
+\begin_layout Standard
 \begin_inset Float algorithm
 wide false
 sideways false
@@ -1682,180 +1962,308 @@ status open
 begin{algorithmic}[1]
 \end_layout
 
-\begin_layout Plain Layout
+\end_inset
 
 
-\backslash
-Require Các ảnh DoG $D$ ở trong một bậc.
- Tọa độ keypoint $
-\backslash
-mathbf{x}$.
 \end_layout
 
 \begin_layout Plain Layout
-
-
-\backslash
-Ensure Tọa độ sau khi localize $
-\backslash
-mathbf{x}$ nếu địa phương hóa thành công
-\end_layout
+\begin_inset ERT
+status open
 
 \begin_layout Plain Layout
 
 
 \backslash
-Function{Localize}{$
-\backslash
-mathbf{x} = 
-\backslash
-left(x,y,
-\backslash
-sigma
-\backslash
-right)$}
+Require
 \end_layout
+
+\end_inset
+
+ Tọa độ 
+\begin_inset Formula $\mathbf{x}$
+\end_inset
+
+, ảnh sai phân 
+\begin_inset Formula $D_{\octave}\left(\mathbf{x}\right)$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
 
 \begin_layout Plain Layout
 
 
 \backslash
-State $n 
-\backslash
-gets 1$ là số vòng lặp tối đa 
+Ensure
 \end_layout
+
+\end_inset
+
+ Tọa độ sau khi cập nhật, kết quả (thành công hay không)
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
 
 \begin_layout Plain Layout
 
 
 \backslash
-For {$
-\backslash
-left(i = 
-\backslash
-overline{1, n}
-\backslash
-right)$}
+State
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset Formula $\mathrm{success}\gets0$
+\end_inset
+
+
 \end_layout
 
 \begin_layout Plain Layout
-
-	
-\backslash
-State $
-\backslash
-hat{
-\backslash
-mathbf{x}}
-\backslash
-gets-
-\backslash
-left(
-\backslash
-frac{
-\backslash
-partial^{2}D}{
-\backslash
-partial
-\backslash
-mathbf{x}^{2}}
-\backslash
-right)^{-1}
-\backslash
-cdot
-\backslash
-frac{
-\backslash
-partial D}{
-\backslash
-partial
-\backslash
-mathbf{x}}$
-\end_layout
+\begin_inset ERT
+status open
 
 \begin_layout Plain Layout
 
-	
+
 \backslash
-State $
-\backslash
-mathbf{x} 
-\backslash
-gets 
-\backslash
-mathbf{x} + 
-\backslash
-mathbf{
-\backslash
-hat{x}}$
+For{
 \end_layout
+
+\end_inset
+
+
+\begin_inset Formula $\mathrm{trial}\in\left\{ 1,\#\mathrm{trials}\right\} $
+\end_inset
+
+
+\begin_inset ERT
+status open
 
 \begin_layout Plain Layout
 
-	
-\backslash
-If {
-\backslash
-Not $
-\backslash
-operatorname{IsValidPoint}(
-\backslash
-mathbf{x})$}
+}
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Plain Layout
-
-		
-\backslash
-State 
-\backslash
-Return nothing
-\end_layout
+\begin_inset ERT
+status open
 
 \begin_layout Plain Layout
 
-	
+
+\backslash
+If{
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula $\mathbf{x}$
+\end_inset
+
+ không là tọa độ hợp lệ
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+State
+\backslash
+Break
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
 \backslash
 EndIf
 \end_layout
 
-\begin_layout Plain Layout
+\end_inset
 
-	
-\backslash
-If {$
-\backslash
-Any{
-\backslash
-mathbf{x} < 0.5}$}
+
 \end_layout
 
 \begin_layout Plain Layout
-
-		
-\backslash
-State $c
-\backslash
-gets 1$
-\end_layout
+\begin_inset ERT
+status open
 
 \begin_layout Plain Layout
 
-		
+
 \backslash
-State 
-\backslash
-Return $
-\backslash
-mathbf{x}$
+State
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset Formula $\mathbf{H}\gets\frac{\partial^{2}D_{\octave}}{\partial\mathbf{x}^{2}}\left(\mathbf{x}\right)$
+\end_inset
+
+; 
+\begin_inset Formula $\mathbf{g}\gets\frac{\partial D_{\octave}\left(\mathbf{x}\right)}{\partial\mathbf{x}}\left(\mathbf{x}\right)$
+\end_inset
+
+
 \end_layout
 
 \begin_layout Plain Layout
+\begin_inset ERT
+status open
 
-	
+\begin_layout Plain Layout
+
+
+\backslash
+State
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset Formula $\hat{\mathbf{x}}\gets-\mathbf{H}^{\dagger}\mathbf{g}$
+\end_inset
+
+; 
+\begin_inset Formula $\mathbf{x}\gets\mathbf{x}+\hat{\mathbf{x}}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+If{
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula $\left(\hat{\mathbf{x}}_{1}<0.5\right)\land\left(\hat{\mathbf{x}}_{2}<0.5\right)\land\left(\hat{\mathbf{x}}_{3}<0.5\right)$
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+State
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset Formula $\mathrm{success}\gets1$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+State
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Break
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
 \backslash
 EndIf
 \end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
 
 \begin_layout Plain Layout
 
@@ -1864,21 +2272,36 @@ EndIf
 EndFor
 \end_layout
 
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
 \begin_layout Plain Layout
 
 
 \backslash
 State 
 \backslash
-Return nothing
+Return
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset Formula $\mathbf{x},\mathrm{success}$
+\end_inset
+
+
 \end_layout
 
 \begin_layout Plain Layout
-
-
-\backslash
-EndFunction
-\end_layout
+\begin_inset ERT
+status open
 
 \begin_layout Plain Layout
 
@@ -1896,10 +2319,10 @@ end{algorithmic}
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Địa phương hóa keypoint
+Tìm tọa độ keypoint
 \begin_inset CommandInset label
 LatexCommand label
-name "alg:localize-kpt-location"
+name "alg:candidate-coord-algorithm"
 
 \end_inset
 
@@ -1908,6 +2331,10 @@ name "alg:localize-kpt-location"
 
 \end_inset
 
+
+\end_layout
+
+\begin_layout Plain Layout
 
 \end_layout
 
@@ -1917,7 +2344,7 @@ name "alg:localize-kpt-location"
 \end_layout
 
 \begin_layout Paragraph
-Lọc keypoint tương phản kém
+Lọc keypoint
 \end_layout
 
 \begin_layout Standard

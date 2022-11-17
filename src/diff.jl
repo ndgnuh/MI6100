@@ -1,4 +1,6 @@
 using ImageFiltering
+using StaticArrays
+using StackViews
 
 function shift(array::Array{T,3}, s::Int, y::Int, x::Int) where {T}
     """ Takes a 3D tensor and shifts it in a specified direction.
@@ -13,26 +15,26 @@ function shift(array::Array{T,3}, s::Int, y::Int, x::Int) where {T}
         shifted: The shifted array.
     """
     padded = padarray(array, Pad(:replicate, 1, 1, 1))
-    shifted = padded[(begin + 1 + s):(end - 1 + s),
-                     (begin + 1 + y):(end - 1 + y),
-                     (begin + 1 + x):(end - 1 + x)]
+    shifted = @view padded[(begin+1+s):(end-1+s),
+        (begin+1+y):(end-1+y),
+        (begin+1+x):(end-1+x)]
     return shifted
 end
 
 function shift(array::Array{T,2}, y::Int, x::Int) where {T}
     padded = padarray(array, Pad(:replicate, 1, 1))
-    shifted = padded[(begin + 1 + y):(end - 1 + y),
-                     (begin + 1 + x):(end - 1 + x)]
+    shifted = @view padded[(begin+1+y):(end-1+y),
+        (begin+1+x):(end-1+x)]
     return shifted
 end
 
 function shift(array::Array{T,1}, x::Int) where {T}
     padded = padarray(array, Pad(:replicate, 1, 1))
-    shifted = padded[(begin + 1 + x):(end - 1 + x)]
+    shifted = padded[(begin+1+x):(end-1+x)]
     return shifted
 end
 
-function derivatives(octave)
+function derivatives(octave::Array{F,3})::Tuple{Array{F,4},Array{F,5}} where {F}
     o = octave
 
     # Gradient
@@ -53,8 +55,41 @@ function derivatives(octave)
 
     grad = cat(ds, dr, dc; dims=4)
     hess = cat(cat(dss, dsr, dsc; dims=4),
-               cat(dsr, drr, drc; dims=4),
-               cat(dsc, drc, dcc; dims=4);
-               dims=5)
+        cat(dsr, drr, drc; dims=4),
+        cat(dsc, drc, dcc; dims=4);
+        dims=5)
     return grad, hess
+end
+
+
+function compute_gradients_at_center_3d(w)
+    w = centered(w)
+    dx = (w[1, 0, 0] - w[-1, 0, 0]) / 2
+    dy = (w[0, 1, 0] - w[0, -1, 0]) / 2
+    dz = (w[0, 0, 1] - w[0, 0, -1]) / 2
+    return @SVector [dx, dy, dz]
+end
+
+function compute_hessians_at_center_3d(w)
+    w = centered(w)
+    c = 2 * w[0, 0, 0]
+
+    # 1 dims
+    dxx = w[1, 0, 0] - c + w[-1, 0, 0]
+    dyy = w[0, 1, 0] - c + w[0, -1, 0]
+    dzz = w[0, 0, 1] - c + w[0, 0, -1]
+
+    # 2 dims
+    dxy = 0.25 * (w[1, 1, 0] + w[-1, -1, 0] - w[-1, 1, 0] - w[1, -1, 0])
+    dxz = 0.25 * (w[1, 0, 1] + w[-1, 0, -1] - w[-1, 0, 1] - w[1, 0, -1])
+    dyz = 0.25 * (w[0, 1, 1] + w[0, -1, -1] - w[0, -1, 1] - w[0, 1, -1])
+    return @SMatrix [dxx dxy dxz
+        dxy dyy dyz
+        dxz dyz dzz]
+end
+
+function derivatives2(octave)
+    grad = mapwindow(compute_gradients_at_center_3d, octave, (3, 3, 3))
+    hess = mapwindow(compute_hessians_at_center_3d, octave, (3, 3, 3))
+    grad, hess
 end

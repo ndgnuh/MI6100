@@ -1,12 +1,12 @@
-using Parameters
+using Base: @kwdef
 
-@with_kw mutable struct SIFT
+@kwdef mutable struct SIFTConfig
     sigma = 1.6
     num_layers = 3
     assumed_blur = 0.5
 end
 
-@with_kw struct Keypoint{T<:AbstractFloat}
+@kwdef struct Keypoint{T<:AbstractFloat}
     scale::Int
     row::Int
     col::Int

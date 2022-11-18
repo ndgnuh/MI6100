@@ -1,6 +1,6 @@
 using Base: @kwdef
 
-@kwdef mutable struct SIFTConfig
+@kwdef mutable struct SIFTMethod
     sigma = 1.6
     num_layers = 3
     assumed_blur = 0.5

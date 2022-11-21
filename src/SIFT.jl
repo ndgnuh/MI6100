@@ -13,6 +13,10 @@ include(joinpath(@__DIR__, "hessian.jl"))
 include(joinpath(@__DIR__, "diff.jl"))
 include(joinpath(@__DIR__, "draw.jl"))
 
+function gaussian_blur(img, σ...)
+    return imfilter(img, KernelFactors.gaussian(σ))
+end
+
 """
     get_octave_pixel_distance(octave_index::Integer; unit_distance=0.5f0)
 
@@ -22,11 +26,11 @@ decrease in each octave. The initial octave have distance 0.5 because
 the image is doubled in the first octave.
 """
 function get_octave_pixel_distance(octave_index::Integer; unit_distance=0.5f0)
-    unit_distance * (2 ^ octave_index)
+    unit_distance * (2^octave_index)
 end
 
 
-function smoothen_vector(X, kernel=SVector(1//3, 1//3, 1//3); iterations=6)
+function smoothen_vector(X, kernel=SVector(1 // 3, 1 // 3, 1 // 3); iterations=6)
     for i in 1:iterations
         X .= imfilter(X, kernel)
     end
@@ -38,9 +42,9 @@ function multiply_factor(s)
 end
 
 function generate_base_image(image::Matrix{F}, σ::F, assume_blur::F) where {F}
-    dsigma = sqrt(σ^2 - 4 * assume_blur^2)
+    dσ = sqrt(σ^2 - 4 * assume_blur^2)
     base = imresize(image; ratio=2)
-    base = imfilter(base, Kernel.gaussian(dsigma))
+    base = gaussian_blur(base, dσ, dσ)
     return base
 end
 
@@ -58,23 +62,23 @@ function compute_progression_sigma(σ::F,
 ) where {F}
     # Sigma
     blur_values = @MVector zeros(F, num_scales)
-    blur_values[begin] = σ
+    @inbounds blur_values[begin] = σ
 
     # Compute σ values
     for i in 1:(num_scales-1)
         σ_prev = k^(i - 1) * σ
         σ_total = σ_prev * k
-        blur_values[i+1] = sqrt(σ_total^2 - σ_prev^2)
+        @inbounds blur_values[i+1] = sqrt(σ_total^2 - σ_prev^2)
     end
 
     return blur_values
 end
 
-function compute_absolute_σ(init_σ::F, num_scales, k::F) where F
+function compute_absolute_σ(init_σ::F, num_scales, k::F) where {F}
     absolute_σ = Array{F}(undef, num_scales)
-    absolute_σ[begin] = init_σ
+    @inbounds absolute_σ[begin] = init_σ
     for idx in 2:num_scales
-        absolute_σ[idx] = absolute_σ[idx - 1] * k
+        @inbounds absolute_σ[idx] = absolute_σ[idx-1] * k
     end
     return absolute_σ
 end
@@ -94,20 +98,20 @@ function compute_gaussian_pyramid(
         # Compute octave base
         octave_base = if octave_idx == 1
             first_σ = sqrt(init_σ^2 - 4 * assume_σ^2)
-            imfilter(imresize(base, ratio=2), Kernel.gaussian(first_σ))
+            gaussian_blur(imresize(base, ratio=2), first_σ, first_σ)
         else
             imresize(gpyr[octave_idx-1][end-2, :, :], ratio=1 // 2)
         end
         height, width = size(octave_base)
-        gpyr[octave_idx] = ones(T, num_scales, height, width)
-        gpyr[octave_idx][begin, :, :] .= octave_base
+        @inbounds gpyr[octave_idx] = ones(T, num_scales, height, width)
+        @inbounds gpyr[octave_idx][begin, :, :] .= octave_base
 
         # Compute the scale space associated with the octave
         for scale_idx in 2:num_scales
             σ = progression_sigmas[scale_idx]
             L_prev = gpyr[octave_idx][scale_idx-1, :, :]
-            L_next = imfilter(L_prev, Kernel.gaussian(σ))
-            gpyr[octave_idx][scale_idx, :, :] .= L_next
+            L_next = gaussian_blur(L_prev, σ, σ)
+            @inbounds gpyr[octave_idx][scale_idx, :, :] .= L_next
         end
     end
     return gpyr
@@ -166,7 +170,7 @@ function findkeypoints(dog_octave, extrema)
     end
 end
 
-function assign_orientations(gaussian_octave, octave_index, coords, nbins::Int=36; init_σ::F, num_scales, k::F) where F
+function assign_orientations(gaussian_octave, octave_index, coords, nbins::Int=36; init_σ::F, num_scales, k::F) where {F}
     magnitudes, orientations = let o = gaussian_octave
         dr = shift(o, 0, 1, 0) - shift(o, 0, -1, 0)
         dc = shift(o, 0, 0, 1) - shift(o, 0, 0, -1)
@@ -186,7 +190,7 @@ function assign_orientations(gaussian_octave, octave_index, coords, nbins::Int=3
         Pad(:reflect, radius, radius, radius))
     return mapreduce(union, coords; init=NamedTuple[]) do coord
         scale, row, col = coord.I
-        σ = absolute_σ[scale + 1]
+        σ = absolute_σ[scale+1]
         radius = trunc(Int, σ * 1.5 * magnitudes[scale, row, col])
         ori = orientation_bins[scale, (row-radius):(row+radius),
             (col-radius):(col+radius)]
@@ -199,11 +203,15 @@ function assign_orientations(gaussian_octave, octave_index, coords, nbins::Int=3
             return abs((dom_weight - weight) / dom_weight) <= 0.8
         end
         #= dom_orientations = [dom_orientation] =#
+
         Iterators.map(dom_orientations) do orientation
+            size_ = init_σ * (2^(scale / num_scales)) * 2.0f0^(octave_index - 2)
+            #= ratio = get_octave_pixel_distance(octave_index) =#
             return Keypoint{Float32}(; scale=scale,
-                row=trunc(Int, row * 2.0f0^(octave_index - 2)),
-                col=trunc(Int, col * 2.0f0^(octave_index - 2)),
-                magnitude=trunc(Int, radius * 2.0f0^(octave_index - 1)),
+                octave=octave_index,
+                row=row, # trunc(Int, row * 2.0f0^(octave_index - 2)),
+                col=col, #trunc(Int, col * 2.0f0^(octave_index - 2)),
+                magnitude=trunc(Int, σ),
                 orientation=deg2rad(nbins * orientation))
         end
     end

@@ -7,6 +7,7 @@ using Base: @kwdef
 end
 
 @kwdef struct Keypoint{T<:AbstractFloat}
+    octave::Int
     scale::Int
     row::Int
     col::Int

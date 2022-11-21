@@ -12,6 +12,7 @@ include(joinpath(@__DIR__, "gradient.jl"))
 include(joinpath(@__DIR__, "hessian.jl"))
 include(joinpath(@__DIR__, "diff.jl"))
 include(joinpath(@__DIR__, "draw.jl"))
+include(joinpath(@__DIR__, "matching.jl"))
 
 function gaussian_blur(img, σ...)
     return imfilter(img, KernelFactors.gaussian(σ))

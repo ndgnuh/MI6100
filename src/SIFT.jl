@@ -6,6 +6,7 @@ using ImageTransformations
 using LinearAlgebra
 using StatsBase
 using ImageFiltering
+using SplitApplyCombine
 
 
 include(joinpath(@__DIR__, "constants.jl"))
@@ -154,7 +155,11 @@ function interpolate(dog_octave, coord, grad, hess, max_tries=10)
     return success, CartesianIndex(scale, row, col), value
 end
 
-function test_edge(hess, coord, edge_threshold=10)
+function test_edge(
+    hess,
+    coord,
+    edge_threshold=Constants.EDGE_RATIO_THRESH
+)
     e = eps(eltype(hess))
     scale, row, col = coord.I
     xy_hessian = hess[scale, row, col, 2:end, 2:end]
@@ -170,7 +175,7 @@ function findkeypoints(dog_octave, extrema)
     grad, hess = derivatives(dog_octave)
     Iterators.filter(extrema) do coord
         success, new_coord, value = interpolate(dog_octave, coord, grad, hess)
-        success = success && abs(value) > 0.03f0 && test_edge(hess, new_coord)
+        success = success && abs(value) > Constants.MAGNITUDE_THRESH && test_edge(hess, new_coord)
         return success
     end
 end
@@ -286,6 +291,19 @@ function sift(image_::Matrix,
     return keypoints, descriptors
 end
 
+
+function get_gradient_props(gpyr, num_octaves, num_scales)
+    iter = Iterators.product(1:num_octaves, 1:num_scales)
+    data = map(iter) do (octave_index, scale_index)
+        L = view(gpyr[octave_index], scale_index, :, :)
+        dr = shift(L, 1, 0) - shift(L, -1, 0)
+        dc = shift(L, 0, 1) - shift(L, 0, -1)
+        mag = @. sqrt(dr^2 + dc^2)
+        ori = @. atan(dc, dr) % (2 * pi)
+        mag, ori
+    end
+    return invert(data)
+end
 #= if PROGRAM_FILE == @__FILE__ =#
 #=     @info 123 =#
 #= end =#

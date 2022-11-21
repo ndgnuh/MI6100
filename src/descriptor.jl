@@ -1,5 +1,6 @@
 using UnPack
 using StaticArrays
+using .Constants
 
 const DESCRIPTOR_LOCALITY = 0
 
@@ -14,10 +15,10 @@ function compute_descriptor(keypoint, L, octave_index)
 
     desc = (@SVector zeros(Float32, 128))
     @unpack row, col, scale = keypoint
-    dist = get_octave_pixel_distance(octave_index)
-    
+    pixel_dist = get_octave_pixel_distance(octave_index)
+
     #= max_width = @chain begin =#
-    #=     (np.sqrt(2) * const.descriptor_locality * sigma) / pixel_dist =#
+    #=     sqrt(2.0f0) * Constants.DESCRIPTOR_LOCALITY * sigma / pixel_dist =#
     #=     trunct(Int, _) =#
     #= end =#
 end

@@ -21,14 +21,14 @@ function shift(array::Array{T,3}, s::Int, y::Int, x::Int) where {T}
     return shifted
 end
 
-function shift(array::Array{T,2}, y::Int, x::Int) where {T}
+function shift(array, y::Int, x::Int) where {T}
     padded = padarray(array, Pad(:replicate, 1, 1))
     shifted = @view padded[(begin+1+y):(end-1+y),
         (begin+1+x):(end-1+x)]
     return shifted
 end
 
-function shift(array::Array{T,1}, x::Int) where {T}
+function shift(array, x::Int) where {T}
     padded = padarray(array, Pad(:replicate, 1, 1))
     shifted = padded[(begin+1+x):(end-1+x)]
     return shifted

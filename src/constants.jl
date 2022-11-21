@@ -55,7 +55,7 @@ const MIN_SIGMA = 0.8f0
 
 # The sigma required to move from the input image to the first octave's first layer.
 # See AOS section 2.2 formula 6.
-const INIT_SIGMA = 1 / MIN_PIXEL_DIST * sqrt(MIN_SIGMA ^ 2 - ORIG_SIGMA ^ 2)
+const INIT_SIGMA = 1.0f0 / MIN_PIXEL_DIST * sqrt(MIN_SIGMA^2 - ORIG_SIGMA^2)
 
 
 #########################
@@ -64,7 +64,7 @@ const INIT_SIGMA = 1 / MIN_PIXEL_DIST * sqrt(MIN_SIGMA ^ 2 - ORIG_SIGMA ^ 2)
 
 # Determines whether a Difference of Gaussian extrema is large enough.
 # Referred to as C_dog in AOS. See AOS section 3.3.
-const MAGNITUDE_THRESH = 0.015f0 * ((2 ^ (1 / SCALES_PER_OCTAVE) - 1) / (2 ^ (1 / 3) - 1))
+const MAGNITUDE_THRESH = 0.015f0 * ((2^(1.0f0 / SCALES_PER_OCTAVE) - 1) / (2^(1.0f0 / 3) - 1))
 
 # Before attempting to interpolate a DoG extrema's value, it must have
 # a magnitude larger than this threshold.
@@ -139,7 +139,7 @@ const DESCRIPTOR_LOCALITY = 6
 const NR_DESCRIPTOR_HISTOGRAMS = 4
 
 # The distance between histogram centers along the x or y axis.
-const INTER_HIST_DIST = DESCRIPTOR_LOCALITY / NR_DESCRIPTOR_HISTOGRAMS
+const INTER_HIST_DIST = 1.0f0 * DESCRIPTOR_LOCALITY / NR_DESCRIPTOR_HISTOGRAMS
 
 # The number of orientation bins in a descriptor histogram.
 # Referred to as n_ori in AOS.
@@ -151,7 +151,7 @@ const DESCRIPTOR_BIN_WIDTH = NR_DESCRIPTOR_BINS / Float32(2 * pi)
 # The normalized maximum amount of mass that may be assigned to a single
 # bin in the SIFT feature, i.e., the concatenated descriptor histograms.
 # See AOS section 4.2. The SIFT feature vector.
-const DESCRIPTOR_CLIP_MAX = 0.2
+const DESCRIPTOR_CLIP_MAX = 0.2f0
 
 
 #########################
@@ -161,4 +161,5 @@ const DESCRIPTOR_CLIP_MAX = 0.2
 # The distance factor between first and second nearest neighbor for accepting a feature match.
 # I.e, create a match if:  first_nn_dist < second_nn_dist * `rel_dist_match_thresh`
 const REL_DIST_MATCH_THRESH = 0.6f0
+
 end

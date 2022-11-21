@@ -7,12 +7,16 @@ using LinearAlgebra
 using StatsBase
 using ImageFiltering
 
+
+include(joinpath(@__DIR__, "constants.jl"))
 include(joinpath(@__DIR__, "struct.jl"))
 include(joinpath(@__DIR__, "gradient.jl"))
 include(joinpath(@__DIR__, "hessian.jl"))
 include(joinpath(@__DIR__, "diff.jl"))
 include(joinpath(@__DIR__, "draw.jl"))
 include(joinpath(@__DIR__, "matching.jl"))
+include(joinpath(@__DIR__, "descriptor.jl"))
+
 
 function gaussian_blur(img, σ...)
     return imfilter(img, KernelFactors.gaussian(σ))
@@ -273,7 +277,13 @@ function sift(image_::Matrix,
         return kpts_wo
     end
 
-    return keypoints
+    descriptors = map(keypoints) do kpt
+        octave_index = kpt.octave
+        L = gpyr[octave_index]
+        compute_descriptor(kpt, L, octave_index)
+    end
+
+    return keypoints, descriptors
 end
 
 #= if PROGRAM_FILE == @__FILE__ =#

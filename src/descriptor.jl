@@ -2,8 +2,6 @@ using UnPack
 using StaticArrays
 using .Constants
 
-const DESCRIPTOR_LOCALITY = 0
-
 function compute_descriptor(keypoint, L, octave_index)
     magnitudes, orientations = let
         dr = shift(L, 0, 1, 0) - shift(L, 0, -1, 0)

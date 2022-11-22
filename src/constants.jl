@@ -104,7 +104,7 @@ const REFERENCE_LOCALITY = 1.5f0
 
 # An additional constant to control the size of the reference orientation patch.
 # See AOS Figure 7.
-const REFERENCE_PATCH_WIDTH_SCALAR = 6 * REFERENCE_LOCALITY
+const REFERENCE_PATCH_WIDTH_SCALAR = trunc(Int, 6 * REFERENCE_LOCALITY)
 
 # Number of smoothing steps performed with a three-tap box filter ([1, 1, 1])
 # on the reference orientation histogram. See AOS section 4.1.B.

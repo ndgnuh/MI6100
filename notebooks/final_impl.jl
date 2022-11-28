@@ -42,6 +42,12 @@ using OffsetArrays
 # ╔═╡ 5c16d793-4e0a-43dc-987d-2bb8ffefcd5b
 using Chain
 
+# ╔═╡ c5a5ccbb-f96e-4a2a-ad99-6c7dc20fecd7
+using SplitApplyCombine
+
+# ╔═╡ 6fce9b1c-80fc-4d88-974a-70b0d60003a7
+using DataStructures
+
 # ╔═╡ 470565aa-f8bb-4fbb-b091-646aaf1d10f8
 using StackViews
 
@@ -62,52 +68,6 @@ S = @ingredients("../src/SIFT.jl").SIFT
 #=╠═╡
 using BenchmarkTools
   ╠═╡ =#
-
-# ╔═╡ 722f377a-d389-4338-9289-b47b9daae6ca
-struct ScaleSpace{F}
-	image::Matrix{F}
-	σ::F
-	k::F
-	num_scales::Int
-	assume_σ::F
-end
-
-# ╔═╡ 4ce6bcef-eaa7-4455-a482-d80190ea1401
-function Base.iterate(ss::ScaleSpace)
-	image = imresize(ss.image; ratio=size)
-	dσ = sqrt(ss.σ^2 - 4 * ss.assume_σ^2)
-	base_image = imfilter(image, KernelFactors.gaussian(dσ, dσ))
-	return base_image, (base_image, 2)
-end
-
-# ╔═╡ 456097ba-e576-4c9a-a3b8-56112a7efbc9
-function Base.iterate(ss::ScaleSpace, state)
-	prev_image, index = state
-	pσ = (ss.σ * k^(index - 1))
-	nσ = pσ ^ k
-	dσ = sqrt(nσ^2 - pσ^2)
-	image = imfitler(prev_image, KernelFactors.gaussian(dσ, dσ))
-	if index == ss.num_scales
-		return image, nothing
-	else
-		return image, (image, index+1)
-	end
-end
-
-# ╔═╡ ba47e270-38b7-4b53-bdfa-867a2f966223
-function Base.length(s::ScaleSpace)
-	return s.num_scales
-end
-
-# ╔═╡ e786250f-d8fa-4c8e-aaf7-ef6827adfd87
-begin
-	function get_octave_pixel_distance(::T, octave::Integer, unit_distance=T(0.5)) where T 
-		unit_distance * (2^octave)
-	end
-	function get_octave_pixel_distance(octave::Integer, unit_distance::T=0.5f0) where T
-		get_octave_pixel_distance(T, octave, unit_distance)
-	end
-end
 
 # ╔═╡ 7b0abaf4-0f80-4755-982d-219042161d39
 Base.@assume_effects :foldable function f!(x)
@@ -156,15 +116,6 @@ KernelFactors.gaussian((1.6, 1.6))
 
 # ╔═╡ ab8b3fdd-4b16-46cc-b583-6bf0e8123081
 img = rand(1920, 1080);
-
-# ╔═╡ 0fac2edf-8cad-4740-a247-b3b3fe362703
-L = ScaleSpace(img, 1.6, sqrt(2), 3, 0.5)
-
-# ╔═╡ 92c58d8f-9c38-4b38-9e04-9ad0b7fdec50
-length(L)
-
-# ╔═╡ 08352934-e2b3-487b-afcc-ec3500201354
-first(L)
 
 # ╔═╡ f5b3e794-fae5-4319-a8d5-6fb845853e1a
 k1, k2 = KernelFactors.gaussian((1.6, 1.6))
@@ -251,6 +202,7 @@ PLUTO_PROJECT_TOML_CONTENTS = """
 Accessors = "7d9f7c33-5ae7-4f3b-8dc6-eff91059b697"
 BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
 Chain = "8be319e6-bccf-4806-a6f7-6fae938471bc"
+DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
 FileIO = "5789e2e9-d7fb-5bc7-8068-2c6fae9b9549"
 ImageCore = "a09fc81d-aa75-5fe9-8630-4744c3626534"
 ImageDraw = "4381153b-2b60-58ae-a1ba-fd683676385f"
@@ -266,6 +218,7 @@ Parameters = "d96e819e-fc66-5662-9728-84c9c7592b0a"
 PlutoLinks = "0ff47ea0-7a50-410d-8455-4348d5de0420"
 ProfileCanvas = "efd6af41-a80b-495e-886c-e51b0c7d77a3"
 Setfield = "efcf1570-3423-57d1-acb7-fd33fddbac46"
+SplitApplyCombine = "03a91e81-4c3e-53e1-a0a4-9c0c8f19dd66"
 StackViews = "cae243ae-269e-4f55-b966-ac2d0dc13c15"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
@@ -275,6 +228,7 @@ UnPack = "3a884ed6-31ef-47d7-9d2a-63182c4928ed"
 Accessors = "~0.1.22"
 BenchmarkTools = "~1.3.2"
 Chain = "~0.5.0"
+DataStructures = "~0.18.13"
 FileIO = "~1.16.0"
 ImageCore = "~0.9.4"
 ImageDraw = "~0.2.5"
@@ -289,6 +243,7 @@ Parameters = "~0.12.3"
 PlutoLinks = "~0.1.5"
 ProfileCanvas = "~0.1.6"
 Setfield = "~1.1.1"
+SplitApplyCombine = "~1.2.2"
 StackViews = "~0.1.1"
 StaticArrays = "~1.5.9"
 StatsBase = "~0.33.21"
@@ -301,7 +256,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.9.0-alpha1"
 manifest_format = "2.0"
-project_hash = "b56bf4cc83121af22277804c99ece53967e95184"
+project_hash = "202d9c25757ac21c53f96419a757d29880937dd9"
 
 [[deps.AbstractFFTs]]
 deps = ["ChainRulesCore", "LinearAlgebra"]
@@ -460,6 +415,12 @@ version = "0.18.13"
 deps = ["Printf"]
 uuid = "ade2ca70-3891-5945-98fb-dc099432e06a"
 
+[[deps.Dictionaries]]
+deps = ["Indexing", "Random", "Serialization"]
+git-tree-sha1 = "e82c3c97b5b4ec111f3c1b55228cebc7510525a2"
+uuid = "85a47980-9c8c-11e8-2b9f-f7ca1fa99fb4"
+version = "0.3.25"
+
 [[deps.Distances]]
 deps = ["LinearAlgebra", "SparseArrays", "Statistics", "StatsAPI"]
 git-tree-sha1 = "3258d0659f812acde79e8a74b11f17ac06d0ca04"
@@ -576,6 +537,11 @@ deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
 git-tree-sha1 = "87f7662e03a649cffa2e05bf19c303e168732d3e"
 uuid = "905a6f67-0a94-5f89-b386-d35d92009cd1"
 version = "3.1.2+0"
+
+[[deps.Indexing]]
+git-tree-sha1 = "ce1566720fd6b19ff3411404d4b977acd4814f9f"
+uuid = "313cdc1a-70c2-5d6a-ae34-0150d3930a38"
+version = "1.1.1"
 
 [[deps.IndirectArrays]]
 git-tree-sha1 = "012e604e1c7458645cb8b436f8fba789a51b257f"
@@ -974,6 +940,12 @@ git-tree-sha1 = "d75bda01f8c31ebb72df80a46c88b25d1c79c56d"
 uuid = "276daf66-3868-5448-9aa4-cd146d93841b"
 version = "2.1.7"
 
+[[deps.SplitApplyCombine]]
+deps = ["Dictionaries", "Indexing"]
+git-tree-sha1 = "48f393b0231516850e39f6c756970e7ca8b77045"
+uuid = "03a91e81-4c3e-53e1-a0a4-9c0c8f19dd66"
+version = "1.2.2"
+
 [[deps.StackViews]]
 deps = ["OffsetArrays"]
 git-tree-sha1 = "46e589465204cd0c08b4bd97385e4fa79a0c770c"
@@ -1116,36 +1088,17 @@ version = "17.4.0+0"
 # ╠═b588a012-2a8c-43da-83ed-e5f3f3965408
 # ╠═3c874c50-1128-44d3-95b5-b3ed460efd58
 # ╠═5c16d793-4e0a-43dc-987d-2bb8ffefcd5b
+# ╠═c5a5ccbb-f96e-4a2a-ad99-6c7dc20fecd7
+# ╠═6fce9b1c-80fc-4d88-974a-70b0d60003a7
 # ╠═29200873-e263-45b2-8ada-0dacd79d34f5
 # ╠═470565aa-f8bb-4fbb-b091-646aaf1d10f8
 # ╠═95b81bca-a3e9-45ca-b054-408a2a9400b4
 # ╠═be1186af-891d-4a0c-a0c9-379234d1f0b4
-# ╠═722f377a-d389-4338-9289-b47b9daae6ca
-# ╠═4ce6bcef-eaa7-4455-a482-d80190ea1401
-# ╠═456097ba-e576-4c9a-a3b8-56112a7efbc9
-# ╠═ba47e270-38b7-4b53-bdfa-867a2f966223
-# ╠═92c58d8f-9c38-4b38-9e04-9ad0b7fdec50
-# ╠═0fac2edf-8cad-4740-a247-b3b3fe362703
-# ╠═08352934-e2b3-487b-afcc-ec3500201354
-# ╠═e786250f-d8fa-4c8e-aaf7-ef6827adfd87
-# ╠═7b0abaf4-0f80-4755-982d-219042161d39
-# ╠═66bdc048-e02f-4ded-a7b5-2fa077a069a7
-# ╠═04e90365-cb73-4c4a-a6d5-1b36d7cf9292
-# ╠═3649348d-1b2f-4694-ac02-5d0b445561d4
-# ╠═4acfdb4e-bdf6-4611-8b50-1399292a7e6c
 # ╠═84123b57-daf2-46c7-bd96-994e03e87881
-# ╠═eeb8735f-d1fb-47d0-982c-8421016cdd5d
 # ╠═a675ec88-5eb5-430a-a6a1-97e77fc97882
-# ╠═1eada4d4-d85b-4dca-b994-4c7aad05b3a1
 # ╠═33e36d3d-92b2-448a-ba88-68af4ebf3b39
 # ╠═298a3ba3-0a5d-4bc6-ab4f-e6c82d2385c1
 # ╠═a5bb6338-51f3-4739-8625-dbcc7c5df443
-# ╠═ab8b3fdd-4b16-46cc-b583-6bf0e8123081
-# ╠═f5b3e794-fae5-4319-a8d5-6fb845853e1a
-# ╠═7d64a3e1-7843-4144-8ffc-79bc3d651dee
-# ╠═6e1bb4ce-d6be-4757-8fb1-56d833d8d23e
-# ╠═c937d7d2-5eae-4fea-b1ee-200c755db41f
-# ╠═474daee3-d2bb-4abd-8aa2-b068906b6186
 # ╠═59b4878b-e334-478c-9dba-bcd4fc3816ff
 # ╠═19f31a8b-1a99-46fc-b16a-8ebaadc7f573
 # ╠═2a4c54d1-2be9-4572-9fd9-e1993470499f

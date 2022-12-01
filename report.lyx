@@ -207,6 +207,11 @@ End
 \end_inset
 
 
+\begin_inset FormulaMacro
+\newcommand{\second}{\mathrm{second}}
+\end_inset
+
+
 \end_layout
 
 \begin_layout Title
@@ -2691,6 +2696,609 @@ status open
 
 \begin_layout Plain Layout
 Biểu diễn số keypoint (descriptor)
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Paragraph
+So khớp keypoint để tìm vật thể
+\end_layout
+
+\begin_layout Standard
+Sau khi thu được các keypoint và các descriptor, ta cần có cách để so khớp
+ hai tập descriptor của hai ảnh khác nhau để tìm ra điểm chung giữa chúng.
+ Phương pháp tìm ra các cặp được trình bày trong 
+\begin_inset CommandInset ref
+LatexCommand formatted
+reference "alg:Đối-sánh-keypoint"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+, trong đó 
+\begin_inset Formula $T$
+\end_inset
+
+ là tham số khoảng cách tương đối tối đa giữa hai keypoint 
+\begin_inset Formula $k_{2a}$
+\end_inset
+
+, 
+\begin_inset Formula $k_{2b}$
+\end_inset
+
+ mà có khoảng cách ngắn nhất tới keypoint 
+\begin_inset Formula $k_{1}$
+\end_inset
+
+ đang được xét.
+ Mặc định, ta chọn 
+\begin_inset Formula $T=0.6$
+\end_inset
+
+.
+ Nếu khoảng cách tương đối giữa hai keypoint bé hơn ngưỡng này, ta coi 
+\begin_inset Formula $\left(k_{1},k_{2a}\right)$
+\end_inset
+
+ là một cặp khớp nhau.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float algorithm
+placement H
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{algorithmic}[1]
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Require{}
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula $\mathcal{K}_{1}$
+\end_inset
+
+, 
+\begin_inset Formula $\mathcal{D}_{1}$
+\end_inset
+
+, 
+\begin_inset Formula $\mathcal{K}_{2}$
+\end_inset
+
+, 
+\begin_inset Formula $\mathcal{D}_{2}$
+\end_inset
+
+ là tập keypoint, descriptor tương ứng của ảnh một và ảnh ha
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Ensure 
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula $\mathcal{M}$
+\end_inset
+
+ là tập các cặp keypoint đối sánh thành công
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+State
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset Formula $\mathcal{M}\coloneqq\emptyset$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+For{
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula $k_{1}\in\mathcal{K}_{1}$
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+	
+\backslash
+State
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset Formula $d_{\min}\coloneqq\inf$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+	
+\backslash
+State
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset Formula $d_{\second}\coloneqq\inf$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+	
+\backslash
+State
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset Formula $k_{\min}\coloneqq$
+\end_inset
+
+ nothing
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+	
+\backslash
+For{
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula $k_{2}\in\mathcal{K}_{2}$
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+		
+\backslash
+State
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula $d_{1}$
+\end_inset
+
+, 
+\begin_inset Formula $d_{2}\coloneqq$
+\end_inset
+
+ descriptor ứng với 
+\begin_inset Formula $k_{1}$
+\end_inset
+
+, 
+\begin_inset Formula $k_{2}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+		
+\backslash
+State
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula $d=\left\lVert d_{1}-d_{2}\right\rVert $
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+		
+\backslash
+If{
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula $d<d_{\min}$
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+			
+\backslash
+State
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula $d_{\min}\coloneqq d$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+			
+\backslash
+State
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula $k_{\min}\coloneqq k_{2}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+		
+\backslash
+Else
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+			
+\backslash
+State
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula $d_{\second}=d$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+		
+\backslash
+EndIf
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+	
+\backslash
+EndFor
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+	
+\backslash
+If{
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula $d_{\min}<d_{\second}\cdot T$
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+		
+\backslash
+State
+\end_layout
+
+\end_inset
+
+ Thêm cặp 
+\begin_inset Formula $\left(k_{1},k_{\min}\right)$
+\end_inset
+
+ vào 
+\begin_inset Formula $\mathcal{M}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+	
+\backslash
+EndIf
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+EndFor
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+State 
+\backslash
+Return
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset Formula $\mathcal{M}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{algorithmic}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Đối sánh keypoint
+\begin_inset CommandInset label
+LatexCommand label
+name "alg:Đối-sánh-keypoint"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \end_inset

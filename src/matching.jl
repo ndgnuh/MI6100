@@ -1,3 +1,5 @@
+using .Constants
+using LinearAlgebra
 function match(desc1, desc2)
     matches = Tuple{Int, Int}[]
     sizehint!(matches, length(desc1))
@@ -10,13 +12,14 @@ function match(desc1, desc2)
             if dist < min_dist
                 min_dist = dist
                 min_feature = idx2
-            else
+            elseif
                 rest_min = dist
             end
         end
         push!(matches, (idx1, min_feature))
     end
-    #= if min_dist < rest_min * const.rel_dist_match_thresh: =#
-    #=     matches.append((feature1, min_feature)) =#
+    if min_dist < rest_min * Constants.REL_DIST_MATCH_THRESH
+        push!(matches, (idx1, idx2))
+    end
     return matches
 end

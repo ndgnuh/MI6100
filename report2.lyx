@@ -1580,18 +1580,17 @@ và một
 \begin_inset Formula $\DominateOrientation$
 \end_inset
 
- là hàm lấy ra các góc chiếm chủ đạo trong histogram, hai thủ tục này được
- mô tả tương ứng trong 
-\begin_inset Flex TODO Note (inline)
-status collapsed
-
-\begin_layout Plain Layout
-Thủ tục patch và dominate histogram
-\end_layout
+ là hàm lấy ra các góc chiếm chủ đạo trong histogram, được mô tả trong 
+\begin_inset CommandInset ref
+LatexCommand formatted
+reference "alg:histogram-peaks"
+plural "false"
+caps "false"
+noprefix "false"
 
 \end_inset
 
-
+.
 \end_layout
 
 \begin_layout Standard
@@ -2533,6 +2532,216 @@ name "alg:keypoint-orienatation"
 
 \end_layout
 
+\begin_layout Standard
+\begin_inset Float algorithm
+placement H
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{algorithmic}[1]
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Requires
+\end_layout
+
+\end_inset
+
+ Historgram 
+\begin_inset Formula $H$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+State
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset Formula $\mathcal{P}\gets\emptyset$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+For{
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula $i\gets1$
+\end_inset
+
+, số lượng góc tối đa
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+	
+\backslash
+State
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset Formula $\phi\gets\argmax\left(H\right)$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+	
+\backslash
+State
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset Formula $H\left[\phi\right]\gets0$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+	
+\backslash
+State
+\end_layout
+
+\end_inset
+
+ Thêm 
+\begin_inset Formula $\Phi$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+EndFor
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{algorithmic}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Tìm peak của histogram 
+\begin_inset CommandInset label
+LatexCommand label
+name "alg:histogram-peaks"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Subsection
 Tính toán descriptor của keypoint
 \end_layout
@@ -2546,7 +2755,7 @@ Sau khi tìm được toạ độ của keypoint, ta tiến hành tìm descripto
 placement H
 wide false
 sideways false
-status open
+status collapsed
 
 \begin_layout Plain Layout
 \begin_inset ERT
@@ -2953,7 +3162,7 @@ noprefix "false"
 placement H
 wide false
 sideways false
-status open
+status collapsed
 
 \begin_layout Plain Layout
 \begin_inset ERT

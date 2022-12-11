@@ -2,60 +2,45 @@
 \lyxformat 544
 \begin_document
 \begin_header
-\save_transient_properties false
+\save_transient_properties true
 \origin unavailable
-\textclass report
+\textclass scrreprt
 \begin_preamble
-\usepackage{mlmodern}
-\usepackage[fontsize=14pt]{scrextend}
-\usepackage[a4paper,top=3.5cm,left=3cm,right=2cm,bottom=2cm]{geometry}
-\usepackage{setspace}\onehalfspacing
-
-\let\oldparagraph\paragraph
-\def\paragraph#1{\oldparagraph{#1.}}
-
-\usepackage{algorithm}
+%% ALGORITHM %%
 \usepackage{algpseudocode}
-\renewcommand{\algorithmicrequire}{\textbf{Input:}}
-\renewcommand{\algorithmicensure}{\textbf{Output:}}
-\newcommand{\Any}[1]{\operatorname{any\left(#1\right)}}
-\newcommand{\Not}{\textbf{not}\ }
-\newcommand{\abs}[1]{\left\lvert#1\right\rvert}
-\newcommand{\trace}{\operatorname{tr}}
-\usepackage{nicefrac}
-
-
-\newcommand{\Continue}{\textbf{continue}}
+\newcommand{\Func}[2][]{%
+	\def\temp{#1}%
+	\ifx\temp\empty%
+		\operatorname{#2}%
+	\else%
+		\operatorname{#2}\left(#1\right)%
+	\fi%
+}
 \newcommand{\Break}{\textbf{break}}
 
-\newrefformat{alg}{Thuật toán \ref{#1}}
-\def\gets\coloneqq
 
-\newcommand{\func}[2][]{%
-	\def\temp{#1}
-	\ifx\temp\empty
-		\operatorname{#2}
-	\else
-		\operatorname{#2}\left(#1\right)
-	\fi
-}
-\def\gets{\coloneqq}
+%% SIFT %%
+\def\octave{\mathrm{octave}}
+\def\numscale{s}
+\def\second{\mathrm{second}}
 \end_preamble
 \use_default_options true
 \begin_modules
+InStar
 todonotes
 \end_modules
 \maintain_unincluded_children false
 \begin_local_layout
-Style JuliaMinted
+Format 66
+Style MyAlgorithmic
 Category              MainText
 Margin                Static
 LatexType             Environment
-LatexName             juliacode
+LatexName             myalgorithmic
 NextNoIndent          1
 LeftMargin            MMM
 RightMargin           MMM
-PassThru              1
+PassThru              0
 ParbreakIsNewline     1
 ParIndent             M
 ParSkip               0
@@ -67,9 +52,10 @@ Align                 Block
 AlignPossible         Block, Left, Right, Center
 Font Monospace
 Preamble
-        \usepackage{minted}
-        \newminted{julia}{fontsize=\footnotesize,breaklines,mathescape,linenos=true}
-    EndPreamble
+	\newenvironment{myalgorithmic}
+		{\begin{algorithmic}[1]}
+		{\end{algorithmic}}
+EndPreamble
 End
 \end_local_layout
 \language vietnamese
@@ -86,7 +72,7 @@ End
 \font_osf false
 \font_sf_scale 100 100
 \font_tt_scale 100 100
-\use_microtype true
+\use_microtype false
 \use_dash_ligatures true
 \graphics default
 \default_output_format default
@@ -99,12 +85,12 @@ End
 \pdf_bookmarks true
 \pdf_bookmarksnumbered true
 \pdf_bookmarksopen true
-\pdf_bookmarksopenlevel 1
+\pdf_bookmarksopenlevel 4
 \pdf_breaklinks false
 \pdf_pdfborder false
 \pdf_colorlinks false
-\pdf_backref false
-\pdf_pdfusetitle true
+\pdf_backref page
+\pdf_pdfusetitle false
 \papersize default
 \use_geometry false
 \use_package amsmath 1
@@ -131,10 +117,6 @@ End
 \shortcut idx
 \color #008000
 \end_index
-\leftmargin 1in
-\topmargin 1in
-\rightmargin 1in
-\bottommargin 1in
 \secnumdepth 3
 \tocdepth 3
 \paragraph_separation indent
@@ -154,125 +136,6 @@ End
 \end_header
 
 \begin_body
-
-\begin_layout Standard
-\begin_inset FormulaMacro
-\newcommand{\next}{\phi}
-\end_inset
-
-
-\begin_inset FormulaMacro
-\newcommand{\prev}{\beta}
-\end_inset
-
-
-\begin_inset FormulaMacro
-\newcommand{\R}{\mathbb{R}}
-\end_inset
-
-
-\begin_inset FormulaMacro
-\newcommand{\resize}{\operatorname{resize}}
-{\text{resize}}
-\end_inset
-
-
-\begin_inset FormulaMacro
-\newcommand{\octave}{\omega}
-\end_inset
-
-
-\begin_inset FormulaMacro
-\newcommand{\layer}{\lambda}
-\end_inset
-
-
-\begin_inset FormulaMacro
-\newcommand{\row}{r}
-\end_inset
-
-
-\begin_inset FormulaMacro
-\newcommand{\col}{c}
-\end_inset
-
-
-\begin_inset FormulaMacro
-\newcommand{\numscale}{\text{\ensuremath{\#\mathrm{scales}}}}
-\end_inset
-
-
-\begin_inset FormulaMacro
-\newcommand{\numoctave}{\text{\ensuremath{\#\mathrm{octaves}}}}
-\end_inset
-
-
-\begin_inset FormulaMacro
-\newcommand{\height}{\mathrm{\#rows}}
-\end_inset
-
-
-\begin_inset FormulaMacro
-\newcommand{\width}{\mathrm{\#cols}}
-\end_inset
-
-
-\begin_inset FormulaMacro
-\newcommand{\second}{\mathrm{second}}
-\end_inset
-
-
-\begin_inset FormulaMacro
-\newcommand{\gets}{\coloneqq}
-\end_inset
-
-
-\end_layout
-
-\begin_layout Title
-Đối sánh ảnh sử dụng Scale Invariant Feature Transform
-\end_layout
-
-\begin_layout Author
-Nguyễn Đức Hùng–20212498M
-\end_layout
-
-\begin_layout Standard
-\begin_inset CommandInset toc
-LatexCommand tableofcontents
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Chapter
-Yêu cầu
-\end_layout
-
-\begin_layout Standard
-Các yêu cầu của báo cáo:
-\end_layout
-
-\begin_layout Itemize
-Ảnh là gì
-\end_layout
-
-\begin_layout Itemize
-Đặc trưng của ảnh
-\end_layout
-
-\begin_layout Itemize
-Thế nào là đối sánh ảnh
-\end_layout
-
-\begin_layout Itemize
-Các phương pháp đối sánh hiện có
-\end_layout
-
-\begin_layout Itemize
-Phân loại các phương pháp
-\end_layout
 
 \begin_layout Chapter
 Đại cương về ảnh
@@ -333,59 +196,6 @@ tín hiệu
 \end_inset
 
 .
-\end_layout
-
-\begin_layout Subsection
-Biểu diễn dạng sóng
-\end_layout
-
-\begin_layout Standard
-Theo phần trên, một bức ảnh được biểu diễn như một tập những điểm ảnh riêng
- biệt.
- Chúng ta có thể biểu diễn ảnh như tổ hợp của những ảnh cơ sở–những bức
- ảnh mà chỉ có một điểm ảnh có giá trị một, các điểm ảnh còn lại có giá
- trị không
-\begin_inset Formula 
-\[
-^{m,n}\mathbf{P}\colon^{m,n}p_{m',n'}=\begin{cases}
-1 & m=m'\land n=n',\\
-0 & \text{các trường hợp khác}.
-\end{cases}
-\]
-
-\end_inset
-
-Khi đó, một bức ảnh bất kỳ có thể được biểu diễn bằng hợp của những cơ sở
- ảnh
-\begin_inset Formula 
-\[
-\mathbf{G}=\sum_{m=0}^{M-1}\sum_{n=0}^{N}g_{m,n}{}^{m,n}\mathbf{P},
-\]
-
-\end_inset
-
-trong đó 
-\begin_inset Formula $g_{m,n}$
-\end_inset
-
- là giá trị xám tại vị trí 
-\begin_inset Formula $m,n$
-\end_inset
-
-.
-\end_layout
-
-\begin_layout Standard
-\begin_inset Flex TODO Note (inline)
-status open
-
-\begin_layout Plain Layout
-Biểu diễn trong ảnh trong miền khác
-\end_layout
-
-\end_inset
-
-
 \end_layout
 
 \begin_layout Section
@@ -519,154 +329,6 @@ noprefix "false"
 \[
 f_{xx}\left(x_{0}\right)=f\left(x_{0}+1\right)-2f\left(x_{0}\right)+f\left(x_{0}-1\right).
 \]
-
-\end_inset
-
-
-\begin_inset Note Comment
-status collapsed
-
-\begin_layout Plain Layout
-Đạo hàm bậc 1 (gradient) của ảnh được tính theo công thức sai phân
-\begin_inset Formula 
-\begin{equation}
-\frac{\partial I}{\partial d}\left(\mathbf{x}\right)=\frac{I\left(\next\left(\mathbf{x},d\right)\right)-I\left(\prev\left(\mathbf{x},d\right)\right)}{2h}\label{eq:grad}
-\end{equation}
-
-\end_inset
-
-trong đó 
-\begin_inset Formula $\mathbf{x}$
-\end_inset
-
- là tọa độ của điểm ảnh, 
-\begin_inset Formula $\next$
-\end_inset
-
- và 
-\begin_inset Formula $\prev$
-\end_inset
-
- là các hàm được định nghĩa bởi
-\begin_inset Formula 
-\begin{align*}
-\next\left(\mathbf{x},d\right) & =\left[x_{i}+h\cdot\mathbf{1}\left(d,i\right)\right],\\
-\prev\left(\mathbf{x},d\right) & =\left[x_{i}-h\cdot\mathbf{1}\left(d,i\right)\right],\\
-\mathbf{1}\left(d,i\right) & =\begin{cases}
-1 & d=i,\\
-0 & d\ne i.
-\end{cases}
-\end{align*}
-
-\end_inset
-
-và 
-\begin_inset Formula $h$
-\end_inset
-
- được chọn sao cho 
-\begin_inset Formula $\next\left(\mathbf{x},d\right)$
-\end_inset
-
- và 
-\series bold
-
-\begin_inset Formula $\prev\left(\mathbf{x},d\right)$
-\end_inset
-
- 
-\series default
-nguyên.
- Theo định nghĩa hessian, đạo hàm bậc hai được
-\begin_inset Formula 
-\begin{align}
-\frac{\partial^{2}I}{\partial d_{2}\partial d_{1}}\left(\mathbf{x}\right) & =\frac{1}{2h}\left[\frac{\partial I}{\partial d_{2}}\next\left(\mathbf{x},d_{1}\right)-\frac{\partial I}{\partial d_{2}}\left(\prev\left(\mathbf{x},d_{1}\right)\right)\right]\nonumber \\
- & =\frac{1}{4h^{2}}\left[I\left(\next\left(\next\left(\mathbf{x},d_{1}\right),d_{2}\right)\right)-I\left(\prev\left(\next\left(\mathbf{x},d_{1}\right),d_{2}\right)\right)-I\left(\next\left(\prev\left(\mathbf{x},d_{1}\right),d_{2}\right)\right)+I\left(\prev\left(\prev\left(\mathbf{x},d_{1}\right),d_{2}\right)\right)\right].\label{eq:hess}
-\end{align}
-
-\end_inset
-
-Trong trường hợp 
-\begin_inset Formula $d_{1}=d_{2}$
-\end_inset
-
-, ta được công thức đơn giản hơn
-\begin_inset Formula 
-\[
-\frac{\partial^{2}I}{\partial d^{2}}=\frac{1}{4h^{2}}\left[I\left(\next^{2}\left(\mathbf{x},d\right)\right)-2I\left(\mathbf{x}\right)+\beta^{2}\left(\mathbf{x},d_{2}\right)\right],
-\]
-
-\end_inset
-
-đặt 
-\begin_inset Formula $h'=2h$
-\end_inset
-
-, ta có
-\begin_inset Formula 
-\[
-\frac{\partial^{2}I}{\partial d^{2}}=\frac{1}{\left(h'\right)^{2}}\left[I\left(\next_{h^{'}}\left(\mathbf{x},d\right)\right)-2I\left(\mathbf{x}\right)+\beta_{h'}\left(\mathbf{x},d_{2}\right)\right].
-\]
-
-\end_inset
-
-Thay 
-\begin_inset Formula $h$
-\end_inset
-
- và 
-\begin_inset Formula $h'$
-\end_inset
-
- phù hợp, ta có công thức tính các gradients và hessians của ảnh theo chiều
- 
-\begin_inset Formula $d$
-\end_inset
-
-:
-\begin_inset Formula 
-\begin{align}
-\frac{\partial I}{\partial d} & =\frac{1}{2}I\left(\next_{1}\left(\mathbf{x},d\right)\right)-\frac{1}{2}I\left(\prev_{1}\left(\mathbf{x},d\right)\right),\label{eq:grad-d}\\
-\frac{\partial^{2}I}{\partial d^{2}} & =I\left(\next_{1}\left(\mathbf{x},d\right)\right)-2I\left(\mathbf{x}\right)+\beta_{1}\left(\mathbf{x},d_{2}\right),\label{eq:hess-d}\\
-\frac{\partial I}{\partial d_{1}\partial d_{2}} & =\frac{1}{4}I\left(\next_{1}\left(\next_{1}\left(\mathbf{x},d_{1}\right),d_{2}\right)\right)+\frac{1}{4}I\left(\prev_{1}\left(\prev_{1}\left(\mathbf{x},d_{1}\right),d_{2}\right)\right)\nonumber \\
- & -\frac{1}{4}I\left(\prev\left(\next\left(\mathbf{x},d_{1}\right),d_{2}\right)\right)-\frac{1}{4}I\left(\next\left(\prev\left(\mathbf{x},d_{1}\right),d_{2}\right)\right).\label{eq:hess-d1-d2}
-\end{align}
-
-\end_inset
-
-Như vậy, việc tính gradient và hessian của ảnh có thể được đưa về thao tác
- nhân chập các chiều tương ứng của ảnh.
- Nhân để tính gradient và hessian lần lượt là:
-\begin_inset Formula 
-\begin{align*}
-K_{G} & =\left[\begin{array}{ccc}
--\frac{1}{2} & 0 & \frac{1}{2}\end{array}\right],\\
-K_{H} & =\left[\begin{array}{ccc}
--\frac{1}{2} & 0 & \frac{1}{2}\\
-0 & 0 & 0\\
-\frac{1}{2} & 0 & -\frac{1}{2}
-\end{array}\right],\quad d_{1}\ne d_{2},\\
-K_{H} & =\left[\begin{array}{ccc}
-0 & 0 & 0\\
-1 & -2 & 1\\
-0 & 0 & 0
-\end{array}\right],\quad d_{1}=d_{2}.
-\end{align*}
-
-\end_inset
-
-
-\end_layout
-
-\end_inset
-
-
-\begin_inset Flex TODO Note (inline)
-status open
-
-\begin_layout Plain Layout
-Viết thêm về đạo hàm ảnh, không có SIFT trong context
-\end_layout
 
 \end_inset
 
@@ -851,7 +513,7 @@ scale space
 
 \end_layout
 
-\begin_layout Chapter
+\begin_layout Section
 Đối sánh ảnh
 \end_layout
 
@@ -868,7 +530,7 @@ Các phương pháp đối sánh ảnh, các vấn đề về locality và invar
 
 \end_layout
 
-\begin_layout Section
+\begin_layout Subsection
 Đặt vấn đề
 \end_layout
 
@@ -877,7 +539,7 @@ Tìm các đặc trưng giống nhau giữa hai ảnh của cùng một sự v�
  chụp khác nhau.
 \end_layout
 
-\begin_layout Subsection
+\begin_layout Subsubsection
 Các phương pháp hiện có
 \end_layout
 
@@ -934,15 +596,11 @@ Nhược điểm: ?
 \end_layout
 
 \begin_layout Chapter
-Phương pháp SIFT
+Scale Invariant Feature Transform
 \end_layout
 
 \begin_layout Section
-Nội dung
-\end_layout
-
-\begin_layout Subsection
-Ý tưởng và quy trình chung
+Tổng quát
 \end_layout
 
 \begin_layout Standard
@@ -1573,32 +1231,12 @@ Tổng quan quy trình SIFT
 
 \end_layout
 
-\begin_layout Subsection
-Phân tích
-\end_layout
-
-\begin_layout Paragraph
-không gian tỷ lệ (Scale space)
-\end_layout
-
-\begin_layout Paragraph
-Địa phương hóa
-\end_layout
-
-\begin_layout Paragraph
-Góc chủ đạo và độ lớn
-\end_layout
-
-\begin_layout Paragraph
-Tính dặc trưng
+\begin_layout Section
+Quy trình chi tiết
 \end_layout
 
 \begin_layout Subsection
-Quy trình cụ thể
-\end_layout
-
-\begin_layout Paragraph
-Xử lý ảnh đầu vào
+Tiền xử lý
 \end_layout
 
 \begin_layout Standard
@@ -1641,54 +1279,12 @@ literal "false"
  thu được sẽ lớn hơn ban đầu
 \end_layout
 
-\begin_layout Paragraph
-Tìm số bậc kim tự tháp
+\begin_layout Subsection
+Tìm scalespace
 \end_layout
 
 \begin_layout Standard
-Ở mỗi bậc của biểu diễn kim tự tháp, ảnh bị thu nhỏ đi với tỷ lệ 
-\begin_inset Formula $\nicefrac{1}{2}$
-\end_inset
-
-, do đó số bậc tối đa của kim tự tháp phụ thuộc vào kích thước ảnh đầu vào.
- Kích thước đó được tính bằng 
-\begin_inset CommandInset ref
-LatexCommand eqref
-reference "eq:num_octaves"
-plural "false"
-caps "false"
-noprefix "false"
-
-\end_inset
-
-:
-\begin_inset Formula 
-\begin{equation}
-\#\mathrm{octave}=\left\lfloor \frac{\log\left(\min\left(\mathrm{height},\mathrm{width}\right)\right)}{\log\left(2\right)}-1\right\rfloor .\label{eq:num_octaves}
-\end{equation}
-
-\end_inset
-
-Công thức 
-\begin_inset CommandInset ref
-LatexCommand eqref
-reference "eq:num_octaves"
-plural "false"
-caps "false"
-noprefix "false"
-
-\end_inset
-
- chỉ đưa ra cận trên, trong thực tiễn ta hoàn toàn có thể tham số hóa số
- bậc của kim tự tháp.
-\end_layout
-
-\begin_layout Paragraph
-Tìm không gian tỷ lệ
-\end_layout
-
-\begin_layout Standard
-Với mỗi bậc 
+Với mỗi bậc octave 
 \begin_inset Formula $\octave$
 \end_inset
 
@@ -1725,7 +1321,7 @@ trong đó
 \begin_inset Formula 
 \begin{align*}
 L_{1}\left(x,y,\sigma_{1}\right) & =I,\\
-L_{\octave}\left(x,y,\sigma_{1}\right) & =\resize\left(L_{\octave-1}\left(x,y,\sigma_{\numscale}\right),0.5\right).
+L_{\octave}\left(x,y,\sigma_{1}\right) & =\left(L_{\octave-1}\left(x,y,\sigma_{\numscale}\right),0.5\right).
 \end{align*}
 
 \end_inset
@@ -1746,8 +1342,8 @@ literal "false"
  
 \end_layout
 
-\begin_layout Paragraph
-Tìm cực trị của không gian tỷ lệ
+\begin_layout Subsection
+Tìm cực trị của scale space
 \end_layout
 
 \begin_layout Standard
@@ -1806,44 +1402,8 @@ Trường hợp cực đại được định nghĩa tương tự.
 ).
 \end_layout
 
-\begin_layout Paragraph
-Kiểm tra tọa độ hợp lệ
-\end_layout
-
-\begin_layout Standard
-Xét tọa độ 
-\begin_inset Formula $\mathbf{x}=\left(x,y,t\right)$
-\end_inset
-
- bất kỳ, không gian tỷ lệ 
-\begin_inset Formula $L_{\octave}\left(x,y,\sigma_{t}\right)$
-\end_inset
-
-.
- Điểm 
-\begin_inset Formula $\mathbf{x}$
-\end_inset
-
- được coi là hợp lệ nếu
-\begin_inset Formula 
-\begin{align*}
- & \left(x<\width-1\right)\land\left(y<\height-1\right)\land\left(t<\numscale-1\right)\\
-\text{và} & \left(x>1\right)\land\left(y>1\right)\land\left(t>1\right).
-\end{align*}
-
-\end_inset
-
-Lý do biên ảnh bị thu hẹp đi 1 đơn vị vì ở bước tìm tọa độ chính xác, ta
- cần tính gradient và hessian của 
-\begin_inset Formula $D_{\octave}\left(\mathbf{x}\right)$
-\end_inset
-
-.
- 
-\end_layout
-
-\begin_layout Paragraph
-Tìm tọa độ chính xác của keypoint
+\begin_layout Subsection
+Localize keypoint
 \end_layout
 
 \begin_layout Standard
@@ -1879,9 +1439,10 @@ noprefix "false"
 
 \begin_layout Standard
 \begin_inset Float algorithm
+placement H
 wide false
 sideways false
-status open
+status collapsed
 
 \begin_layout Plain Layout
 \begin_inset ERT
@@ -2266,342 +1827,13 @@ name "alg:candidate-coord-algorithm"
 
 \end_layout
 
-\begin_layout Plain Layout
-
-\end_layout
-
 \end_inset
 
 
 \end_layout
 
-\begin_layout Paragraph
-Lọc keypoint
-\end_layout
-
-\begin_layout Standard
-Sau khi địa phương hóa keypoint, ta loại bỏ các điểm ảnh với độ tương phản
- thấp và các keypoint nằm trên cạnh (do các keypoint nằm trên cạnh sẽ bị
- ảnh hưởng bởi góc quay của ảnh).
- Việc loại bỏ được tính sử dụng 
-\begin_inset CommandInset ref
-LatexCommand formatted
-reference "alg:keypoint-filter"
-plural "false"
-caps "false"
-noprefix "false"
-
-\end_inset
-
-.
-\begin_inset Float algorithm
-placement H
-wide false
-sideways false
-status open
-
-\begin_layout Plain Layout
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-begin{algorithmic}[1]
-\end_layout
-
-\begin_layout Plain Layout
-
-
-\backslash
-Require Keypoint $
-\backslash
-mathbf{x}$, dung sai $
-\backslash
-mathbf{
-\backslash
-hat{x}}$, ngưỡng $r$ (mặc định $10$)
-\end_layout
-
-\begin_layout Plain Layout
-
-
-\backslash
-Ensure Bỏ keypoint hoặc không
-\end_layout
-
-\begin_layout Plain Layout
-
-
-\backslash
-Function {RejectKeypoint}{$
-\backslash
-mathbf{x}$, $
-\backslash
-mathbf{
-\backslash
-hat{x}}$, $r = 10$}
-\end_layout
-
-\begin_layout Plain Layout
-
-	
-\backslash
-State $D
-\backslash
-left(
-\backslash
-mathbf{
-\backslash
-hat{x}}
-\backslash
-right) 
-\backslash
-gets D+
-\backslash
-frac{1}{2}
-\backslash
-left(
-\backslash
-frac{
-\backslash
-partial D}{
-\backslash
-partial x}
-\backslash
-right)^{
-\backslash
-top}
-\backslash
-mathbf{
-\backslash
-hat{x}}$
-\end_layout
-
-\begin_layout Plain Layout
-
-	
-\backslash
-If {$
-\backslash
-abs{D
-\backslash
-left(
-\backslash
-mathbf{
-\backslash
-hat{x}}
-\backslash
-right)}< 0.03$}
-\end_layout
-
-\begin_layout Plain Layout
-
-		
-\backslash
-State 
-\backslash
-Return 1
-\end_layout
-
-\begin_layout Plain Layout
-
-	
-\backslash
-EndIf
-\end_layout
-
-\begin_layout Plain Layout
-
-	
-\backslash
-State $
-\backslash
-mathbf{H} 
-\backslash
-gets 
-\backslash
-left[
-\backslash
-begin{array}{cc}D_{xx} & D_{xy}
-\backslash
-
-\backslash
-D_{xy} & D_{yy}
-\backslash
-end{array}
-\backslash
-right]$
-\end_layout
-
-\begin_layout Plain Layout
-
-	
-\backslash
-If {$
-\backslash
-nicefrac{
-\backslash
-trace
-\backslash
-left(
-\backslash
-mathbf{H}
-\backslash
-right)}{
-\backslash
-det
-\backslash
-left(
-\backslash
-mathbf{H}
-\backslash
-right)} 
-\backslash
-ge 
-\backslash
-nicefrac{
-\backslash
-left(r+1
-\backslash
-right)^{2}}{r}$}
-\end_layout
-
-\begin_layout Plain Layout
-
-		
-\backslash
-State 
-\backslash
-Return 1
-\end_layout
-
-\begin_layout Plain Layout
-
-	
-\backslash
-EndIf
-\end_layout
-
-\begin_layout Plain Layout
-
-	
-\backslash
-State 
-\backslash
-Return 0
-\end_layout
-
-\begin_layout Plain Layout
-
-
-\backslash
-EndFunction
-\end_layout
-
-\begin_layout Plain Layout
-
-
-\backslash
-end{algorithmic}
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Plain Layout
-\begin_inset Caption Standard
-
-\begin_layout Plain Layout
-Lọc bỏ keypoint
-\begin_inset CommandInset label
-LatexCommand label
-name "alg:keypoint-filter"
-
-\end_inset
-
-
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Plain Layout
-
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Paragraph
-Tính toán góc chủ đạo cho keypoint
-\end_layout
-
-\begin_layout Standard
-Bằng cách gắn keypoint cho một góc chủ đạo, không phụ thuộc vào chiều quay
- của ảnh, ta có thể so khớp ảnh không bị ảnh hưởng bởi góc xoay.
- Việc tính góc chủ đạo sẽ dựa trên việc thống kê số góc của các điểm lân
- cận vùng ảnh đó.
- Bán kính của vùng lân cận được tính bởi
-\begin_inset Formula 
-\[
-m\left(x,y,\sigma\right)=\sqrt{\left(\frac{\partial L\left(x,y,\sigma\right)}{\partial x}\right)^{2}+\left(\frac{\partial L\left(x,y,\sigma\right)}{\partial y}\right)^{2}}.
-\]
-
-\end_inset
-
-Góc của một điểm bất kỳ sẽ được định nghĩa bởi
-\begin_inset Formula 
-\[
-\theta\left(x,y,\sigma\right)=\arctan\left(\frac{\nicefrac{\partial L\left(x,y,\sigma\right)}{\partial y}}{\nicefrac{\partial L\left(x,y,\sigma\right)}{\partial x}}\right).
-\]
-
-\end_inset
-
-Ta xét tất cả các điểm 
-\begin_inset Formula $\left(x_{0},y_{0}\right)$
-\end_inset
-
- mà
-\begin_inset Formula 
-\[
-d\left(\left(x,y\right),\left(x_{0},y_{0}\right)\right)\le m\left(x,y,\sigma\right)
-\]
-
-\end_inset
-
-Với mỗi keypoint, một histogram với số lượng bin là 
-\begin_inset Formula $36$
-\end_inset
-
- sẽ được dùng để thống kê lại góc chủ đạo của các điểm quanh nó một bán
- kính
-\begin_inset Formula 
-\[
-r=1.5\cdot\sigma_{0}\cdot m\left(x,y,\sigma\right).
-\]
-
-\end_inset
-
-Góc ứng với đỉnh histogram sẽ là góc chủ đạo của keypoint này.
- Bất kỳ góc nào với thống kê nằm trong khoảng 
-\begin_inset Formula $80\%$
-\end_inset
-
- của góc chủ đạo cũng sẽ được xét tới.
- Nếu có góc như vậy, một keypoint khác giống hệt keypoint hiện tại nhưng
- với góc đang xét sẽ được thêm vào tập keypoint.
-\end_layout
-
-\begin_layout Paragraph
-Tính toán biểu diễn của keypoint
+\begin_layout Subsection
+Tính toán descriptor của keypoint
 \end_layout
 
 \begin_layout Standard
@@ -2613,7 +1845,7 @@ Sau khi tìm được toạ độ của keypoint, ta tiến hành tìm descripto
 \begin_inset Float algorithm
 wide false
 sideways false
-status open
+status collapsed
 
 \begin_layout Plain Layout
 \begin_inset ERT
@@ -2674,7 +1906,7 @@ mathbf{R}
 \backslash
 gets 
 \backslash
-func[L']{Magnitude}
+Func[L']{Magnitude}
 \backslash
 )
 \end_layout
@@ -2693,7 +1925,7 @@ Phi}
 \backslash
 gets 
 \backslash
-func[L']{Orientation}
+Func[L']{Orientation}
 \backslash
 )
 \end_layout
@@ -2759,7 +1991,7 @@ State
 \backslash
 gets 
 \backslash
-func[K]{Coord}
+Func[K]{Coord}
 \backslash
 )
 \end_layout
@@ -2970,8 +2202,8 @@ Tính toán descriptor của keypoint
 
 \end_layout
 
-\begin_layout Paragraph
-So khớp keypoint để tìm vật thể
+\begin_layout Subsection
+Keypoint matching
 \end_layout
 
 \begin_layout Standard
@@ -3574,69 +2806,15 @@ name "alg:Đối-sánh-keypoint"
 \end_layout
 
 \begin_layout Section
-Thử nghiệm
-\end_layout
-
-\begin_layout Standard
-\begin_inset Flex TODO Note (inline)
-status open
-
-\begin_layout Plain Layout
-Thử nghiệm trên ảnh
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Section
-Kết quả và nhận xét
-\end_layout
-
-\begin_layout Standard
-\begin_inset Flex TODO Note (inline)
-status open
-
-\begin_layout Plain Layout
-Ưu nhược điểm, phương pháp mở rộng
-\end_layout
-
-\end_inset
-
-
+Phân tích
 \end_layout
 
 \begin_layout Chapter
 Kết luận
 \end_layout
 
-\begin_layout Chapter
-Tài liệu tham khảo
-\end_layout
-
 \begin_layout Standard
-\begin_inset CommandInset bibtex
-LatexCommand bibtex
-btprint "btPrintCited"
-bibfiles "latex/refs"
-options "bibtotoc,plain"
 
-\end_inset
-
-
-\end_layout
-
-\begin_layout Section*
-Note
-\end_layout
-
-\begin_layout Itemize
-Tư tưởng phương pháp
-\end_layout
-
-\begin_layout Itemize
-Viết thuật toán
 \end_layout
 
 \end_body

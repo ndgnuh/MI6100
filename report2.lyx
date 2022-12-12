@@ -261,6 +261,23 @@ status open
 \end_layout
 
 \begin_layout Standard
+\begin_inset FormulaMacro
+\newcommand{\argmax}{\operatorname{argmax}}
+{\text{argmax}}
+\end_inset
+
+
+\end_layout
+
+\begin_layout Title
+Đối sánh ảnh sử dụng Scale Invariant Feature Transform
+\end_layout
+
+\begin_layout Author
+Nguyễn Đức Hùng–20212498M
+\end_layout
+
+\begin_layout Standard
 \begin_inset CommandInset toc
 LatexCommand tableofcontents
 
@@ -671,7 +688,7 @@ Tìm các đặc trưng giống nhau giữa hai ảnh của cùng một sự v�
  chụp khác nhau.
 \end_layout
 
-\begin_layout Subsubsection
+\begin_layout Subsection
 Các phương pháp hiện có
 \end_layout
 
@@ -766,13 +783,39 @@ Sử dụng các descriptor để đối sánh ảnh
 \end_layout
 
 \begin_layout Standard
+Các bước trên được mô tả lại dưới dạng giả mã trong 
+\begin_inset CommandInset ref
+LatexCommand formatted
+reference "alg:Tổng-quan-SIFT"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+, trong đó 
+\begin_inset Formula $\varOmega$
+\end_inset
+
+ là số lượng octave, 
+\begin_inset Formula $\omega$
+\end_inset
+
+ là chỉ số octave, 
+\begin_inset Formula $S$
+\end_inset
+
+ là số lượng scale trong mỗi octave.
+\end_layout
+
+\begin_layout Standard
 \begin_inset Float algorithm
 placement H
 wide false
 sideways false
 status open
 
-\begin_layout Group
+\begin_layout Plain Layout
 \begin_inset ERT
 status open
 
@@ -788,7 +831,7 @@ begin{algorithmic}[1]
 
 \end_layout
 
-\begin_layout Group
+\begin_layout Plain Layout
 \begin_inset ERT
 status open
 
@@ -801,14 +844,18 @@ State
 
 \end_inset
 
- Xử lý ảnh đầu vào 
+
+\begin_inset Formula $I'\gets$
+\end_inset
+
+ Tiền xử lý 
 \begin_inset Formula $I$
 \end_inset
 
 
 \end_layout
 
-\begin_layout Group
+\begin_layout Plain Layout
 \begin_inset ERT
 status open
 
@@ -822,13 +869,17 @@ State
 \end_inset
 
  
-\begin_inset Formula $\#\mathrm{octave}\gets$
+\begin_inset Formula $\mathcal{L}\gets\left\{ L_{\octave}\left(x,y,\sigma_{j}\right)\colon\octave=\overline{1,\varOmega},j=\overline{1,S}\right\} =\left\{ \mathcal{L}_{\octave}\right\} $
 \end_inset
 
- tìm số bậc kim tự tháp
+ là gaussian pyramid của 
+\begin_inset Formula $I'$
+\end_inset
+
+
 \end_layout
 
-\begin_layout Group
+\begin_layout Plain Layout
 \begin_inset ERT
 status open
 
@@ -842,13 +893,17 @@ State
 \end_inset
 
  
-\begin_inset Formula $\mathcal{L}\gets\left\{ L_{\octave}\left(x,y,\sigma\right)\colon\octave=\overline{1,\#\mathrm{octave}}\right\} $
+\begin_inset Formula $\mathcal{X}\gets$
+\end_inset
+
+ tập các cực trị của 
+\begin_inset Formula $\mathcal{L}$
 \end_inset
 
 
 \end_layout
 
-\begin_layout Group
+\begin_layout Plain Layout
 \begin_inset ERT
 status open
 
@@ -862,45 +917,18 @@ State
 \end_inset
 
  
-\begin_inset Formula $\mathcal{K}\gets\varnothing$
+\begin_inset Formula $\mathcal{K}\gets$
 \end_inset
 
+ localize và tìm góc chủ đạo của các điểm 
+\begin_inset Formula $\mathbf{x}\in\mathcal{X}$
+\end_inset
 
+.
+ 
 \end_layout
-
-\begin_layout Group
-\begin_inset ERT
-status open
 
 \begin_layout Plain Layout
-
-
-\backslash
-For{
-\end_layout
-
-\end_inset
-
-
-\begin_inset Formula $L_{\octave}\left(x,y,\octave\right)\in\mathcal{L}$
-\end_inset
-
-
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-}
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_deeper
-\begin_layout Group
 \begin_inset ERT
 status open
 
@@ -914,278 +942,17 @@ State
 \end_inset
 
  
-\begin_inset Formula $\mathcal{C}\gets\left\{ \mathbf{x}\colon\mathbf{x}\text{ là cực trị }L_{\octave}\left(x,y,\sigma\right)\right\} $
+\begin_inset Formula $\mathcal{D}\gets$
 \end_inset
 
-
-\end_layout
-
-\begin_layout Group
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-For{
-\end_layout
-
-\end_inset
-
-
-\begin_inset Formula $\mathbf{x\in\mathcal{C}}$
-\end_inset
-
-
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-}
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_deeper
-\begin_layout Group
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-State
-\end_layout
-
-\end_inset
-
- 
-\begin_inset Formula $\mathbf{x}\gets$
-\end_inset
-
- tìm vị trí chính xác của 
-\begin_inset Formula $\mathbf{x}$
-\end_inset
-
- trong 
-\begin_inset Formula $L_{\octave}\left(x,y,\sigma\right)$
+ descriptor của mỗi 
+\begin_inset Formula $K\in\mathcal{K}$
 \end_inset
 
 .
 \end_layout
 
-\begin_layout Group
-\begin_inset ERT
-status open
-
 \begin_layout Plain Layout
-
-
-\backslash
-State
-\end_layout
-
-\end_inset
-
- 
-\begin_inset Formula $\mathrm{check1}\gets\mathbf{x}$
-\end_inset
-
- là tọa độ hợp lệ
-\end_layout
-
-\begin_layout Group
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-State
-\end_layout
-
-\end_inset
-
- 
-\begin_inset Formula $\mathrm{check2}\gets\mathbf{x}$
-\end_inset
-
- tương phản đủ lớn
-\end_layout
-
-\begin_layout Group
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-State
-\end_layout
-
-\end_inset
-
- 
-\begin_inset Formula $\mathrm{check3}\gets\mathbf{x}$
-\end_inset
-
- không nằm trên cạnh
-\end_layout
-
-\begin_layout Group
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-If{
-\end_layout
-
-\end_inset
-
-
-\begin_inset Formula $\mathrm{check1\land check2\land check3}$
-\end_inset
-
-
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-}
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Group
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-State
-\end_layout
-
-\end_inset
-
- 
-\begin_inset Formula $K\gets$
-\end_inset
-
- tập keypoint ứng với tọa độ 
-\begin_inset Formula $\mathbf{x}$
-\end_inset
-
- và các góc chủ đạo
-\end_layout
-
-\begin_layout Group
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-State
-\end_layout
-
-\end_inset
-
- 
-\begin_inset Formula $\mathcal{K}\gets\mathcal{K}\cup K$
-\end_inset
-
-
-\end_layout
-
-\begin_layout Group
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-EndIf
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\end_deeper
-\begin_layout Group
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-EndFor
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\end_deeper
-\begin_layout Group
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-EndFor
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Group
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-State
-\end_layout
-
-\end_inset
-
- 
-\begin_inset Formula $\mathcal{D}\gets\left\{ \text{biểu diễn số của }k\colon k\in\mathcal{K}\right\} $
-\end_inset
-
-
-\end_layout
-
-\begin_layout Group
 \begin_inset ERT
 status open
 
@@ -1207,7 +974,7 @@ Return
 
 \end_layout
 
-\begin_layout Group
+\begin_layout Plain Layout
 \begin_inset ERT
 status open
 
@@ -1227,7 +994,14 @@ end{algorithmic}
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Tổng quan quy trình SIFT
+Tổng quan SIFT
+\begin_inset CommandInset label
+LatexCommand label
+name "alg:Tổng-quan-SIFT"
+
+\end_inset
+
+
 \end_layout
 
 \end_inset
@@ -1259,33 +1033,15 @@ Tiền xử lý
 
 trong đó red, green, blue là giá trị sáng của kênh màu tương ứng tại một
  ví trí của ảnh
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-cite{RGB2Gray}
-\end_layout
+\begin_inset CommandInset citation
+LatexCommand cite
+key "RGB2Gray"
+literal "false"
 
 \end_inset
 
 .
  
-\end_layout
-
-\begin_layout Standard
-[*] Trong 
-\begin_inset CommandInset citation
-LatexCommand cite
-key "Lowe2004"
-literal "false"
-
-\end_inset
-
- chỉ ra rằng, khi làm mờ ảnh để tìm thang mở rộng ảnh lên, số lượng keypoint
- thu được sẽ lớn hơn ban đầu
 \end_layout
 
 \begin_layout Subsection
@@ -1562,9 +1318,10 @@ noprefix "false"
 
 , trong đó 
 \begin_inset Formula 
-\[
-\Patch\left(\mathbf{x}\right)=\Patch\left(x,y,t\right)=\left\{ \left(i,j\right),i=\overline{x-\left[\frac{\sigma_{t}}{2}\right],x+\left[\frac{\sigma_{t}}{2}\right]},j=\overline{y-\left[\frac{\sigma_{t}}{2}\right],y+\left[\frac{\sigma_{t}}{2}\right]}\right\} ,
-\]
+\begin{align*}
+\Patch\left(\mathbf{x}\right) & =\Patch\left(x,y,t\right),\\
+\Patch\left(x,y,t\right) & =\left\{ \left(i,j\right),i=\overline{x-\left[\frac{\sigma_{t}}{2}\right],x+\left[\frac{\sigma_{t}}{2}\right]},j=\overline{y-\left[\frac{\sigma_{t}}{2}\right],y+\left[\frac{\sigma_{t}}{2}\right]}\right\} ,
+\end{align*}
 
 \end_inset
 
@@ -2530,14 +2287,11 @@ name "alg:keypoint-orienatation"
 \end_inset
 
 
-\end_layout
-
-\begin_layout Standard
 \begin_inset Float algorithm
 placement H
 wide false
 sideways false
-status open
+status collapsed
 
 \begin_layout Plain Layout
 \begin_inset ERT
@@ -2563,7 +2317,7 @@ status open
 
 
 \backslash
-Requires
+Require
 \end_layout
 
 \end_inset
@@ -2583,6 +2337,26 @@ status open
 
 
 \backslash
+Ensure
+\end_layout
+
+\end_inset
+
+ Tập các góc chủ đạo 
+\begin_inset Formula $\mathcal{P}$
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
 State
 \end_layout
 
@@ -2590,6 +2364,26 @@ State
 
  
 \begin_inset Formula $\mathcal{P}\gets\emptyset$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+State
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset Formula $\max\gets0$
 \end_inset
 
 
@@ -2654,13 +2448,133 @@ status open
 
 	
 \backslash
+If{
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula $i\ne1\land H\left[\phi\right]<0.8\max$
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+		
+\backslash
+State
+\backslash
+Continue
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+	
+\backslash
+EndIf
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+	
+\backslash
+For{
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset Formula $i\gets-4,4$
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+		
+\backslash
 State
 \end_layout
 
 \end_inset
 
  
-\begin_inset Formula $H\left[\phi\right]\gets0$
+\begin_inset Formula $H\left[\phi+i\right]\gets0$
+\end_inset
+
+ (mask góc 
+\begin_inset Formula $\phi$
+\end_inset
+
+ và các góc gần với 
+\begin_inset Formula $\phi$
+\end_inset
+
+ của histogram)
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+	
+\backslash
+EndFor
+\end_layout
+
 \end_inset
 
 
@@ -2680,10 +2594,64 @@ State
 \end_inset
 
  Thêm 
-\begin_inset Formula $\Phi$
+\begin_inset Formula $\phi$
+\end_inset
+
+ vào 
+\begin_inset Formula $\mathcal{P}$
 \end_inset
 
 
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+	
+\backslash
+If{
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula $i=1$
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+} 
+\backslash
+State
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset Formula $\max=H\left[\phi\right]$
+\end_inset
+
+ 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+EndIf
+\end_layout
+
+\end_inset
+
+ 
 \end_layout
 
 \begin_layout Plain Layout
@@ -2697,6 +2665,28 @@ status open
 EndFor
 \end_layout
 
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+State 
+\backslash
+Return
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset Formula $\mathcal{P}$
 \end_inset
 
 
@@ -2747,19 +2737,26 @@ Tính toán descriptor của keypoint
 \end_layout
 
 \begin_layout Standard
-Sau khi tìm được toạ độ của keypoint, ta tiến hành tìm descriptor cho chúng:
-\end_layout
+Việc tính toán descriptor được mô tả trong 
+\begin_inset CommandInset ref
+LatexCommand formatted
+reference "alg:Tính-toán-descriptor"
+plural "false"
+caps "false"
+noprefix "false"
 
-\begin_layout Standard
+\end_inset
+
+.
 \begin_inset Float algorithm
 placement H
 wide false
 sideways false
-status collapsed
+status open
 
 \begin_layout Plain Layout
 \begin_inset ERT
-status collapsed
+status open
 
 \begin_layout Plain Layout
 
@@ -3099,6 +3096,13 @@ end{algorithmic}
 
 \begin_layout Plain Layout
 Tính toán descriptor của keypoint
+\begin_inset CommandInset label
+LatexCommand label
+name "alg:Tính-toán-descriptor"
+
+\end_inset
+
+
 \end_layout
 
 \end_inset
@@ -3714,8 +3718,40 @@ name "alg:Đối-sánh-keypoint"
 
 \end_layout
 
-\begin_layout Section
+\begin_layout Chapter
 Phân tích
+\end_layout
+
+\begin_layout Section
+Ưu điểm
+\end_layout
+
+\begin_layout Subsection
+Scale invariant
+\end_layout
+
+\begin_layout Standard
+Vì SIFT tìm kiếm điểm ảnh trên nhiều
+\end_layout
+
+\begin_layout Subsection
+Rotate invariant
+\end_layout
+
+\begin_layout Subsection
+Low brightness-sensitive
+\end_layout
+
+\begin_layout Section
+Nhược điểm
+\end_layout
+
+\begin_layout Subsection
+Viewpoint variant
+\end_layout
+
+\begin_layout Subsection
+Thời gian chạy cao
 \end_layout
 
 \begin_layout Chapter

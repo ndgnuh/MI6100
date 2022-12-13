@@ -19,6 +19,7 @@
 \newcommand{\Break}{\textbf{break}}
 \newcommand{\Continue}{\textbf{continue}}
 
+\usepackage{newcent}
 
 %% SIFT %%
 \def\octave{\mathrm{octave}}
@@ -32,6 +33,8 @@
 \begin_modules
 InStar
 todonotes
+fixltx2e
+logicalmkup
 \end_modules
 \maintain_unincluded_children false
 \begin_local_layout
@@ -65,7 +68,7 @@ End
 \inputencoding utf8x
 \fontencoding T5
 \font_roman "default" "default"
-\font_sans "default" "default"
+\font_sans "avant" "default"
 \font_typewriter "default" "default"
 \font_math "auto" "auto"
 \font_default_family default
@@ -74,7 +77,7 @@ End
 \font_osf false
 \font_sf_scale 100 100
 \font_tt_scale 100 100
-\use_microtype false
+\use_microtype true
 \use_dash_ligatures true
 \graphics default
 \default_output_format default
@@ -119,10 +122,12 @@ End
 \shortcut idx
 \color #008000
 \end_index
+\topmargin 3cm
+\bottommargin 2cm
 \secnumdepth 3
 \tocdepth 3
 \paragraph_separation indent
-\paragraph_indentation default
+\paragraph_indentation 0.5in
 \is_math_indent 0
 \math_numbering_side default
 \quotes_style english
@@ -130,6 +135,7 @@ End
 \papercolumns 1
 \papersides 1
 \paperpagestyle default
+\bullet 0 1 28 -1
 \tracking_changes false
 \output_changes false
 \html_math_output 0
@@ -3731,7 +3737,7 @@ Scale invariant
 \end_layout
 
 \begin_layout Standard
-Vì SIFT tìm kiếm điểm ảnh trên nhiều
+Vì SIFT tìm kiếm điểm ảnh trên nhiều 
 \end_layout
 
 \begin_layout Subsection
@@ -3750,8 +3756,46 @@ Nhược điểm
 Viewpoint variant
 \end_layout
 
+\begin_layout Standard
+SIFT không được thiết kế để xử lý việc thay đổi góc nhìn, do đó, ví dụ với
+ ..., SIFT đối sánh thành công với nhiều keypoint.
+ Khi thay đổi viewpoint đi khoảng 30 độ, số lượng keypoint match thành công
+ ít hơn, và khi thay đổi viewpoint đi 60 độ, vật thể không thể được nhận
+ dạng.
+ Để khắc phục nhược điểm này, một số phương pháp khác ra đời dựa trên tinh
+ thần của SIFT, nhưng thay vì chỉ tìm keypoint trên nhiều octave/scale khác
+ nhau, các phương pháp này tìm keypoint trên nhiều viewpoint 
+\begin_inset Flex TODO Note (inline)
+status open
+
+\begin_layout Plain Layout
+Hình minh hoạ và dẫn thêm ví dụ
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Subsection
 Thời gian chạy cao
+\end_layout
+
+\begin_layout Standard
+Việc tính toán gaussian pyramid và tìm cực trị của DoG pyramid tốn nhiều
+ tài nguyên tính toán.
+ Một số thuật toán khác như SURF đã được phát triển để khắc phục nhược điểm
+ này 
+\begin_inset Flex TODO Note (inline)
+status open
+
+\begin_layout Plain Layout
+dẫn thêm thông tin về SURF
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Chapter

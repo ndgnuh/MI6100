@@ -19,7 +19,9 @@
 \newcommand{\Break}{\textbf{break}}
 \newcommand{\Continue}{\textbf{continue}}
 
+%% TYPOGRAPHY %%
 \usepackage{newcent}
+\usepackage{indentfirst}
 
 %% SIFT %%
 \def\octave{\mathrm{octave}}
@@ -28,6 +30,7 @@
 
 %% PRETTY REF %%
 \newrefformat{alg}{Thuật toán \ref{#1}}
+\newrefformat{fig}{Hình \ref{#1}}
 \end_preamble
 \use_default_options true
 \begin_modules
@@ -84,7 +87,7 @@ End
 \output_sync 0
 \bibtex_command default
 \index_command default
-\paperfontsize default
+\paperfontsize 11
 \spacing onehalf
 \use_hyperref true
 \pdf_bookmarks true
@@ -1361,7 +1364,7 @@ noprefix "false"
 placement H
 wide false
 sideways false
-status collapsed
+status open
 
 \begin_layout Plain Layout
 \begin_inset ERT
@@ -1802,6 +1805,30 @@ State
 
 \end_inset
 
+ Kiểm tra
+\begin_inset Formula 
+\begin{equation}
+\frac{\det\left(\mathbf{H}\right)}{\tr\left(\mathbf{H}\right)}\le\frac{1+r^{2}}{r}\label{eq:keypoint-on-edge}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+		
+\backslash
+State
+\end_layout
+
+\end_inset
+
  Thêm 
 \begin_inset Formula $\mathbf{x}$
 \end_inset
@@ -1913,7 +1940,7 @@ name "alg:candidate-coord-algorithm"
 placement H
 wide false
 sideways false
-status collapsed
+status open
 
 \begin_layout Plain Layout
 \begin_inset ERT
@@ -3724,52 +3751,176 @@ name "alg:Đối-sánh-keypoint"
 
 \end_layout
 
-\begin_layout Chapter
+\begin_layout Section
 Phân tích
 \end_layout
 
-\begin_layout Section
+\begin_layout Subsection
 Ưu điểm
 \end_layout
 
-\begin_layout Subsection
-Scale invariant
+\begin_layout Standard
+Vì SIFT tìm kiếm điểm ảnh trên nhiều scale khác nhau, các keypoint tìm được
+ bởi SIFT ít bị ảnh hưởng bởi tỉ lệ của vật thể trong ảnh.
+ Ngoài ra, cách tìm keypoint của SIFT có một số đặc trưng khiến cho keypoint
+ không bị ảnh hưởng bởi độ sáng cũng như góc xoay của vật thể.
 \end_layout
 
 \begin_layout Standard
-Vì SIFT tìm kiếm điểm ảnh trên nhiều 
+Đầu tiên, trong bước localize keypoint, điều kiện lọc bỏ keypoint 
+\begin_inset Flex TODO Note (inline)
+status open
+
+\begin_layout Plain Layout
+REF phương trình
+\end_layout
+
+\end_inset
+
+ khiến cho những keypoint nằm trên cạnh bị bỏ đi.
+ Việc phát hiện các cạnh thường gặp khó khăn với góc xoay của ảnh, do đó
+ bỏ các keypoint nằm trên cạnh giúp cho keypoint không bị ảnh hưởng bởi
+ góc xoay.
+ Tiếp theo, khi tìm góc chủ đạo của keypoint, góc được tính toán bằng cách
+ thống kê trên lân cận của keypoint và tìm ra đỉnh của historgram.
+ Điều này làm cho những góc chủ đạo được xác định bởi vùng lân cận của keypoint,
+ một đặc trưng vốn không ảnh hưởng bởi góc xoay.
+\end_layout
+
+\begin_layout Standard
+Đối với ảnh hưởng về độ sáng, trong khi tìm descriptor cũng như tìm góc
+ chủ đạo, SIFT bỏ qua độ lớn của gradient, khiến cho ảnh hưởng của độ sáng
+ lên keypoint tìm được không cao.
+\begin_inset Float figure
+placement h
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename figures/box-in-scene-match.png
+	display false
+	width 100text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Cuốn sách trong cảnh, cuốn sách bị chê lấp và xoay, ảnh mẫu.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Float figure
+placement H
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename figures/cup-in-scene-match.png
+	display false
+	width 100text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Tìm kiếm cốc cà phê, cốc nhỏ hơn rất nhiều trong ảnh bên phải và bị xoay
+ 180 độ, ảnh tự chụp.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Subsection
-Rotate invariant
-\end_layout
-
-\begin_layout Subsection
-Low brightness-sensitive
-\end_layout
-
-\begin_layout Section
 Nhược điểm
-\end_layout
-
-\begin_layout Subsection
-Viewpoint variant
 \end_layout
 
 \begin_layout Standard
 SIFT không được thiết kế để xử lý việc thay đổi góc nhìn, do đó, ví dụ với
  ..., SIFT đối sánh thành công với nhiều keypoint.
  Khi thay đổi viewpoint đi khoảng 30 độ, số lượng keypoint match thành công
- ít hơn, và khi thay đổi viewpoint đi 60 độ, vật thể không thể được nhận
- dạng.
+ ít hơn (
+\begin_inset CommandInset ref
+LatexCommand formatted
+reference "fig:sift-affine-no-match"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+), và khi thay đổi viewpoint đi 60 độ, vật thể không thể được nhận dạng.
  Để khắc phục nhược điểm này, một số phương pháp khác ra đời dựa trên tinh
  thần của SIFT, nhưng thay vì chỉ tìm keypoint trên nhiều octave/scale khác
- nhau, các phương pháp này tìm keypoint trên nhiều viewpoint 
-\begin_inset Flex TODO Note (inline)
+ nhau, các phương pháp này tìm keypoint trên nhiều viewpoint, ví dụ như
+ ASIFT
+\begin_inset CommandInset citation
+LatexCommand cite
+key "ipol.2011.my-asift"
+literal "false"
+
+\end_inset
+
+.
+\begin_inset Float figure
+placement H
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Float figure
+wide false
+sideways false
 status open
 
 \begin_layout Plain Layout
-Hình minh hoạ và dẫn thêm ví dụ
+\align center
+\begin_inset Graphics
+	filename figures/cup-vp-match1.png
+	display false
+	width 45text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Viewpoint thay đổi ít
 \end_layout
 
 \end_inset
@@ -3777,25 +3928,80 @@ Hình minh hoạ và dẫn thêm ví dụ
 
 \end_layout
 
-\begin_layout Subsection
-Thời gian chạy cao
+\end_inset
+
+
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename figures/cup-vp-match2.png
+	display false
+	width 45text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Viewpoint thay đổi nhiều
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Số lượng keypoint ít dần khi viewpoint lệch khỏi ảnh train
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:sift-affine-no-match"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
-Việc tính toán gaussian pyramid và tìm cực trị của DoG pyramid tốn nhiều
- tài nguyên tính toán.
- Một số thuật toán khác như SURF đã được phát triển để khắc phục nhược điểm
- này 
-\begin_inset Flex TODO Note (inline)
-status open
-
-\begin_layout Plain Layout
-dẫn thêm thông tin về SURF
-\end_layout
+Ngoài ra, việc tính toán gaussian pyramid và tìm cực trị của DoG pyramid
+ tốn nhiều tài nguyên tính toán.
+ Một số thuật toán khác như FREAK
+\begin_inset CommandInset citation
+LatexCommand cite
+key "FREAK"
+literal "false"
 
 \end_inset
 
-
+đã được phát triển để khắc phục nhược điểm này, trong khi vẫn giữ được các
+ thuộc tính như scale invariant và rotate invariant.
 \end_layout
 
 \begin_layout Chapter

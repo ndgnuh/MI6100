@@ -18,7 +18,24 @@
 }
 \newcommand{\Break}{\textbf{break}}
 \newcommand{\Continue}{\textbf{continue}}
+\usepackage{listings}
+\lstdefinelanguage{custom}{
+    morekeywords={Input, Output, for, end, if, in, :=, int, float,
+				 trunc, round, floor, ceil, 
+				 bool, true, false, return, zeros, ones, rand},
+    sensitive=false, % keywords are not case-sensitive
+    morecomment=[l]{\#}, % l is for line comment
+    morestring=[b]" % defines that strings are enclosed in double quotes
+} % 
 
+\usepackage{inconsolata}
+\lstset{
+basicstyle=\ttfamily,
+numberstyle=\footnotesize\bfseries\ttfamily,
+extendedchars=false,
+inputencoding=utf8,
+xleftmargin=2em, language=custom, tabsize=3, numbers=left}
+\usepackage{listingsutf8}
 %% TYPOGRAPHY %%
 \usepackage{newcent}
 \usepackage{indentfirst}
@@ -31,6 +48,9 @@
 %% PRETTY REF %%
 \newrefformat{alg}{Thuật toán \ref{#1}}
 \newrefformat{fig}{Hình \ref{#1}}
+\newrefformat{sec}{Phần \ref{#1}}
+
+\usepackage[a4paper, top=3.5cm, bottom=3.0cm, left=3.5cm, right=2.0cm]{geometry}
 \end_preamble
 \use_default_options true
 \begin_modules
@@ -67,7 +87,7 @@ EndPreamble
 End
 \end_local_layout
 \language vietnamese
-\language_package default
+\language_package babel
 \inputencoding utf8x
 \fontencoding T5
 \font_roman "default" "default"
@@ -184,6 +204,15 @@ status open
 \begin_inset FormulaMacro
 \newcommand{\Resize}{\operatorname{Resize}}
 {\text{Resize}}
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset FormulaMacro
+\newcommand{\tr}{\operatorname{tr}}
+{\text{tr}}
 \end_inset
 
 
@@ -357,7 +386,43 @@ tín hiệu
 \end_layout
 
 \begin_layout Section
-Đạo hàm của ảnh
+Một số thao tác trên ảnh
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:imageops"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Phần 
+\begin_inset CommandInset ref
+LatexCommand nameref
+reference "sec:imageops"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ nói về một số thao tác trên ảnh mà sẽ được dùng trong thuật toán chi tiết
+ (
+\begin_inset CommandInset ref
+LatexCommand formatted
+reference "sec:sift-detail"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+).
+\end_layout
+
+\begin_layout Subsection
+Tính gradient và hessian
 \end_layout
 
 \begin_layout Standard
@@ -493,6 +558,312 @@ f_{xx}\left(x_{0}\right)=f\left(x_{0}+1\right)-2f\left(x_{0}\right)+f\left(x_{0}
 
 \end_layout
 
+\begin_layout Subsection
+Thu nhỏ ảnh với tỉ lệ
+\end_layout
+
+\begin_layout Standard
+Với ảnh 
+\begin_inset Formula $I$
+\end_inset
+
+ kích thước 
+\begin_inset Formula $m\times n$
+\end_inset
+
+, ta có thể thu nhỏ ảnh về kích thước 
+\begin_inset Formula $m'\times n'$
+\end_inset
+
+ bằng một trong hai cách lấy mẫu hoặc nội suy song tuyến
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Bilinear"
+literal "false"
+
+\end_inset
+
+ (
+\begin_inset CommandInset ref
+LatexCommand formatted
+reference "alg:imresize-subsample"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ và 
+\begin_inset CommandInset ref
+LatexCommand formatted
+reference "alg:imresize-interlinear"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+).
+\begin_inset Float algorithm
+placement H
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begingroup
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+ttfamily
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{lstlisting}
+\end_layout
+
+\begin_layout Plain Layout
+
+Input: I, m', n'
+\end_layout
+
+\begin_layout Plain Layout
+
+I' := zeros(m', n')
+\end_layout
+
+\begin_layout Plain Layout
+
+rx := m / m'
+\end_layout
+
+\begin_layout Plain Layout
+
+ry := n / n'
+\end_layout
+
+\begin_layout Plain Layout
+
+for i' in 1:m', j' in 1:n'
+\end_layout
+
+\begin_layout Plain Layout
+
+	i := round(i' * rx)
+\end_layout
+
+\begin_layout Plain Layout
+
+	j := round(j' * ry)
+\end_layout
+
+\begin_layout Plain Layout
+
+	I'(i', j') := I(i, j)
+\end_layout
+
+\begin_layout Plain Layout
+
+end
+\end_layout
+
+\begin_layout Plain Layout
+
+return I'
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{lstlisting}
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+endgroup
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Thu nhỏ ảnh bằng cách lấy mẫu
+\begin_inset CommandInset label
+LatexCommand label
+name "alg:imresize-subsample"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Float algorithm
+placement H
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{lstlisting}
+\end_layout
+
+\begin_layout Plain Layout
+
+Input: I, m', n'
+\end_layout
+
+\begin_layout Plain Layout
+
+I' := zeros(m', n')
+\end_layout
+
+\begin_layout Plain Layout
+
+rx := m / m'
+\end_layout
+
+\begin_layout Plain Layout
+
+ry := n / n'
+\end_layout
+
+\begin_layout Plain Layout
+
+for i in 1:m', j in 1:n'
+\end_layout
+
+\begin_layout Plain Layout
+
+	[i1, i2] := [floor(i' * rx), ceil(i' * rx)]
+\end_layout
+
+\begin_layout Plain Layout
+
+	[j1, j2] := [floor(j' * ry), ceil(j' * ry)]
+\end_layout
+
+\begin_layout Plain Layout
+
+	[wx, wy] := [(rx * i) - i1, (ry * j) - j1]
+\end_layout
+
+\begin_layout Plain Layout
+
+	[a, b, := [I(i1, j1), I(i2, j1),
+\end_layout
+
+\begin_layout Plain Layout
+
+	 c, d]     I(i1, j2), I(i2, j2)]
+\end_layout
+
+\begin_layout Plain Layout
+
+	pixel := ( a * (1 - wx) * (1 - wy)
+\end_layout
+
+\begin_layout Plain Layout
+
+	         + b * (1 - wy) * wx
+\end_layout
+
+\begin_layout Plain Layout
+
+	         + c * (1 - wx) * wy
+\end_layout
+
+\begin_layout Plain Layout
+
+	         + d * wy * wx)
+\end_layout
+
+\begin_layout Plain Layout
+
+	I'(i, j) = pixel
+\end_layout
+
+\begin_layout Plain Layout
+
+end
+\end_layout
+
+\begin_layout Plain Layout
+
+return I'
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{lstlisting}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Thu nhỏ ảnh bằng cách nội suy
+\begin_inset CommandInset label
+LatexCommand label
+name "alg:imresize-interlinear"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Section
 Đặc trưng của ảnh
 \end_layout
@@ -563,7 +934,19 @@ Miền
 \begin_inset space ~
 \end_inset
 
-trưng/khối.
+trưng/khối
+\begin_inset space ~
+\end_inset
+
+(region
+\begin_inset space ~
+\end_inset
+
+of
+\begin_inset space ~
+\end_inset
+
+interest/blob).
  Miền đặc trưng là đặc trưng giống với điểm đặc trưng, nhưng thay vì cung
  cấp thông tin về một trên ảnh, miền đặc trưng cung cấp thông tin mang tính
  cấu trúc về một miền ở trong ảnh.
@@ -591,166 +974,95 @@ Khi phát hiện được đặc trưng của ảnh, một thao tác hay đượ
  thể mà để phục vụ như một bước trung gian, ta có thể coi kết quả đầu ra
  như một ảnh (theo nghĩa là ánh xạ từ không gian tới một giá trị), ảnh này
  được gọi là ảnh đặc trưng.
-\end_layout
-
-\begin_layout Subsection
-Kim tự tháp và không gian mức tỷ lệ
-\end_layout
-
-\begin_layout Standard
-\begin_inset Flex TODO Note (inline)
-status open
-
-\begin_layout Plain Layout
-Chuyển dịch thuật từ không gian bậc 
-\begin_inset Formula $\to$
-\end_inset
-
- không gian tỷ lệ
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-Một (biểu diễn) kim tự tháp là một loại biểu diễn đa mức trong xử lý tín
- hiệu.
- Trong biểu diễn kim tự tháp, một ảnh được liên tục làm mịn và thu nhỏ
-\begin_inset Foot
-status collapsed
-
-\begin_layout Plain Layout
-Nguyên văn: 
-\emph on
-subsample
-\emph default
-, tức lấy mẫu con.
- Trong ngữ cảnh tính toán biểu diễn kim tự tháp của ảnh, khi lấy mẫu con
- của ảnh ta thu được một ảnh nhỏ hơn.
-\end_layout
-
-\end_inset
-
-.
  
 \end_layout
 
-\begin_layout Standard
-\begin_inset Flex TODO Note (inline)
-status open
-
-\begin_layout Plain Layout
-Nói thêm về các loại nhân để làm mờ, thêm ảnh minh họa
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-Biểu diễn kim tự tháp là tiền đề của một loại biểu diễn khác–biểu diễn không
- gian tỷ lệ.
- Không gian tỷ lệ là một dạng biểu diễn nhằm xử lý cấu trúc của ảnh ở nhiều
- mức tỷ lệ khác nhau, bằng cách biểu diễn ảnh dưới dạng các ảnh được làm
- mờ của nó.
-\end_layout
-
-\begin_layout Standard
-\begin_inset Flex TODO Note (inline)
-status open
-
-\begin_layout Plain Layout
-scale space
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
 \begin_layout Section
-Đối sánh ảnh
+Bài toán đối sánh ảnh
 \end_layout
 
 \begin_layout Standard
-\begin_inset Flex TODO Note (inline)
+Thông thường, khi dò các đặc trưng của ảnh, ta mong muốn các đặc trưng của
+ vật thể trong ảnh cũng sẽ xuất hiện ở trong những ảnh khác, bất kể những
+ bức ảnh khác có độ sáng, độ tương phản, góc nhìn thay đổi...
+ Khi có thể trích xuất ra những đặc trưng như vậy của vật thể từ nhiều ảnh
+ khác nhau, ta có thể dùng một ảnh mẫu của vật thể để trích ra những đặc
+ trưng 
+\begin_inset Quotes eld
+\end_inset
+
+tham khảo
+\begin_inset Quotes erd
+\end_inset
+
+, sau đó dùng những đặc trưng đó để tìm vật thể trong một khung cảnh bất
+ kỳ.
+ Bài toán tìm ra vật thể như vậy là bài toán đối sánh ảnh.
+ Một số họ phương pháp đối sánh ảnh có thể kể ra là: 
+\end_layout
+
+\begin_layout Itemize
+Những phương pháp sử dụng histogram là những phương pháp khá đơn giản.
+ Trong những phương pháp này, nếu histogram của hai ảnh có mức độ trùng
+ khớp nhất định, ta coi hai ảnh đó của cùng một vật thể.
+ Nhược điểm chung của những phương pháp này là không xử lý được những trường
+ hợp ảnh của hai vật thể không liên quan tới nhau nhưng cùng histogram.
+ Phương pháp này không quan tâm tới những đặc trưng mang tính địa phương
+ của ảnh.
+ Ví dụ: Histogram Intersection.
+\end_layout
+
+\begin_layout Itemize
+Những phương pháp đối sánh ảnh sử dụng đặc trưng cạnh hoặc góc đã có quan
+ tâm hơn tới những đặc trưng bậc cao
+\begin_inset Foot
 status open
 
 \begin_layout Plain Layout
-Các phương pháp đối sánh ảnh, các vấn đề về locality và invariants...
+Bậc cao hơn ở đây có thể hiểu tương đương với việc gần với nghĩa thông thường
+ hơn.
 \end_layout
 
 \end_inset
 
-
+ của ảnh.
+ Tuy nhiên, cạnh và góc không đủ tốt để xử lý những trường hợp phức tạp.
+ Cạnh chỉ chạy dọc theo ảnh của vật thể và không có sự phân biệt giữa các
+ đoạn của cánh.
+ Đặc trưng góc thì không phải lúc nào cũng xuất hiện trong ảnh của vật thể.
+ Ví dụ: Canny Edge Detector, Harris Corner Detector.
 \end_layout
 
-\begin_layout Subsection
-Đặt vấn đề
+\begin_layout Itemize
+Những phương pháp đối sánh ảnh sử dụng miền đặc trưng quan tâm tới một đặc
+ trưng bậc cao hơn và thể hiện tốt hơn các đặc trưng của vật thể, vì chúng
+ quan tâm tới tính địa phương của ảnh.
+ Ví dụ: Scale Invariant Feature Transform (SIFT), Laplace of Gaussian.
+\end_layout
+
+\begin_layout Itemize
+Một số hướng tiếp cận khác, như dựa trên chuyển động (Optical Flow), dựa
+ trên hình dạng (biến đổi Hough tổng quát), sử dụng mô hình học máy (CNN),
+ sử dụng kết hợp những phương pháp trên (FPN
+\begin_inset CommandInset citation
+LatexCommand cite
+key "FPN"
+literal "false"
+
+\end_inset
+
+)...
 \end_layout
 
 \begin_layout Standard
-Tìm các đặc trưng giống nhau giữa hai ảnh của cùng một sự vật từ nhiều góc
- chụp khác nhau.
-\end_layout
-
-\begin_layout Subsection
-Các phương pháp hiện có
-\end_layout
-
-\begin_layout Itemize
-Đối sánh ảnh sử dụng histogram
-\end_layout
-
-\begin_deeper
-\begin_layout Itemize
-Ưu điểm: đơn giản
-\end_layout
-
-\begin_layout Itemize
-Nhược điểm: false positive (ảnh hai vật thể khác nhau nhưng cùng phân phối
- màu), false negative (ảnh một vật thể nhưng làm thay đổi độ sáng ở một
- phần ảnh)
-\end_layout
-
-\end_deeper
-\begin_layout Itemize
-Đối sánh ảnh sử dụng các góc làm keypoint
-\end_layout
-
-\begin_deeper
-\begin_layout Itemize
-Harris detector: sử dụng intensity shift
-\end_layout
-
-\begin_layout Itemize
-Ưu điểm: rotation invariant
-\end_layout
-
-\begin_layout Itemize
-Nhược điểm scale variant
-\end_layout
-
-\end_deeper
-\begin_layout Itemize
-Đối sánh ảnh sử dụng SIFT:
-\end_layout
-
-\begin_deeper
-\begin_layout Itemize
-Ưu điểm: rotation invariant và scale invariant
-\end_layout
-
-\begin_layout Itemize
-Nhược điểm: ?
-\end_layout
-
-\end_deeper
-\begin_layout Itemize
-Đối sánh ảnh sử dụng các đặc trưng trích từ mạng học sâu
+Báo cáo này sẽ trình bày chi tiết về một thuật toán đối sánh sử dụng miền
+ đặc trưng mang tên Scale Invariant Feature Transform (SIFT).
+ Đây là một phương pháp cổ điển và ổn định với góc quay, tỉ lệ, độ sáng
+ và độ tương phản của ảnh.
+ SIFT, sẽ phát hiện các miền đặc trưng trên ảnh, được gọi là keypoint.
+ Mỗi keypoint sẽ bao gồm các thuộc tính: toạ độ, kích thước, góc chính và
+ descriptor, trong đó descriptor là biểu diễn số của keypoint, có thể được
+ dùng để so sánh keypoint giữa ảnh khác khác nhau.
 \end_layout
 
 \begin_layout Chapter
@@ -758,7 +1070,11 @@ Scale Invariant Feature Transform
 \end_layout
 
 \begin_layout Section
-Tổng quát
+Tổng quan
+\end_layout
+
+\begin_layout Standard
+Trong trường hợp một chiều, việc phát hiện blob có thể được 
 \end_layout
 
 \begin_layout Standard
@@ -1025,6 +1341,13 @@ name "alg:Tổng-quan-SIFT"
 
 \begin_layout Section
 Quy trình chi tiết
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:sift-detail"
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Subsection
@@ -3784,18 +4107,38 @@ REF phương trình
  Tiếp theo, khi tìm góc chủ đạo của keypoint, góc được tính toán bằng cách
  thống kê trên lân cận của keypoint và tìm ra đỉnh của historgram.
  Điều này làm cho những góc chủ đạo được xác định bởi vùng lân cận của keypoint,
- một đặc trưng vốn không ảnh hưởng bởi góc xoay.
+ một đặc trưng vốn không ảnh hưởng bởi góc xoay (
+\begin_inset CommandInset ref
+LatexCommand formatted
+reference "fig:box-in-scene"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+).
 \end_layout
 
 \begin_layout Standard
 Đối với ảnh hưởng về độ sáng, trong khi tìm descriptor cũng như tìm góc
  chủ đạo, SIFT bỏ qua độ lớn của gradient, khiến cho ảnh hưởng của độ sáng
- lên keypoint tìm được không cao.
+ lên keypoint tìm được không cao (
+\begin_inset CommandInset ref
+LatexCommand formatted
+reference "fig:cup-in-scene"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+).
 \begin_inset Float figure
 placement h
 wide false
 sideways false
-status collapsed
+status open
 
 \begin_layout Plain Layout
 \align center
@@ -3814,6 +4157,13 @@ status collapsed
 
 \begin_layout Plain Layout
 Cuốn sách trong cảnh, cuốn sách bị chê lấp và xoay, ảnh mẫu.
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:box-in-scene"
+
+\end_inset
+
+
 \end_layout
 
 \end_inset
@@ -3825,7 +4175,13 @@ Cuốn sách trong cảnh, cuốn sách bị chê lấp và xoay, ảnh mẫu.
 
 
 \begin_inset Float figure
-placement H
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Float figure
 wide false
 sideways false
 status collapsed
@@ -3834,8 +4190,7 @@ status collapsed
 \align center
 \begin_inset Graphics
 	filename figures/cup-in-scene-match.png
-	display false
-	width 100text%
+	width 45text%
 
 \end_inset
 
@@ -3846,8 +4201,324 @@ status collapsed
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
+Trường hợp độ sáng bình thường
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Float figure
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename figures/cup-in-scene-match-lighten.png
+	width 45text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Trường hợp độ sáng cao
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Float figure
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename figures/cup-in-scene-match-darken.png
+	width 45text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Trường hợp độ sáng thấp
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Float figure
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename figures/cup-in-scene-match-very-darken.png
+	width 45text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Trường hợp độ sáng rất thấp
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Float figure
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename figures/cup-in-scene-match-low-contrast.png
+	width 45text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Trường hợp độ tương phản thấp
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Float figure
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename figures/cup-in-scene-match-high-contrast.png
+	width 45text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Trường hợp độ tương phản cao
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Float figure
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename figures/cup-in-scene-match-low-brn-contrast.png
+	width 45text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Trường hợp độ tương phản và độ sáng thấp
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Float figure
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename figures/cup-in-scene-match-high-brn-contrast.png
+	width 45text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Trường hợp độ tương phản và độ sáng cao
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Float figure
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename figures/cup-in-scene-match-high-brn-low-contrast.png
+	width 45text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Trường hợp độ tương phản thấp và độ sáng cao
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename figures/cup-in-scene-match-low-brn-high-contrast.png
+	width 45text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Trường hợp độ tương phản cao và độ sáng thấp
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
 Tìm kiếm cốc cà phê, cốc nhỏ hơn rất nhiều trong ảnh bên phải và bị xoay
- 180 độ, ảnh tự chụp.
+ 180 độ, xem xét ở nhiều mức điều kiện sáng và tương phản khác nhau.
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:cup-in-scene"
+
+\end_inset
+
+
 \end_layout
 
 \end_inset

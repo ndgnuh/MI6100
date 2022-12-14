@@ -24,96 +24,84 @@ begin
 	using PlutoUI
 end
 
-# ╔═╡ 3ea7db58-089e-4606-b75b-d3e72f76e5fd
-function fgrad(f, x)
-	(f(x + 0.01) - f(x - 0.01)) / 0.02
-end
-
-# ╔═╡ 03f3b27a-d842-45a3-b10c-6b9d03fd1ff6
-function fhess(f, x)
-	(fgrad(f, x + 0.01) - fgrad(f, x - 0.01)) / 0.02
-end
-
-# ╔═╡ 10942e73-5b61-4cea-b7fc-217b401aebf7
-
-
-# ╔═╡ 13600a21-0f3e-48d4-80b2-21cc1a4a0551
-pdf
-
-# ╔═╡ 7e53cdb3-7e58-499a-bc85-34d5d054fe36
-
-
-# ╔═╡ f4ad4adf-4b70-4b73-99fc-ed944365b721
-x = -1:0.01:1
-
-# ╔═╡ 3d41b656-a4e2-4918-baaa-358535e22d43
-function blob(x, x0, width)
-	map(x -> (x0 < x < x0 + width) ? 1f0 : 0f0, x)
-end
-
-# ╔═╡ 68b42a37-bfec-47db-8e5f-4626f0637fbe
-y1 = blob(x, -0.05, 0.1)
-
-# ╔═╡ c1c140ae-ab43-46e5-ba17-0c3bd61f628c
-y2 = blob(x, -0.4, 0.8)
-
-# ╔═╡ 6d859387-95cd-4720-96f1-3db4f8a02a75
-maximum(y)
-
-# ╔═╡ 997a994d-fde2-4144-8c18-029045515826
-@bind kσ Slider(0.01:0.01:5.0, show_value=true)
+# ╔═╡ f6c08e49-534a-4842-9235-8c0928759a21
+using Statistics
 
 # ╔═╡ ff9c21b7-d61a-4b72-b595-0fbe30a0805d
 dist = Normal(0, kσ)
 
-# ╔═╡ a1bb9181-c8a9-4d83-b613-d55eb9bf4efc
-lk = Kernel.LoG((kσ,))
+# ╔═╡ fa7ed872-52cc-487e-a7dd-cf74428218ef
 
-# ╔═╡ 04f16378-d926-423c-b2c4-4c8012cb148a
-function gaussian(σ, x)
+
+# ╔═╡ 10942e73-5b61-4cea-b7fc-217b401aebf7
+function gaussian(x, σ=0.1)
+	@. exp(-(x/σ)^2/2) / sqrt(2 * π) / σ
 end
 
-# ╔═╡ cc147d64-c16c-4eb1-8b45-999f27e6fb80
-gy, logy = let 
-	k = KernelFactors.gaussian(kσ)
-	
-	gy = imfilter(y, k)
-	logy = imfilter(y, lk)
-	gy, logy
+# ╔═╡ e42e37c5-008f-4b8a-8373-9939dacdf5e4
+function ddgaussian(x, σ=0.1)
+	gaussian(x, σ) .* (@. (x^2 - σ^2) / σ^2)
 end
 
-# ╔═╡ be9132e9-7a35-4c13-b85f-b4395febfc6d
+# ╔═╡ cb0e662d-aae8-46c9-8a7a-22aaf747880b
+function dgaussian(x, σ=1)
+	map(only, gradient.(x-> gaussian(x, σ), x))
+end
 
+# ╔═╡ 68b42a37-bfec-47db-8e5f-4626f0637fbe
+x = -5:0.025:5
+
+# ╔═╡ 3d41b656-a4e2-4918-baaa-358535e22d43
+begin
+	function blob(x, width)
+		half_width = width / 2
+		y = map(x -> (-half_width < x < half_width) ? 1f0 + rand(Normal(width/100, width/100)) : 0f0, x)
+		# imfilter(y, Float32[1, 1, 1, 1, 1])
+	end
+	function blob(width)
+		x -> blob(x, width)
+	end
+end
+
+# ╔═╡ 2e16510c-73f5-4238-94ab-99f2733ebbe1
+yg = 
+
+# ╔═╡ 997a994d-fde2-4144-8c18-029045515826
+md"""
+bwidth: $(@bind bw Slider(0.1:0.1:100, show_value=true))
+
+σ: $(@bind σ Slider(0.025:0.025:5.0, show_value=true))
+"""
+
+# ╔═╡ e09cc880-20a0-4627-b8e3-2b267486120e
+y = blob(x, bw)
+
+# ╔═╡ e652dc6d-8659-4bea-ae1f-c0d935e0f440
+plot(x, y)
+
+# ╔═╡ 792ad4dd-7500-4a6a-b1a9-856efaa42da9
+ylog = imfilter(y, ddgaussian.(x))
+
+# ╔═╡ a9a326af-c6f7-4a56-8f2b-f4f70ed923f8
+plt = let 
+	ylims = (-30, 30)
+	p = plot(layout=(4, 1), size=(640, 1000))
+	plot!(x, y, subplot=1, label=raw"$I(x))$")
+	plot!(x, gaussian(x, σ), subplot=2, label="\$G(x, $σ)\$")
+	plot!(x, imfilter(y, gaussian(x, σ)); subplot=3, label="\$I(x) * G(x, $σ)\$")
+	plot!(x, imfilter(y, ddgaussian(x, σ)); ylims, subplot=4, label="\$I(x) * \\nabla G(x, $σ)\$")
+end
+
+# ╔═╡ e8d76076-3b4f-480d-a8b8-667c0a9b1b5d
+[(0.8, 0.325)]
+
+# ╔═╡ 6eedbc6d-576e-4d0e-b536-03d49d500dae
+Plots.savefig(plt, "/tmp/1d-blob-detection-03.png")
 
 # ╔═╡ 2d481abe-e64d-4f24-9f8c-ba66722c1e3f
 function normalize(x)
 	x / sqrt(mapreduce(x_i -> x_i^2f0, +, x))
 end
-
-# ╔═╡ 9602bc34-0dda-4914-b96b-37a7c9f2eaa6
-lgy1 = normalize(imfilter(y1, lk))
-
-# ╔═╡ b8e983e9-44ed-46eb-b076-ed377c65330e
-lgy2 = normalize(imfilter(y2, lk))
-
-# ╔═╡ a9a326af-c6f7-4a56-8f2b-f4f70ed923f8
-let ylims = (-1, 1)
-	p = plot(layout=(2, 2))
-	plot!(x, y1, subplot=1, label=raw"$I_1(x)$")
-	plot!(x, y2, subplot=2, label=raw"$I_2(x)$")
-	plot!(x, lgy1, subplot=3, ylims=ylims, label=raw"$L(σ) * I_1(x)$")
-	plot!(x, lgy2, subplot=4, ylims=ylims, label=raw"$L(σ) * I_2(x)$")
-	p
-end
-
-# ╔═╡ f82dbe8f-9bfb-49d2-9202-6e7f1f5ba88f
-normalize([-1f0, lk, -1f0])
-
-# ╔═╡ e40b458b-d2c9-479f-895e-28c03c9def98
-^(2)
-
-# ╔═╡ dcff858e-8fe0-4292-bfb3-cecc4f93c8eb
-
 
 # ╔═╡ 8b84fc79-481e-48ea-bcdd-136ff490878b
 expr = quote 
@@ -124,21 +112,6 @@ end |> Base.remove_linenums!
 
 # ╔═╡ 6f94dc35-1854-47a1-9c61-2c6b4beae611
 e = :((x, y) = size(4))
-
-# ╔═╡ e6730b80-d5e5-4758-8436-7bfb7146abfe
-e.args
-
-# ╔═╡ 7124a73f-8d27-43fc-bc4f-35afaf1ef8cb
-
-
-# ╔═╡ 9e6a9de2-78bd-4152-80b5-76553c8e78e6
-
-
-# ╔═╡ 399a73d7-de13-40f1-a2b8-7d31adceefe8
-
-
-# ╔═╡ 43fa92a3-a38b-4885-b49d-aee9fc44ca85
-
 
 # ╔═╡ 6a40b91d-148a-46f2-aca2-816ea54da12d
 function cvt_symbol(s_)
@@ -172,12 +145,6 @@ end
 # ╔═╡ bb4b662c-4602-47c6-b315-0df7e93939e5
 print(cvt_asn(:(x = 1)))
 
-# ╔═╡ 9c932d12-a63d-40fb-8f46-19fcf0dac89b
-
-
-# ╔═╡ b8141c1f-4b36-43fa-afb9-49e70122d292
-
-
 # ╔═╡ 9520376f-3851-4dee-8e21-ded6b93f86d6
 function cvtAlgPseudoCode(expr, depth=0)
 	if depth >= 1000
@@ -195,6 +162,7 @@ ImageCore = "a09fc81d-aa75-5fe9-8630-4744c3626534"
 ImageFiltering = "6a3955dd-da59-5b1f-98d4-e7296123deb5"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
+Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
 
 [compat]
@@ -212,7 +180,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.9.0-alpha1"
 manifest_format = "2.0"
-project_hash = "f7f6fcf5933e5fa9762326bc958bf8faa017d300"
+project_hash = "574030209470c16491ebf6a145d1b6c9ad90dd29"
 
 [[deps.AbstractFFTs]]
 deps = ["ChainRulesCore", "LinearAlgebra"]
@@ -244,9 +212,9 @@ version = "6.0.24"
 
 [[deps.ArrayInterfaceCore]]
 deps = ["LinearAlgebra", "SparseArrays", "SuiteSparse"]
-git-tree-sha1 = "c46fb7dd1d8ca1d213ba25848a5ec4e47a1a1b08"
+git-tree-sha1 = "badccc4459ffffb6bce5628461119b7057dec32c"
 uuid = "30b0a656-2188-435a-8636-2ec0e6a096e2"
-version = "0.1.26"
+version = "0.1.27"
 
 [[deps.Artifacts]]
 uuid = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
@@ -255,9 +223,9 @@ uuid = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
 uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
 
 [[deps.BitFlags]]
-git-tree-sha1 = "629c6e4a7be8f427d268cebef2a5e3de6c50d462"
+git-tree-sha1 = "43b1a4a8f797c1cddadf60499a8a077d4af2cd2d"
 uuid = "d1d4a3ce-64b1-5f1a-9ba4-7e7e69966f35"
-version = "0.1.6"
+version = "0.1.7"
 
 [[deps.Bzip2_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -581,9 +549,9 @@ version = "1.0.2"
 
 [[deps.HTTP]]
 deps = ["Base64", "CodecZlib", "Dates", "IniFile", "Logging", "LoggingExtras", "MbedTLS", "NetworkOptions", "OpenSSL", "Random", "SimpleBufferStream", "Sockets", "URIs", "UUIDs"]
-git-tree-sha1 = "e1acc37ed078d99a714ed8376446f92a5535ca65"
+git-tree-sha1 = "822a2b8d53fd5fb8d2f454d521d51dd88bcfc8a6"
 uuid = "cd3eb016-35fb-5094-929b-558a96fad6f3"
-version = "1.5.5"
+version = "1.6.0"
 
 [[deps.HarfBuzz_jll]]
 deps = ["Artifacts", "Cairo_jll", "Fontconfig_jll", "FreeType2_jll", "Glib_jll", "Graphite2_jll", "JLLWrappers", "Libdl", "Libffi_jll", "Pkg"]
@@ -1244,9 +1212,9 @@ version = "0.4.1"
 
 [[deps.TranscodingStreams]]
 deps = ["Random", "Test"]
-git-tree-sha1 = "8a75929dcd3c38611db2f8d08546decb514fcadf"
+git-tree-sha1 = "e4bdc63f5c6d62e80eb1c0043fcc0360d5950ff7"
 uuid = "3bb67fe8-82b1-5028-8e26-92a6c54297fa"
-version = "0.9.9"
+version = "0.9.10"
 
 [[deps.Tricks]]
 git-tree-sha1 = "6bac775f2d42a611cdfcd1fb217ee719630c4175"
@@ -1254,9 +1222,9 @@ uuid = "410a4b4d-49e4-4fbc-ab6d-cb71b17b3775"
 version = "0.1.6"
 
 [[deps.URIs]]
-git-tree-sha1 = "e59ecc5a41b000fa94423a578d29290c7266fc10"
+git-tree-sha1 = "ac00576f90d8a259f2c9d823e91d1de3fd44d348"
 uuid = "5c2747f8-b7ea-4ff2-ba2e-563bfd36b1d4"
-version = "1.4.0"
+version = "1.4.1"
 
 [[deps.UUIDs]]
 deps = ["Random", "SHA"]
@@ -1522,42 +1490,29 @@ version = "1.4.1+0"
 # ╔═╡ Cell order:
 # ╠═e314e7da-7af9-11ed-18cf-0dba91b9f648
 # ╠═ff9c21b7-d61a-4b72-b595-0fbe30a0805d
-# ╠═3ea7db58-089e-4606-b75b-d3e72f76e5fd
-# ╠═03f3b27a-d842-45a3-b10c-6b9d03fd1ff6
+# ╠═fa7ed872-52cc-487e-a7dd-cf74428218ef
 # ╠═10942e73-5b61-4cea-b7fc-217b401aebf7
-# ╠═13600a21-0f3e-48d4-80b2-21cc1a4a0551
-# ╠═7e53cdb3-7e58-499a-bc85-34d5d054fe36
-# ╠═f4ad4adf-4b70-4b73-99fc-ed944365b721
+# ╠═e42e37c5-008f-4b8a-8373-9939dacdf5e4
+# ╠═cb0e662d-aae8-46c9-8a7a-22aaf747880b
+# ╠═e652dc6d-8659-4bea-ae1f-c0d935e0f440
 # ╠═68b42a37-bfec-47db-8e5f-4626f0637fbe
-# ╠═c1c140ae-ab43-46e5-ba17-0c3bd61f628c
+# ╠═e09cc880-20a0-4627-b8e3-2b267486120e
 # ╠═3d41b656-a4e2-4918-baaa-358535e22d43
-# ╠═6d859387-95cd-4720-96f1-3db4f8a02a75
-# ╠═997a994d-fde2-4144-8c18-029045515826
+# ╠═f6c08e49-534a-4842-9235-8c0928759a21
+# ╠═2e16510c-73f5-4238-94ab-99f2733ebbe1
+# ╠═792ad4dd-7500-4a6a-b1a9-856efaa42da9
 # ╠═a9a326af-c6f7-4a56-8f2b-f4f70ed923f8
-# ╠═a1bb9181-c8a9-4d83-b613-d55eb9bf4efc
-# ╠═9602bc34-0dda-4914-b96b-37a7c9f2eaa6
-# ╠═b8e983e9-44ed-46eb-b076-ed377c65330e
-# ╠═04f16378-d926-423c-b2c4-4c8012cb148a
-# ╠═cc147d64-c16c-4eb1-8b45-999f27e6fb80
-# ╠═f82dbe8f-9bfb-49d2-9202-6e7f1f5ba88f
-# ╠═be9132e9-7a35-4c13-b85f-b4395febfc6d
+# ╠═997a994d-fde2-4144-8c18-029045515826
+# ╠═e8d76076-3b4f-480d-a8b8-667c0a9b1b5d
+# ╠═6eedbc6d-576e-4d0e-b536-03d49d500dae
 # ╠═2d481abe-e64d-4f24-9f8c-ba66722c1e3f
-# ╠═e40b458b-d2c9-479f-895e-28c03c9def98
-# ╠═dcff858e-8fe0-4292-bfb3-cecc4f93c8eb
 # ╠═8b84fc79-481e-48ea-bcdd-136ff490878b
 # ╠═6f94dc35-1854-47a1-9c61-2c6b4beae611
-# ╠═e6730b80-d5e5-4758-8436-7bfb7146abfe
-# ╠═7124a73f-8d27-43fc-bc4f-35afaf1ef8cb
-# ╠═9e6a9de2-78bd-4152-80b5-76553c8e78e6
-# ╠═399a73d7-de13-40f1-a2b8-7d31adceefe8
-# ╠═43fa92a3-a38b-4885-b49d-aee9fc44ca85
 # ╠═6a40b91d-148a-46f2-aca2-816ea54da12d
 # ╠═bcf9ed5a-c44e-4c68-b216-6490eaf39246
 # ╠═36a42073-3eb3-4561-9d0d-27348f855642
 # ╠═cd984f78-e37d-46a7-8294-d30fa7c50d06
 # ╠═bb4b662c-4602-47c6-b315-0df7e93939e5
-# ╠═9c932d12-a63d-40fb-8f46-19fcf0dac89b
-# ╠═b8141c1f-4b36-43fa-afb9-49e70122d292
 # ╠═9520376f-3851-4dee-8e21-ded6b93f86d6
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

@@ -1,0 +1,56 @@
+\makeatletter
+\def\MyName{Nguyễn Đức Hùng–20212498M}
+\newcommand{\Size}[1]{\fontsize{#1}{#1}\selectfont}
+\def\MyID{20212498M}
+\def\MyTopic{Đối sánh ảnh sử dụng Scale Invariant Feature Transform}
+\def\MyTeacher{TS.\,Vương Mai Phương}
+\def\MySchool{VIỆN TOÁN ỨNG DỤNG VÀ TIN HỌC}
+\makeatother
+
+
+
+
+% \setlength{\parindent}{0pt}
+\thispagestyle{empty}
+% \usepackage{fontspec}
+% \setmainfont{mycustomfont}[
+%	Path=/home/hung/.local/share/fonts/Playfair+Display/static/,
+%	UprightFont=PlayfairDisplay-Regular.ttf,
+%	BoldFont=PlayfairDisplay-Bold.ttf,
+%	ItalicFont=PlayfairDisplay-Italic.ttf,
+%	BoldItalicFont=PlayfairDisplay-BoldItalic.ttf]
+
+
+\let\oldparindent\parindent
+\setlength{\parindent}{0pt}
+\begin{titlepage}
+	\centering
+	\Size{22}{TRƯỜNG ĐẠI HỌC BÁCH KHOA HÀ NỘI}
+
+	\smallskip
+
+	\Size{22}{\MySchool}
+
+	---{oOo}---
+
+	\vfill
+
+	\includegraphics[width=\widthof{Báo cáo môn học:}]{figures/bk.png}
+
+	\vfill
+	\Size{18}{Báo cáo môn học:}
+
+	\Size{22}{\MyTopic{}}
+
+	\vfill
+
+	\Size{14}{
+		\begin{tabular}{@{}ll}
+			\textit{Giảng viên hướng dẫn:}& \MyTeacher{}\\
+			\textit{Học viên thực hiện:}& \MyName{}\\
+		\end{tabular}}
+
+	\vfill
+	\Size{16}{Hà Nội, tháng 10 năm 2022}
+\end{titlepage}
+\let\parindent\oldparindent

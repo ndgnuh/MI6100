@@ -38,7 +38,10 @@ xleftmargin=2em, language=custom, tabsize=3, numbers=left}
 \usepackage{listingsutf8}
 %% TYPOGRAPHY %%
 \usepackage{newcent}
-\usepackage{indentfirst}
+\usepackage[section]{placeins}
+
+
+% \usepackage{indentfirst}
 
 %% SIFT %%
 \def\octave{\mathrm{octave}}
@@ -47,7 +50,7 @@ xleftmargin=2em, language=custom, tabsize=3, numbers=left}
 
 %% PRETTY REF %%
 \newrefformat{alg}{Thuật toán \ref{#1}}
-\newrefformat{fig}{Hình \ref{#1}}
+\newrefformat{fig}{Hình \ref{#1} trang \pageref{#1}}
 \newrefformat{sec}{Phần \ref{#1}}
 
 \usepackage[a4paper, top=3.5cm, bottom=3.0cm, left=3.5cm, right=2.0cm]{geometry}
@@ -307,12 +310,28 @@ status open
 
 \end_layout
 
-\begin_layout Title
-Đối sánh ảnh sử dụng Scale Invariant Feature Transform
+\begin_layout Standard
+\begin_inset FormulaMacro
+\newcommand{\second}{\operatorname{second}}
+{second}
+\end_inset
+
+
+\begin_inset FormulaMacro
+\newcommand{\LoG}{\nabla^{2}G}
+\end_inset
+
+
 \end_layout
 
-\begin_layout Author
-Nguyễn Đức Hùng–20212498M
+\begin_layout Standard
+\begin_inset CommandInset include
+LatexCommand input
+filename "titlepage.tex"
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -426,12 +445,9 @@ Tính gradient và hessian
 \end_layout
 
 \begin_layout Standard
-Khi sử dụng SIFT, cần tính gradient và hessian của ảnh.
- Khi tìm cực trị của không gian tỷ lệ, đó là ảnh ba chiều (layer, hàng,
- cột).
- Khi tìm hướng chủ đạo, đó là ảnh hai chiều (hàng, cột).
- Tuy nhiên, cách tính trong cả hai trường hợp này đều tương tự nhau.
- Việc tính gradient, hessian sẽ sử dụng công thức tính sai phân 
+Việc tính gradient, hessian của ảnh có rất nhiều cách.
+ Báo cáo này sẽ sử dụng cách tính gradient và hessian bằng công thức tính
+ sai phân 
 \begin_inset CommandInset ref
 LatexCommand eqref
 reference "eq:diff-grad"
@@ -558,8 +574,420 @@ f_{xx}\left(x_{0}\right)=f\left(x_{0}+1\right)-2f\left(x_{0}\right)+f\left(x_{0}
 
 \end_layout
 
+\begin_layout Standard
+Từ đó ta có thủ tục tính gradient và hessian của ảnh.
+ Gradient của ảnh ba chiều được thể hiện trong 
+\begin_inset CommandInset ref
+LatexCommand formatted
+reference "alg:gradient-3d"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+, trường hợp hai chiều trong 
+\begin_inset CommandInset ref
+LatexCommand formatted
+reference "alg:imgradient-2d"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ có thể được thu được bằng cách loại bỏ chiều thứ ba trong 
+\begin_inset CommandInset ref
+LatexCommand formatted
+reference "alg:gradient-3d"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ Việc tính hessian trong trường hợp ba chiều được mô tả trong 
+\begin_inset CommandInset ref
+LatexCommand formatted
+reference "alg:imhessian-3d"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+, trường hợp hai chiều được tính toán tương tự.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float algorithm
+placement H
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{lstlisting}
+\end_layout
+
+\begin_layout Plain Layout
+
+Input: I(x, y, z)
+\end_layout
+
+\begin_layout Plain Layout
+
+[m, n, p] := size(I)
+\end_layout
+
+\begin_layout Plain Layout
+
+grad = zeros(m, n, p, 3)
+\end_layout
+
+\begin_layout Plain Layout
+
+for i in 2:(m-1), j in 2:(n-1), k in 2:(p-1)
+\end_layout
+
+\begin_layout Plain Layout
+
+	grad[i, j, k, 1] := I(i+1, j, k) - I(i-1, j, k)
+\end_layout
+
+\begin_layout Plain Layout
+
+	grad[i, j, k, 1] := I(i, j+1, k) - I(i, j-1, k)
+\end_layout
+
+\begin_layout Plain Layout
+
+	grad[i, j, k, 1] := I(i, j, k+1) - I(i, j, k-1)
+\end_layout
+
+\begin_layout Plain Layout
+
+end
+\end_layout
+
+\begin_layout Plain Layout
+
+grad := grad / 2
+\end_layout
+
+\begin_layout Plain Layout
+
+return grad
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{lstlisting}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Tính gradient (trường hợp ba chiều)
+\begin_inset CommandInset label
+LatexCommand label
+name "alg:gradient-3d"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Float algorithm
+placement H
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{lstlisting}
+\end_layout
+
+\begin_layout Plain Layout
+
+Input: I(x, y)
+\end_layout
+
+\begin_layout Plain Layout
+
+[m, n] := size(I)
+\end_layout
+
+\begin_layout Plain Layout
+
+grad = zeros(m, n, p, 2)
+\end_layout
+
+\begin_layout Plain Layout
+
+for i in 2:(m-1), j in 2:(n-1)
+\end_layout
+
+\begin_layout Plain Layout
+
+	grad[i, j, 1] := I(i+1, j) - I(i-1, j)
+\end_layout
+
+\begin_layout Plain Layout
+
+	grad[i, j, 1] := I(i, j+1) - I(i, j-1)
+\end_layout
+
+\begin_layout Plain Layout
+
+end
+\end_layout
+
+\begin_layout Plain Layout
+
+grad := grad / 2
+\end_layout
+
+\begin_layout Plain Layout
+
+return grad
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{lstlisting}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Tính gradient (trường hợp hai chiều)
+\begin_inset CommandInset label
+LatexCommand label
+name "alg:imgradient-2d"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Float algorithm
+placement H
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{lstlisting}
+\end_layout
+
+\begin_layout Plain Layout
+
+Input: I(x, y, z)
+\end_layout
+
+\begin_layout Plain Layout
+
+[m, n, p] := size(I)
+\end_layout
+
+\begin_layout Plain Layout
+
+hess = zeros(m, n, p, 3, 3)
+\end_layout
+
+\begin_layout Plain Layout
+
+for i in 2:(m-1), j in 2:(n-1), k in 2:(p-1)
+\end_layout
+
+\begin_layout Plain Layout
+
+	# double of center value
+\end_layout
+
+\begin_layout Plain Layout
+
+	dcv = I(i, j, k) * 2
+\end_layout
+
+\begin_layout Plain Layout
+
+	hess[i, j, k, 1, 1] := I(i+1, j, k) + I(i-1, j, k) - dcv
+\end_layout
+
+\begin_layout Plain Layout
+
+	hess[i, j, k, 2, 2] := I(i, j+1, k) + I(i, j-1, k) - dcv
+\end_layout
+
+\begin_layout Plain Layout
+
+	hess[i, j, k, 3, 3] := I(i, j, k+1) + I(i, j, k-1) - dcv
+\end_layout
+
+\begin_layout Plain Layout
+
+	hess[i, j, k, 1, 2] := 
+\end_layout
+
+\begin_layout Plain Layout
+
+	     (I(i+1, j+1, k) + I(i-1, j-1, k)
+\end_layout
+
+\begin_layout Plain Layout
+
+	    - I(i+1, j-1, k) - I(i-1, j+1, k)) * 0.25
+\end_layout
+
+\begin_layout Plain Layout
+
+	hess[i, j, k, 1, 3] := 
+\end_layout
+
+\begin_layout Plain Layout
+
+	     (I(i+1, j, k+1) + I(i-1, j, k-1)
+\end_layout
+
+\begin_layout Plain Layout
+
+	    - I(i+1, j, k-1) - I(i-1, j, k+1)) * 0.25
+\end_layout
+
+\begin_layout Plain Layout
+
+	hess[i, j, k, 2, 3] := 
+\end_layout
+
+\begin_layout Plain Layout
+
+	     (I(i, j+1 k+1) + I(i, j-1, k-1)
+\end_layout
+
+\begin_layout Plain Layout
+
+	    - I(i, j+1, k-1) - I(i, j-1, k+1)) * 0.25
+\end_layout
+
+\begin_layout Plain Layout
+
+	hess[i, j, k, 2, 1] := hess[i, j, k, 1, 2]
+\end_layout
+
+\begin_layout Plain Layout
+
+	hess[i, j, k, 3, 1] := hess[i, j, k, 1, 3]
+\end_layout
+
+\begin_layout Plain Layout
+
+	hess[i, j, k, 3, 2] := hess[i, j, k, 2, 3]
+\end_layout
+
+\begin_layout Plain Layout
+
+end
+\end_layout
+
+\begin_layout Plain Layout
+
+return hess
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{lstlisting}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Tính hessian ảnh (trường hợp ba chiều)
+\begin_inset CommandInset label
+LatexCommand label
+name "alg:imhessian-3d"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Subsection
-Thu nhỏ ảnh với tỉ lệ
+Thay đổi kích thước ảnh
 \end_layout
 
 \begin_layout Standard
@@ -571,7 +999,7 @@ Với ảnh
 \begin_inset Formula $m\times n$
 \end_inset
 
-, ta có thể thu nhỏ ảnh về kích thước 
+, ta có thể thu nhỏ hoặc phóng to ảnh về kích thước 
 \begin_inset Formula $m'\times n'$
 \end_inset
 
@@ -730,7 +1158,7 @@ name "alg:imresize-subsample"
 placement H
 wide false
 sideways false
-status open
+status collapsed
 
 \begin_layout Plain Layout
 \begin_inset ERT
@@ -1070,17 +1498,362 @@ Scale Invariant Feature Transform
 \end_layout
 
 \begin_layout Section
-Tổng quan
+Ý tưởng và tổng quan
 \end_layout
 
 \begin_layout Standard
-Trong trường hợp một chiều, việc phát hiện blob có thể được 
+Trong trường hợp một chiều, việc phát hiện blob được thực hiện bằng cách
+ tích chập tín hiệu 
+\begin_inset Formula $I$
+\end_inset
+
+ với nhân Laplace-của-Gaussian (LoG) 
+\begin_inset Formula $L\left(\sigma\right)$
+\end_inset
+
+.
+ Với trường hợp một chiều, 
+\begin_inset Formula $L\left(\sigma\right)$
+\end_inset
+
+ là đạo hàm cấp hai của hàm Gauss.
+ Phần cực trị của 
+\begin_inset Formula $I\left(x\right)\ast L\left(\sigma\right)$
+\end_inset
+
+ sẽ tương ứng với tâm của blob.
+ 
+\begin_inset CommandInset ref
+LatexCommand formatted
+reference "fig:1d-blob"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ minh họa việc dùng LoG để phát hiện blob.
+ Blob trong 
+\begin_inset CommandInset ref
+LatexCommand formatted
+reference "fig:1d-blob-01"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ có thể được phát hiện với 
+\begin_inset Formula $\sigma=0.325$
+\end_inset
+
+, nhưng với blob kích thước 
+\begin_inset Formula $1.6$
+\end_inset
+
+ trong 
+\begin_inset CommandInset ref
+LatexCommand formatted
+reference "fig:1d-blob-02"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ Ở đây có hai đặc tính cần lưu ý:
+\end_layout
+
+\begin_layout Itemize
+Tham số 
+\begin_inset Formula $\sigma$
+\end_inset
+
+ có tương quan dương với độ lớn của blob, do đó ta có thể dùng 
+\begin_inset Formula $\sigma$
+\end_inset
+
+ để xác định kích thước của blob.
+\end_layout
+
+\begin_layout Itemize
+Với hàm 
+\begin_inset Formula $\LoG\left(x,\sigma\right)$
+\end_inset
+
+ , 
+\begin_inset Formula $\sigma$
+\end_inset
+
+ càng tăng thì hàm này càng 
+\begin_inset Quotes eld
+\end_inset
+
+phẳng
+\begin_inset Quotes erd
+\end_inset
+
+, do đó khi tính toán, giá trị của hàm được chuẩn hóa bằng cách nhân với
+ 
+\begin_inset Formula $\sigma^{2}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Itemize
+Cực trị của 
+\begin_inset Formula $\LoG\left(x,\sigma\right)$
+\end_inset
+
+ tương ứng với tâm và độ lớn của một blob.
 \end_layout
 
 \begin_layout Standard
-Ý tưởng của SIFT là đưa ra các keypoint không nhạy cảm với kích thước, góc
- xoay, và nhạy cảm ít với độ sáng cũng như màu của ảnh.
- Một cách thô sơ, quy trình của thuật toán SIFT diễn ra như sau:
+Từ những tính chất trên, việc tìm blob trong trường hợp một chiều có thể
+ được mô tả như sau:
+\end_layout
+
+\begin_layout Enumerate
+Tìm 
+\begin_inset Formula $I\left(x\right)\ast\LoG\left(x,\sigma\right)$
+\end_inset
+
+ với 
+\begin_inset Formula $\sigma\in\left\{ \sigma_{1},\sigma_{2},\ldots,\sigma_{n}\right\} $
+\end_inset
+
+m
+\end_layout
+
+\begin_layout Enumerate
+Tìm 
+\begin_inset Formula $\left(x^{*},\sigma^{*}\right)=\argmax\left\{ I\left(x\right)*\LoG\left(x,\sigma_{i}\right)\colon i=\overline{1,n}\right\} $
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement H
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Float figure
+placement H
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename figures/1d-blob-detection-01.png
+	display false
+	width 30text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Blob với độ rộng 
+\begin_inset Formula $0.8$
+\end_inset
+
+, 
+\begin_inset Formula $\sigma=0.325$
+\end_inset
+
+
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:1d-blob-01"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Float figure
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename figures/1d-blob-detection-02.png
+	display false
+	width 30text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Blob với độ rộng 
+\begin_inset Formula $1.6$
+\end_inset
+
+, 
+\begin_inset Formula $\sigma=0.325$
+\end_inset
+
+
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:1d-blob-02"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Float figure
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename figures/1d-blob-detection-03.png
+	display false
+	width 30text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Blob với độ rộng 
+\begin_inset Formula $1.6$
+\end_inset
+
+, 
+\begin_inset Formula $\sigma=0.75$
+\end_inset
+
+
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:1d-blob-03"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Phát hiện blob với Laplacian of Gaussian
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:1d-blob"
+
+\end_inset
+
+, thứ tự các biểu đồ từ trên xuống dưới: 
+\begin_inset Newline newline
+\end_inset
+
+(1) Tín hiệu 
+\begin_inset Formula $I\left(x\right)$
+\end_inset
+
+;
+\begin_inset Newline newline
+\end_inset
+
+(2) Hàm Gauss 
+\begin_inset Formula $G\left(x,\sigma\right)$
+\end_inset
+
+;
+\begin_inset Newline newline
+\end_inset
+
+(3) Tín hiệu sau khi nhân chập 
+\begin_inset Formula $I\left(x\right)\ast G\left(x,\sigma\right)$
+\end_inset
+
+; 
+\begin_inset Newline newline
+\end_inset
+
+(4) Tín hiệu sau khi nhân chập 
+\begin_inset Formula $I\left(x\right)\ast\LoG\left(x,\sigma\right)$
+\end_inset
+
+.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Trong phương pháp trên, 
+\begin_inset Formula $\left\{ \sigma_{1},\sigma_{2},\ldots,\sigma_{n}\right\} $
+\end_inset
+
+ được gọi là không gian tỷ lệ của ảnh.
+ SIFT tận dụng ý tưởng này trên không gian hai chiều để phát hiện các keypoint,
+ đồng thời đưa ra một số lượng hóa thông minh khác để khắc phục những ảnh
+ hưởng từ việc xoay ảnh, góc nhìn và độ sáng.
+ Quy trình bộ dò SIFT, một cách tổng quát diễn ra như sau:
 \end_layout
 
 \begin_layout Enumerate
@@ -1131,6 +1904,12 @@ noprefix "false"
 \end_inset
 
  là số lượng scale trong mỗi octave.
+ Khi ứng dụng thực tế, các bước từ đầu cho tới khi tìm ra descriptor được
+ thực hiện trên các ảnh tham chiếu trước.
+ Các descriptor của ảnh tham chiếu được lưu vào cơ sở dữ liệu.
+ Khi thực hiện đối sánh, descriptor trong cơ sở dữ liệu đó sẽ được dùng
+ để tìm vật thể trong ảnh mới.
+ 
 \end_layout
 
 \begin_layout Standard
@@ -1381,7 +2160,32 @@ Tìm gaussian pyramid
 \end_layout
 
 \begin_layout Standard
-Gaussian pyramid 
+Trong SIFT, tính toán trên không gian tỷ lệ được sắp xếp như thành một Gaussian
+ pyramid, tương đương với 
+\begin_inset Formula $I\left(x\right)\ast G\left(x,\sigma\right)$
+\end_inset
+
+ trong trường hợp một chiều.
+ Một Gaussian pyramid gồm nhiều octave, mỗi octave gồm nhiều ảnh ứng với
+ các 
+\begin_inset Formula $\sigma$
+\end_inset
+
+ khác nhau.
+ Mỗi octave 
+\begin_inset Formula $i$
+\end_inset
+
+ sẽ tương đương với việc giá trị 
+\begin_inset Formula $\sigma$
+\end_inset
+
+ được tăng lên 
+\begin_inset Formula $2^{i-1}$
+\end_inset
+
+ lần.
+ Gaussian pyramid 
 \begin_inset Formula $\mathcal{L}=\left\{ L_{i}\left(x,y,\sigma_{j}\right)\colon j=\overline{1,S}\right\} _{i=1}^{N}$
 \end_inset
 
@@ -1420,7 +2224,7 @@ noprefix "false"
 \begin{align}
 L_{0}\left(x,y,\sigma_{0}\right) & =G\left(x,y,\sqrt{\sigma_{0}^{2}-\left(2\sigma_{a}\right)^{2}}\right)\ast\Resize\left(I,\ratio=2\right),\label{eq:scale-space-01}\\
 L_{i+1}\left(x,y,\sigma_{0}\right) & =\Resize\left(L_{i}\left(x,y,\sigma_{0}\right),\ratio=0.5\right),\label{eq:scale-space-02}\\
-L_{i}\left(x,y,\sigma_{j+1}\right) & =G\left(x,y,d\sigma_{j}\right)\ast L_{i}\left(x,y,\sigma_{j}\right),\quad j=\overline{1,s},\label{eq:scale-space-03}\\
+L_{i}\left(x,y,\sigma_{j+1}\right) & =G\left(x,y,d\sigma_{j}\right)\ast L_{i}\left(x,y,\sigma_{j}\right),\quad j=\overline{1,S},\label{eq:scale-space-03}\\
 d\sigma_{j} & =\sqrt{\sigma_{j+1}^{2}-\sigma_{j}^{2}}=\sqrt{\left(2^{j+1}\sigma_{0}\right)^{2}-\left(2^{j}\sigma_{0}\right)^{2}},\label{eq:scale-space-dsigma}
 \end{align}
 
@@ -1515,6 +2319,34 @@ literal "false"
 .
 \end_layout
 
+\begin_layout Itemize
+Các giá trị 
+\begin_inset Formula $\sigma_{j}$
+\end_inset
+
+ được tính bằng cách 
+\begin_inset Formula $\sigma_{j}=k\sigma_{j-1}$
+\end_inset
+
+, với 
+\begin_inset Formula $k$
+\end_inset
+
+ được chọn bằng 
+\begin_inset Formula $2^{1/S}$
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Lowe2004"
+literal "false"
+
+\end_inset
+
+.
+\end_layout
+
 \begin_layout Subsection
 Tìm cực trị của scale space
 \end_layout
@@ -1549,7 +2381,24 @@ D_{\octave}\left(x,y,\sigma_{t}\right)=L_{\octave}\left(x,y,\sigma_{t+1}\right)-
 
 \end_inset
 
-Đặt 
+Ảnh sai phân này có một tính chất đặc biệt, đó là 
+\begin_inset Formula 
+\[
+G\left(x,y,k\sigma\right)-G\left(x,y,\sigma\right)\approx\left(k-1\right)\sigma^{2}\LoG.
+\]
+
+\end_inset
+
+Nói cách khác, cực trị của 
+\begin_inset Formula $D_{\octave}\left(x,y,\sigma\right)$
+\end_inset
+
+ có thể dùng để xấp xỉ cực trị của 
+\begin_inset Formula $\LoG\left(x,y,\sigma\right)$
+\end_inset
+
+, và SIFT dùng phương thức này để giảm khối lượng tính toán.
+ Đặt 
 \begin_inset Formula $\mathbf{x}=\left(x,y,t\right)$
 \end_inset
 
@@ -1684,10 +2533,9 @@ noprefix "false"
 
 \begin_layout Standard
 \begin_inset Float algorithm
-placement H
 wide false
 sideways false
-status open
+status collapsed
 
 \begin_layout Plain Layout
 \begin_inset ERT
@@ -2260,10 +3108,9 @@ name "alg:candidate-coord-algorithm"
 
 
 \begin_inset Float algorithm
-placement H
 wide false
 sideways false
-status open
+status collapsed
 
 \begin_layout Plain Layout
 \begin_inset ERT
@@ -2644,7 +3491,6 @@ name "alg:keypoint-orienatation"
 
 
 \begin_inset Float algorithm
-placement H
 wide false
 sideways false
 status collapsed
@@ -3093,7 +3939,9 @@ Tính toán descriptor của keypoint
 \end_layout
 
 \begin_layout Standard
-Việc tính toán descriptor được mô tả trong 
+Sau khi thành công tìm ra các keypoint, ta cần một cách để so sánh chúng
+ với nhau, và đó chính là descriptor.
+ Việc tính toán descriptor được mô tả trong 
 \begin_inset CommandInset ref
 LatexCommand formatted
 reference "alg:Tính-toán-descriptor"
@@ -3105,10 +3953,9 @@ noprefix "false"
 
 .
 \begin_inset Float algorithm
-placement H
 wide false
 sideways false
-status open
+status collapsed
 
 \begin_layout Plain Layout
 \begin_inset ERT
@@ -3519,7 +4366,6 @@ noprefix "false"
 
 \begin_layout Standard
 \begin_inset Float algorithm
-placement H
 wide false
 sideways false
 status collapsed
@@ -3548,7 +4394,7 @@ status open
 
 
 \backslash
-Require{}
+Require
 \end_layout
 
 \end_inset
@@ -4091,12 +4937,12 @@ Vì SIFT tìm kiếm điểm ảnh trên nhiều scale khác nhau, các keypoint
 
 \begin_layout Standard
 Đầu tiên, trong bước localize keypoint, điều kiện lọc bỏ keypoint 
-\begin_inset Flex TODO Note (inline)
-status open
-
-\begin_layout Plain Layout
-REF phương trình
-\end_layout
+\begin_inset CommandInset ref
+LatexCommand formatted
+reference "eq:keypoint-on-edge"
+plural "false"
+caps "false"
+noprefix "false"
 
 \end_inset
 
@@ -4134,11 +4980,153 @@ noprefix "false"
 \end_inset
 
 ).
+\end_layout
+
+\begin_layout Subsection
+Nhược điểm
+\end_layout
+
+\begin_layout Standard
+SIFT không được thiết kế để xử lý việc thay đổi góc nhìn, do đó, ví dụ với
+ ..., SIFT đối sánh thành công với nhiều keypoint.
+ Khi thay đổi viewpoint đi khoảng 30 độ, số lượng keypoint match thành công
+ ít hơn (
+\begin_inset CommandInset ref
+LatexCommand formatted
+reference "fig:sift-affine-no-match"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+), và khi thay đổi viewpoint đi 60 độ, vật thể không thể được nhận dạng.
+ Để khắc phục nhược điểm này, một số phương pháp khác ra đời dựa trên tinh
+ thần của SIFT, nhưng thay vì chỉ tìm keypoint trên nhiều octave/scale khác
+ nhau, các phương pháp này tìm keypoint trên nhiều viewpoint, ví dụ như
+ ASIFT
+\begin_inset CommandInset citation
+LatexCommand cite
+key "ipol.2011.my-asift"
+literal "false"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Ngoài ra, việc tính toán gaussian pyramid và tìm cực trị của DoG pyramid
+ tốn nhiều tài nguyên tính toán.
+ Một số thuật toán khác như FREAK
+\begin_inset CommandInset citation
+LatexCommand cite
+key "FREAK"
+literal "false"
+
+\end_inset
+
+đã được phát triển để khắc phục nhược điểm này, trong khi vẫn giữ được các
+ thuộc tính như scale invariant và rotate invariant.
 \begin_inset Float figure
-placement h
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Float figure
 wide false
 sideways false
 status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename figures/cup-vp-match1.png
+	display false
+	width 45text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Viewpoint thay đổi ít
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename figures/cup-vp-match2.png
+	display false
+	width 45text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Viewpoint thay đổi nhiều
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Số lượng keypoint ít dần khi viewpoint lệch khỏi ảnh train
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:sift-affine-no-match"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Float figure
+wide false
+sideways false
+status collapsed
 
 \begin_layout Plain Layout
 \align center
@@ -4177,7 +5165,7 @@ name "fig:box-in-scene"
 \begin_inset Float figure
 wide false
 sideways false
-status open
+status collapsed
 
 \begin_layout Plain Layout
 \align center
@@ -4479,7 +5467,7 @@ Trường hợp độ tương phản thấp và độ sáng cao
 \begin_inset Float figure
 wide false
 sideways false
-status open
+status collapsed
 
 \begin_layout Plain Layout
 \align center
@@ -4531,160 +5519,28 @@ name "fig:cup-in-scene"
 
 \end_layout
 
-\begin_layout Subsection
-Nhược điểm
-\end_layout
-
-\begin_layout Standard
-SIFT không được thiết kế để xử lý việc thay đổi góc nhìn, do đó, ví dụ với
- ..., SIFT đối sánh thành công với nhiều keypoint.
- Khi thay đổi viewpoint đi khoảng 30 độ, số lượng keypoint match thành công
- ít hơn (
-\begin_inset CommandInset ref
-LatexCommand formatted
-reference "fig:sift-affine-no-match"
-plural "false"
-caps "false"
-noprefix "false"
-
-\end_inset
-
-), và khi thay đổi viewpoint đi 60 độ, vật thể không thể được nhận dạng.
- Để khắc phục nhược điểm này, một số phương pháp khác ra đời dựa trên tinh
- thần của SIFT, nhưng thay vì chỉ tìm keypoint trên nhiều octave/scale khác
- nhau, các phương pháp này tìm keypoint trên nhiều viewpoint, ví dụ như
- ASIFT
-\begin_inset CommandInset citation
-LatexCommand cite
-key "ipol.2011.my-asift"
-literal "false"
-
-\end_inset
-
-.
-\begin_inset Float figure
-placement H
-wide false
-sideways false
-status collapsed
-
-\begin_layout Plain Layout
-\align center
-\begin_inset Float figure
-wide false
-sideways false
-status open
-
-\begin_layout Plain Layout
-\align center
-\begin_inset Graphics
-	filename figures/cup-vp-match1.png
-	display false
-	width 45text%
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Plain Layout
-\begin_inset Caption Standard
-
-\begin_layout Plain Layout
-Viewpoint thay đổi ít
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\end_inset
-
-
-\begin_inset Float figure
-wide false
-sideways false
-status open
-
-\begin_layout Plain Layout
-\align center
-\begin_inset Graphics
-	filename figures/cup-vp-match2.png
-	display false
-	width 45text%
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Plain Layout
-\begin_inset Caption Standard
-
-\begin_layout Plain Layout
-Viewpoint thay đổi nhiều
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Plain Layout
-\begin_inset Caption Standard
-
-\begin_layout Plain Layout
-Số lượng keypoint ít dần khi viewpoint lệch khỏi ảnh train
-\begin_inset CommandInset label
-LatexCommand label
-name "fig:sift-affine-no-match"
-
-\end_inset
-
-
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-Ngoài ra, việc tính toán gaussian pyramid và tìm cực trị của DoG pyramid
- tốn nhiều tài nguyên tính toán.
- Một số thuật toán khác như FREAK
-\begin_inset CommandInset citation
-LatexCommand cite
-key "FREAK"
-literal "false"
-
-\end_inset
-
-đã được phát triển để khắc phục nhược điểm này, trong khi vẫn giữ được các
- thuộc tính như scale invariant và rotate invariant.
-\end_layout
-
-\begin_layout Chapter
-Kết luận
-\end_layout
-
 \begin_layout Standard
 \begin_inset CommandInset bibtex
 LatexCommand bibtex
 btprint "btPrintCited"
 bibfiles "refs"
 options "plain"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+addcontentsline{toc}{chapter}{Tài liệu tham khảo}
+\end_layout
 
 \end_inset
 

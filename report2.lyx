@@ -18,16 +18,22 @@
 }
 \newcommand{\Break}{\textbf{break}}
 \newcommand{\Continue}{\textbf{continue}}
+\algrenewcommand\algorithmicrequire{\textbf{Input:}}
+\algrenewcommand\algorithmicensure{\textbf{Output:}}
+\renewcommand{\algorithmname}{Thủ tục}
+
+%% LISTING %%
 \usepackage{listings}
 \lstdefinelanguage{custom}{
     morekeywords={Input, Output, for, end, if, in, :=, int, float,
-				 trunc, round, floor, ceil, 
+				 trunc, round, floor, ceil, pad,
 				 bool, true, false, return, zeros, ones, rand},
     sensitive=false, % keywords are not case-sensitive
     morecomment=[l]{\#}, % l is for line comment
     morestring=[b]" % defines that strings are enclosed in double quotes
 } % 
 
+%% LISTING %% 
 \usepackage{inconsolata}
 \lstset{
 basicstyle=\ttfamily,
@@ -36,12 +42,19 @@ extendedchars=false,
 inputencoding=utf8,
 xleftmargin=2em, language=custom, tabsize=3, numbers=left}
 \usepackage{listingsutf8}
+
+
 %% TYPOGRAPHY %%
 \usepackage{newcent}
+<<<<<<< Updated upstream
 \usepackage[section]{placeins}
 
 
 % \usepackage{indentfirst}
+=======
+\usepackage{indentfirst}
+\usepackage[utf8]{vietnam}
+>>>>>>> Stashed changes
 
 %% SIFT %%
 \def\octave{\mathrm{octave}}
@@ -49,9 +62,15 @@ xleftmargin=2em, language=custom, tabsize=3, numbers=left}
 \def\second{\mathrm{second}}
 
 %% PRETTY REF %%
+<<<<<<< Updated upstream
 \newrefformat{alg}{Thuật toán \ref{#1}}
 \newrefformat{fig}{Hình \ref{#1} trang \pageref{#1}}
+=======
+\newrefformat{alg}{\algorithmname{} \ref{#1}}
+\newrefformat{fig}{Hình \ref{#1}}
+>>>>>>> Stashed changes
 \newrefformat{sec}{Phần \ref{#1}}
+\newrefformat{def}{Định nghĩa \ref{#1}}
 
 \usepackage[a4paper, top=3.5cm, bottom=3.0cm, left=3.5cm, right=2.0cm]{geometry}
 \end_preamble
@@ -61,6 +80,8 @@ InStar
 todonotes
 fixltx2e
 logicalmkup
+theorems-bytype
+theorems-chap-bytype
 \end_modules
 \maintain_unincluded_children false
 \begin_local_layout
@@ -90,7 +111,7 @@ EndPreamble
 End
 \end_local_layout
 \language vietnamese
-\language_package babel
+\language_package auto
 \inputencoding utf8x
 \fontencoding T5
 \font_roman "default" "default"
@@ -348,7 +369,7 @@ LatexCommand tableofcontents
 \end_layout
 
 \begin_layout Section
-Ảnh và biểu diễn ảnh
+Ảnh
 \end_layout
 
 \begin_layout Standard
@@ -404,8 +425,262 @@ tín hiệu
 .
 \end_layout
 
+\begin_layout Definition
+\begin_inset Argument 1
+status open
+
+\begin_layout Plain Layout
+Ảnh số
+\end_layout
+
+\end_inset
+
+Ký hiệu 
+\begin_inset Formula $\overline{1,n}$
+\end_inset
+
+ là tập 
+\begin_inset Formula $\left\{ i\right\} _{i=1}^{n}$
+\end_inset
+
+.
+ Một ảnh số 
+\begin_inset Formula $I$
+\end_inset
+
+ là một ảnh xạ
+\begin_inset Formula 
+\begin{align}
+I & {}\colon\overline{1,W}\times\overline{1,H}\times\overline{1,C}\to\mathbb{R},\nonumber \\
+I\left(x,y,c\right) & {}=\text{giá trị kênh \ensuremath{c} của điểm ảnh tại vị trí \left(x,y\right)},\label{eq:image-def}
+\end{align}
+
+\end_inset
+
+trong đó giá trị 
+\begin_inset Formula $H,W$
+\end_inset
+
+ được gọi là chiều cao và chiều rộng của ảnh một cách tương ứng, giá trị
+ 
+\begin_inset Formula $C$
+\end_inset
+
+ là 
+\emph on
+số kênh
+\emph default
+ của ảnh.
+ Một ảnh xám có 
+\begin_inset Formula $C=1$
+\end_inset
+
+, ảnh màu thường có 
+\begin_inset Formula $C=3$
+\end_inset
+
+ (mỗi kênh ứng với ba màu cơ bản là đỏ, xanh lá, xanh dương) hoặc 
+\begin_inset Formula $C=4$
+\end_inset
+
+ (kênh thứ tư thể hiện độ trong suốt).
+ Trong trường hợp 
+\begin_inset Formula $C=1$
+\end_inset
+
+, ta có thể đồng nhất 
+\begin_inset Formula $I\left(x,y\right)\coloneqq I\left(x,y,c\right)$
+\end_inset
+
+.
+\begin_inset CommandInset label
+LatexCommand label
+name "def:ảnh số"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Separator plain
+\end_inset
+
+
+\end_layout
+
+\begin_layout Remark
+Khi biểu diễn trên máy tính, ảnh được biểu diễn bằng mảng ba chiều với hai
+ định dạng phổ thông: 
+\begin_inset Formula $H\times W\times C$
+\end_inset
+
+ trong các thư viện xử lý ảnh truyền thống, 
+\begin_inset Formula $C\times H\times W$
+\end_inset
+
+ trong các thư viện học máy.
+ Cả hai trường hợp có những lưu ý như sau:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Trục 
+\begin_inset Formula $y$
+\end_inset
+
+ có hướng từ trên xuống (
+\begin_inset CommandInset ref
+LatexCommand formatted
+reference "fig:Trục-y-khi-máytính"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+).
+\begin_inset Float figure
+placement H
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename figures/y-flip.png
+	height 10em
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Trục 
+\begin_inset Formula $y$
+\end_inset
+
+ khi biểu diễn ảnh trên máy tính.
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Trục-y-khi-máytính"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+Chỉ số thứ nhất và thứ hai tương ứng với một dòng và một cột trên ảnh, do
+ đó, để lấy ra giá trị kênh 
+\begin_inset Formula $c$
+\end_inset
+
+ của điểm ảnh tại vị trí 
+\begin_inset Formula $\left(x,y\right)$
+\end_inset
+
+.
+ Do đó, khi lập trình ta cần sử dụng cách đánh chỉ số của ma trận; có nghĩa
+ rằng: lấy chỉ số 
+\begin_inset Formula $\left[y,x,c\right]$
+\end_inset
+
+ (trường hợp 
+\begin_inset Formula $H\times W\times C$
+\end_inset
+
+), và 
+\begin_inset Formula $\left[c,y,x\right]$
+\end_inset
+
+ (trường hợp 
+\begin_inset Formula $C\times H\times W$
+\end_inset
+
+).
+\end_layout
+
+\begin_layout Standard
+Báo cáo sử dụng 
+\begin_inset Formula $I\left(x,y,c\right)$
+\end_inset
+
+ (ngoặc tròn) để lấy ra giá trị điểm ảnh theo 
+\begin_inset CommandInset ref
+LatexCommand formatted
+reference "eq:image-def"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+, và 
+\begin_inset Formula $I\left[y,x,c\right]$
+\end_inset
+
+ để lấy giá trị điểm ảnh theo cách đánh chỉ số ma trận.
+ Nếu không nói gì khác, ảnh đầu vào tại bước đang xét được sắp xếp theo
+ chiều 
+\begin_inset Formula $H\times W\times C$
+\end_inset
+
+.
+\end_layout
+
+\end_deeper
+\begin_layout Definition
+\begin_inset Argument 1
+status collapsed
+
+\begin_layout Plain Layout
+Ảnh đặc trưng
+\end_layout
+
+\end_inset
+
+Trong một số trường hợp, ảnh 
+\begin_inset Formula $I$
+\end_inset
+
+ không phải ảnh theo nghĩa thông thường để có thể được nhìn bởi mắt người,
+ ta gọi 
+\begin_inset Formula $I$
+\end_inset
+
+ là một ảnh đặc trưng.
+ Số kênh của ảnh đặc trưng có thể không nằm trong những giá trị được nêu
+ trong 
+\begin_inset CommandInset ref
+LatexCommand formatted
+reference "def:ảnh số"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+\end_layout
+
 \begin_layout Section
-Một số thao tác trên ảnh
+Thao tác trên ảnh
 \begin_inset CommandInset label
 LatexCommand label
 name "sec:imageops"
@@ -416,7 +691,8 @@ name "sec:imageops"
 \end_layout
 
 \begin_layout Standard
-Phần 
+Với khái niệm như trên, ta có một số thao tác trên ảnh.
+ Phần 
 \begin_inset CommandInset ref
 LatexCommand nameref
 reference "sec:imageops"
@@ -445,9 +721,7 @@ Tính gradient và hessian
 \end_layout
 
 \begin_layout Standard
-Việc tính gradient, hessian của ảnh có rất nhiều cách.
- Báo cáo này sẽ sử dụng cách tính gradient và hessian bằng công thức tính
- sai phân 
+Việc tính gradient, hessian sẽ sử dụng công thức tính sai phân 
 \begin_inset CommandInset ref
 LatexCommand eqref
 reference "eq:diff-grad"
@@ -479,7 +753,27 @@ noprefix "false"
 
 \end_inset
 
-Để tính toán với ảnh, ta cần các toạ độ là nguyên, do đó lựa chọn 
+Để áp dụng công thức 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:diff-grad"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ và 
+\begin_inset CommandInset ref
+LatexCommand formatted
+reference "eq:diff-grad"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ trên ảnh, ta cần các toạ độ là nguyên, do đó lựa chọn 
 \begin_inset Formula $h$
 \end_inset
 
@@ -572,6 +866,155 @@ f_{xx}\left(x_{0}\right)=f\left(x_{0}+1\right)-2f\left(x_{0}\right)+f\left(x_{0}
 \end_inset
 
 
+\end_layout
+
+\begin_layout Standard
+Khi tính toán trên máy tính, việc tính gradient và hessian của ảnh thường
+ được tính toán bằng các thủ tục đã được véc tơ hoá để tối ưu tốc độ.
+\begin_inset Float algorithm
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{lstlisting}
+\end_layout
+
+\begin_layout Plain Layout
+
+Input: I
+\end_layout
+
+\begin_layout Plain Layout
+
+m, n := size(I)
+\end_layout
+
+\begin_layout Plain Layout
+
+I := pad(I, 1)
+\end_layout
+
+\begin_layout Plain Layout
+
+dx = I[2:m, :] - I[1:m-1, :]
+\end_layout
+
+\begin_layout Plain Layout
+
+dy = I[:, 2:n] - I[:, 1:n-1]
+\end_layout
+
+\begin_layout Plain Layout
+
+G = [dx, dy] / 2
+\end_layout
+
+\begin_layout Plain Layout
+
+return G
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{lstlisting}
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{lstlisting}
+\end_layout
+
+\begin_layout Plain Layout
+
+Input: I
+\end_layout
+
+\begin_layout Plain Layout
+
+m, n := size(I)
+\end_layout
+
+\begin_layout Plain Layout
+
+G := zeros(m, n, 2)
+\end_layout
+
+\begin_layout Plain Layout
+
+for i in 2:m-1, j in 2:n-1
+\end_layout
+
+\begin_layout Plain Layout
+
+	dx = 0.5 * (I[i+1, j] - I[i-1, j])
+\end_layout
+
+\begin_layout Plain Layout
+
+	dy = 0.5 * (I[i, j+1] - I[i, j-1])
+\end_layout
+
+\begin_layout Plain Layout
+
+	G[i-1, j-1, :] = [dx, dy]
+\end_layout
+
+\begin_layout Plain Layout
+
+end
+\end_layout
+
+\begin_layout Plain Layout
+
+return G
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{lstlisting}
+\end_layout
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Tính gradient
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Thu nhỏ ảnh với tỉ lệ
 \end_layout
 
 \begin_layout Standard

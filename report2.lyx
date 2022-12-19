@@ -199,11 +199,33 @@ status open
 \end_inset
 
 
+\end_layout
+
+\begin_layout Standard
 \begin_inset FormulaMacro
 \newcommand{\octave}{\omega}
 \end_inset
 
 
+\end_layout
+
+\begin_layout Standard
+\begin_inset FormulaMacro
+\newcommand{\numoctave}{\varOmega}
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset FormulaMacro
+\newcommand{\numscale}{\varLambda}
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
 \begin_inset FormulaMacro
 \newcommand{\gets}{\coloneqq}
 \end_inset
@@ -1929,6 +1951,13 @@ Scale Invariant Feature Transform
 
 \begin_layout Section
 Ý tưởng và tổng quan
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:Ý-tưởng-sift"
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -2582,7 +2611,241 @@ literal "false"
 \end_inset
 
 .
+ Quy trình chi tiết được trình bày trong 
+\begin_inset CommandInset ref
+LatexCommand formatted
+reference "alg:Tiền-xử-lý"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float algorithm
+placement H
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{algorithmic}[1]
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Require
+\end_layout
+
+\end_inset
+
+ Ảnh RGB 
+\begin_inset Formula $I\left(x,y,c\right)$
+\end_inset
+
+ kích thước
+\begin_inset Formula $W\times H$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Ensure
+\end_layout
+
+\end_inset
+
+ Ảnh xám 
+\begin_inset Formula $I'\left(x,y\right)$
+\end_inset
+
+ kích thước
+\begin_inset Formula $W\times H$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+State
+\end_layout
+
+\end_inset
+
  
+\begin_inset Formula $I'\left(x,y\right)=\left\{ 0,x\in\overline{1,W},y\in\overline{1,H}\right\} $
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+For{
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula $x=\overline{1,W},y=\overline{1,H}$
+\end_inset
+
+ 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+	
+\backslash
+State
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset Formula $I'\left(x,y\right)=0.2126\cdot I\left(x,y,1\right)+0.7152\cdot I\left(x,y,2\right)+0.0722\cdot I\left(x,y,3\right)$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+EndFor
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+State 
+\backslash
+Return
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset Formula $I'\left(x,y\right)$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{algorithmic}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Tiền xử lý ảnh đầu vào.
+\begin_inset CommandInset label
+LatexCommand label
+name "alg:Tiền-xử-lý"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Subsection
@@ -2590,33 +2853,101 @@ Tìm gaussian pyramid
 \end_layout
 
 \begin_layout Standard
-Trong SIFT, tính toán trên không gian tỷ lệ được sắp xếp như thành một Gaussian
- pyramid, tương đương với 
-\begin_inset Formula $I\left(x\right)\ast G\left(x,\sigma\right)$
+Gaussian pyramid có thể được coi như một dãy của dãy các ảnh ba chiều 
+\begin_inset Formula 
+\[
+\mathcal{L}=\left\{ L_{\octave,\scale}\left(x,y\right)\colon\octave=\overline{1,\numoctave},\scale=\overline{1,\numscale}\right\} 
+\]
+
 \end_inset
 
- trong trường hợp một chiều.
- Một Gaussian pyramid gồm nhiều octave, mỗi octave gồm nhiều ảnh ứng với
- các 
-\begin_inset Formula $\sigma$
+trong đó 
+\begin_inset Formula $\numoctave$
 \end_inset
 
- khác nhau.
- Mỗi octave 
-\begin_inset Formula $i$
+ và 
+\begin_inset Formula $\numscale$
 \end_inset
 
- sẽ tương đương với việc giá trị 
-\begin_inset Formula $\sigma$
+ là các tham số tùy chọn.
+ Gọi 
+\begin_inset Formula 
+\[
+\mathcal{L}_{\octave}=\left\{ L_{\octave,\scale}\left(x,y\right)\colon\octave=\overline{1,\numoctave}\right\} 
+\]
+
 \end_inset
 
- được tăng lên 
-\begin_inset Formula $2^{i-1}$
+là một octave, 
+\begin_inset Formula $\numoctave$
 \end_inset
 
- lần.
- Gaussian pyramid 
-\begin_inset Formula $\mathcal{L}=\left\{ L_{i}\left(x,y,\sigma_{j}\right)\colon j=\overline{1,S}\right\} _{i=1}^{N}$
+ là số lượng octave tối đa.
+ Mỗi octave sẽ bao gồm các ảnh 
+\begin_inset Formula $L_{\octave,\lambda}\left(x,y\right)$
+\end_inset
+
+, được gọi là các scale.
+ Giả sử ta có một dãy các giá trị 
+\begin_inset Formula 
+\[
+\Sigma=\left\{ \sigma_{\octave,\scale}\right\} _{\octave=\overline{1,\numoctave},\scale=\overline{1,\numscale}},
+\]
+
+\end_inset
+
+sao cho 
+\begin_inset Formula $\sigma_{\octave+1}=2\sigma_{\octave}$
+\end_inset
+
+, mỗi scale khi đó tương đương với một tín hiệu 
+\begin_inset Formula $I\left(x\right)\ast G\left(x,\sigma_{\octave,\lambda}\right)$
+\end_inset
+
+ trong trường hợp một chiều (xem 
+\begin_inset CommandInset ref
+LatexCommand formatted
+reference "sec:Ý-tưởng-sift"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+).
+ Các ảnh 
+\begin_inset Formula $L_{\octave,\scale}$
+\end_inset
+
+ được tính theo công thức
+\begin_inset Flex TODO Note (inline)
+status open
+
+\begin_layout Plain Layout
+Dẫn dắt sang việc tính dùng một dãy sigma và sửa nốt phần này
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula 
+\begin{align*}
+L_{\octave,\lambda+1}\left(x,y\right) & =L_{\octave,\lambda}\left(x,y\right)\ast G\left(x,y,\sqrt{\sigma_{\octave,\scale+1}^{2}-\sigma_{\octave,\scale}^{2}}\right)\\
+L_{\octave,0}\left(x,y\right) & =L_{\octave,\lambda}\left(x,y\right)\ast G\left(x,y,\sqrt{\sigma_{\octave,\scale+1}^{2}-\sigma_{\octave,\scale}^{2}}\right)
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+==============
+\end_layout
+
+\begin_layout Standard
+Gaussian pyramid 
+\begin_inset Formula $\mathcal{L}$
 \end_inset
 
  được tìm với công thức 
@@ -2777,21 +3108,169 @@ literal "false"
 .
 \end_layout
 
+\begin_layout Standard
+\begin_inset Float algorithm
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{algorithmic}[1]
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Require
+\end_layout
+
+\end_inset
+
+ Ảnh xám 
+\begin_inset Formula $I^{\prime}\left(x,y\right)$
+\end_inset
+
+ cỡ 
+\begin_inset Formula $W\times H$
+\end_inset
+
+, 
+\begin_inset Formula $\sigma_{0}$
+\end_inset
+
+, 
+\begin_inset Formula $\numscale$
+\end_inset
+
+, 
+\begin_inset Formula $\numoctave$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Ensure
+\end_layout
+
+\end_inset
+
+ Gaussian pyramid 
+\begin_inset Formula $\mathcal{L}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+State
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset Formula $I^{\prime}=\Resize\left(I^{\prime},\ratio=2\right)\ast G\left(\right)$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{algorithmic}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Tìm scale space
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Subsection
 Tìm cực trị của scale space
 \end_layout
 
 \begin_layout Standard
-Sau khi có gaussian pyramid 
-\begin_inset Formula $\mathcal{L}$
+Vì các ảnh trong 
+\begin_inset Formula $\mathcal{L}_{\octave}$
 \end_inset
 
-, ta tìm cực trị của mỗi octave 
-\begin_inset Formula $\mathcal{L}_{i}$
+ có cùng một kích thước, ta có thể coi 
+\begin_inset Formula $\mathcal{L}_{\octave}$
 \end_inset
 
- trong 
-\begin_inset Formula $\mathcal{L}$
+ như một ảnh ba chiều 
+\begin_inset Formula $L_{\octave}\left(x,y,\scale\right)$
+\end_inset
+
+, sao cho 
+\begin_inset Formula $L_{\octave,\scale}\left(x,y\right)=L_{\octave}\left(x,y,\scale\right)$
+\end_inset
+
+.
+ Để tìm cực trị của scale space, ta tìm cực trị của 
+\begin_inset Formula $L_{\octave}\left(x,y,\scale\right)$
+\end_inset
+
+ ứng với các biến 
+\begin_inset Formula $\left(x,y,\scale\right)$
 \end_inset
 
 .

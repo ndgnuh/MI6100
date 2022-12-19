@@ -46,15 +46,7 @@ xleftmargin=2em, language=custom, tabsize=3, numbers=left}
 
 %% TYPOGRAPHY %%
 \usepackage{newcent}
-<<<<<<< Updated upstream
-\usepackage[section]{placeins}
-
-
-% \usepackage{indentfirst}
-=======
-\usepackage{indentfirst}
 \usepackage[utf8]{vietnam}
->>>>>>> Stashed changes
 
 %% SIFT %%
 \def\octave{\mathrm{octave}}
@@ -62,13 +54,8 @@ xleftmargin=2em, language=custom, tabsize=3, numbers=left}
 \def\second{\mathrm{second}}
 
 %% PRETTY REF %%
-<<<<<<< Updated upstream
-\newrefformat{alg}{Thuật toán \ref{#1}}
-\newrefformat{fig}{Hình \ref{#1} trang \pageref{#1}}
-=======
 \newrefformat{alg}{\algorithmname{} \ref{#1}}
-\newrefformat{fig}{Hình \ref{#1}}
->>>>>>> Stashed changes
+\newrefformat{fig}{Hình \ref{#1} trang \pageref{#1}}
 \newrefformat{sec}{Phần \ref{#1}}
 \newrefformat{def}{Định nghĩa \ref{#1}}
 

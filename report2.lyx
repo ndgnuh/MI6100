@@ -987,7 +987,7 @@ name "alg:imhessian-3d"
 \end_layout
 
 \begin_layout Subsection
-Thay đổi kích thước ảnh
+Thay đổi kích thước
 \end_layout
 
 \begin_layout Standard
@@ -1406,7 +1406,7 @@ Khi phát hiện được đặc trưng của ảnh, một thao tác hay đượ
 \end_layout
 
 \begin_layout Section
-Bài toán đối sánh ảnh
+Đối sánh ảnh
 \end_layout
 
 \begin_layout Standard
@@ -2447,7 +2447,8 @@ Xét điểm cực trị của
 \begin_inset Formula $\mathbf{x}$
 \end_inset
 
- chỉ cho biết thông tin về những vị trí có thể có keypoint trên ảnh.
+ chỉ cho biết thông tin về những vị trí có thể có keypoint trên ảnh, do
+ đó ta cần localize để tìm ra keypoint một cách chính xác.
  Việc tìm keypoint gồm các bước:
 \end_layout
 
@@ -2475,19 +2476,25 @@ noprefix "false"
 \end_inset
 
 , số lần lặp tối đa được chọn bằng mười.
- Nếu kết quả success 
-\begin_inset Formula $=0$
+ Trong quá trình này, các keypoint không đạt đủ điều kiện về độ tương phản,
+ hoặc keypoint nằm trên cạnh sẽ bị lọc ra.
+ Ta thu được tập keypoint ứng cử 
+\begin_inset Formula $\mathcal{C}$
 \end_inset
 
-, tại 
-\begin_inset Formula $\mathbf{x}$
-\end_inset
-
- không có keypoint nào được tìm thấy.
+.
 \end_layout
 
 \begin_layout Enumerate
-Tìm orientation của keypoint sử dụng 
+Tìm orientation của mỗi ứng cử keypoint 
+\begin_inset Formula $K$
+\end_inset
+
+ trong 
+\begin_inset Formula $\mathcal{C}$
+\end_inset
+
+ sử dụng 
 \begin_inset CommandInset ref
 LatexCommand formatted
 reference "alg:keypoint-orienatation"
@@ -2526,6 +2533,24 @@ plural "false"
 caps "false"
 noprefix "false"
 
+\end_inset
+
+.
+ Sau quá trình này ta thu được tập keypoint 
+\begin_inset Formula $\mathcal{K}$
+\end_inset
+
+.
+ Mỗi ứng cử 
+\begin_inset Formula $K$
+\end_inset
+
+ thuộc 
+\begin_inset Formula $\mathcal{C}$
+\end_inset
+
+ có thể tạo ra một hoặc nhiều keypoint trong 
+\begin_inset Formula $\mathcal{K}$
 \end_inset
 
 .
@@ -3110,7 +3135,7 @@ name "alg:candidate-coord-algorithm"
 \begin_inset Float algorithm
 wide false
 sideways false
-status collapsed
+status open
 
 \begin_layout Plain Layout
 \begin_inset ERT
@@ -3935,7 +3960,7 @@ name "alg:histogram-peaks"
 \end_layout
 
 \begin_layout Subsection
-Tính toán descriptor của keypoint
+Tính toán descriptor 
 \end_layout
 
 \begin_layout Standard

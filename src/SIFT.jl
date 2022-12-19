@@ -8,7 +8,23 @@ using StatsBase
 using ImageFiltering
 using SplitApplyCombine
 
-
+	function resize_sampling(I, new_size::NTuple)
+	    new_h, new_w = new_size
+	    h, w = size(I)
+	    r_h, r_w = h / new_h, w / new_w
+	    I′ = zeros(eltype(I), new_h, new_w)
+	    for i′ in 1:new_h, j′ in 1:new_w
+	        i = trunc(Int, r_h * i′ + 0.5)
+	        j = trunc(Int, r_w * j′ + 0.5)
+	        I′[i′, j′] = I[i, j]
+	    end
+		return I′
+	end
+	function resize_sampling(I, ratio::AbstractFloat)
+	    new_size = Tuple(trunc(Int, s * ratio) for s in size(I))
+	    resize_sampling(I, new_size)
+	end
+	
 include(joinpath(@__DIR__, "constants.jl"))
 include(joinpath(@__DIR__, "struct.jl"))
 include(joinpath(@__DIR__, "gradient.jl"))
@@ -265,4 +281,5 @@ end
 #= end =#
 
 
+end
 end

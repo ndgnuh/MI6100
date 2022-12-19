@@ -883,7 +883,7 @@ Khi tính toán trên máy tính, việc tính gradient và hessian của ảnh 
 \begin_inset Float algorithm
 wide false
 sideways false
-status open
+status collapsed
 
 \begin_layout Plain Layout
 \begin_inset ERT
@@ -1022,10 +1022,6 @@ Tính gradient
 
 \end_layout
 
-\begin_layout Subsection
-Thu nhỏ ảnh với tỉ lệ
-\end_layout
-
 \begin_layout Standard
 Từ đó ta có thủ tục tính gradient và hessian của ảnh.
  Gradient của ảnh ba chiều được thể hiện trong 
@@ -1087,98 +1083,171 @@ status open
 
 
 \backslash
-begin{lstlisting}
+begin{algorithmic}[1]
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Plain Layout
-
-Input: I(x, y, z)
-\end_layout
-
-\begin_layout Plain Layout
-
-[m, n, p] := size(I)
-\end_layout
+\begin_inset ERT
+status collapsed
 
 \begin_layout Plain Layout
 
-grad = zeros(m, n, p, 3)
-\end_layout
 
-\begin_layout Plain Layout
-
-for i in 2:(m-1), j in 2:(n-1), k in 2:(p-1)
-\end_layout
-
-\begin_layout Plain Layout
-
-	grad[i, j, k, 1] := I(i+1, j, k) - I(i-1, j, k)
-\end_layout
-
-\begin_layout Plain Layout
-
-	grad[i, j, k, 1] := I(i, j+1, k) - I(i, j-1, k)
-\end_layout
-
-\begin_layout Plain Layout
-
-	grad[i, j, k, 1] := I(i, j, k+1) - I(i, j, k-1)
-\end_layout
-
-\begin_layout Plain Layout
-
-end
-\end_layout
-
-\begin_layout Plain Layout
-
-grad := grad / 2
-\end_layout
-
-\begin_layout Plain Layout
-
-return grad
+\backslash
+State 
+\backslash
+ensuremath{[
+\backslash
+ensuremath{m}, 
+\backslash
+ensuremath{n}] 
+\backslash
+gets 
+\backslash
+operatorname{size}
+\backslash
+left(
+\backslash
+ensuremath{I}
+\backslash
+right)}
 \end_layout
 
 \begin_layout Plain Layout
 
 
 \backslash
-end{lstlisting}
+State 
+\backslash
+ensuremath{
+\backslash
+mathrm{grad} 
+\backslash
+gets 
+\backslash
+operatorname{zeros}
+\backslash
+left(
+\backslash
+ensuremath{m}, 
+\backslash
+ensuremath{n}, 2
+\backslash
+right)}
 \end_layout
 
-\end_inset
+\begin_layout Plain Layout
 
+
+\backslash
+For{
+\backslash
+ensuremath{   
+\backslash
+ensuremath{
+\backslash
+ensuremath{i} 
+\backslash
+gets 
+\backslash
+operatorname{range}
+\backslash
+left(2, 
+\backslash
+ensuremath{m}-1
+\backslash
+right)},    
+\backslash
+ensuremath{
+\backslash
+ensuremath{j} 
+\backslash
+gets 
+\backslash
+operatorname{range}
+\backslash
+left(2, 
+\backslash
+ensuremath{n}-1
+\backslash
+right)}}} 
+\end_layout
+
+\begin_layout Plain Layout
+
+    
+\backslash
+State 
+\backslash
+ensuremath{
+\backslash
+mathrm{grad[i, j, 1]} 
+\backslash
+gets 
+\backslash
+left(
+\backslash
+ensuremath{I[i + 1, j]}-
+\backslash
+ensuremath{I[i - 1, j]}
+\backslash
+right)/2}
+\end_layout
+
+\begin_layout Plain Layout
+
+    
+\backslash
+State 
+\backslash
+ensuremath{
+\backslash
+mathrm{grad[i, j, 2]} 
+\backslash
+gets 
+\backslash
+left(
+\backslash
+ensuremath{I[i, j + 1]}-
+\backslash
+ensuremath{I[i, j - 1]}
+\backslash
+right)/2}
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+EndFor{}
+\end_layout
+
+\begin_layout Plain Layout
 
 \end_layout
 
 \begin_layout Plain Layout
-\begin_inset Caption Standard
-
-\begin_layout Plain Layout
-Tính gradient (trường hợp ba chiều)
-\begin_inset CommandInset label
-LatexCommand label
-name "alg:gradient-3d"
-
-\end_inset
 
 
+\backslash
+State 
+\backslash
+Return 
+\backslash
+ensuremath{
+\backslash
+mathrm{grad}}
 \end_layout
 
 \end_inset
 
 
 \end_layout
-
-\end_inset
-
-
-\begin_inset Float algorithm
-placement H
-wide false
-sideways false
-status collapsed
 
 \begin_layout Plain Layout
 \begin_inset ERT
@@ -1188,59 +1257,7 @@ status open
 
 
 \backslash
-begin{lstlisting}
-\end_layout
-
-\begin_layout Plain Layout
-
-Input: I(x, y)
-\end_layout
-
-\begin_layout Plain Layout
-
-[m, n] := size(I)
-\end_layout
-
-\begin_layout Plain Layout
-
-grad = zeros(m, n, p, 2)
-\end_layout
-
-\begin_layout Plain Layout
-
-for i in 2:(m-1), j in 2:(n-1)
-\end_layout
-
-\begin_layout Plain Layout
-
-	grad[i, j, 1] := I(i+1, j) - I(i-1, j)
-\end_layout
-
-\begin_layout Plain Layout
-
-	grad[i, j, 1] := I(i, j+1) - I(i, j-1)
-\end_layout
-
-\begin_layout Plain Layout
-
-end
-\end_layout
-
-\begin_layout Plain Layout
-
-grad := grad / 2
-\end_layout
-
-\begin_layout Plain Layout
-
-return grad
-\end_layout
-
-\begin_layout Plain Layout
-
-
-\backslash
-end{lstlisting}
+end{algorithmic}
 \end_layout
 
 \end_inset
@@ -1284,129 +1301,643 @@ status open
 
 
 \backslash
-begin{lstlisting}
+begin{algorithmic}[1]
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Plain Layout
-
-Input: I(x, y, z)
-\end_layout
-
-\begin_layout Plain Layout
-
-[m, n, p] := size(I)
-\end_layout
+\begin_inset ERT
+status collapsed
 
 \begin_layout Plain Layout
 
-hess = zeros(m, n, p, 3, 3)
-\end_layout
 
-\begin_layout Plain Layout
-
-for i in 2:(m-1), j in 2:(n-1), k in 2:(p-1)
-\end_layout
-
-\begin_layout Plain Layout
-
-	# double of center value
-\end_layout
-
-\begin_layout Plain Layout
-
-	dcv = I(i, j, k) * 2
-\end_layout
-
-\begin_layout Plain Layout
-
-	hess[i, j, k, 1, 1] := I(i+1, j, k) + I(i-1, j, k) - dcv
-\end_layout
-
-\begin_layout Plain Layout
-
-	hess[i, j, k, 2, 2] := I(i, j+1, k) + I(i, j-1, k) - dcv
-\end_layout
-
-\begin_layout Plain Layout
-
-	hess[i, j, k, 3, 3] := I(i, j, k+1) + I(i, j, k-1) - dcv
-\end_layout
-
-\begin_layout Plain Layout
-
-	hess[i, j, k, 1, 2] := 
-\end_layout
-
-\begin_layout Plain Layout
-
-	     (I(i+1, j+1, k) + I(i-1, j-1, k)
-\end_layout
-
-\begin_layout Plain Layout
-
-	    - I(i+1, j-1, k) - I(i-1, j+1, k)) * 0.25
-\end_layout
-
-\begin_layout Plain Layout
-
-	hess[i, j, k, 1, 3] := 
-\end_layout
-
-\begin_layout Plain Layout
-
-	     (I(i+1, j, k+1) + I(i-1, j, k-1)
-\end_layout
-
-\begin_layout Plain Layout
-
-	    - I(i+1, j, k-1) - I(i-1, j, k+1)) * 0.25
-\end_layout
-
-\begin_layout Plain Layout
-
-	hess[i, j, k, 2, 3] := 
-\end_layout
-
-\begin_layout Plain Layout
-
-	     (I(i, j+1 k+1) + I(i, j-1, k-1)
-\end_layout
-
-\begin_layout Plain Layout
-
-	    - I(i, j+1, k-1) - I(i, j-1, k+1)) * 0.25
-\end_layout
-
-\begin_layout Plain Layout
-
-	hess[i, j, k, 2, 1] := hess[i, j, k, 1, 2]
-\end_layout
-
-\begin_layout Plain Layout
-
-	hess[i, j, k, 3, 1] := hess[i, j, k, 1, 3]
-\end_layout
-
-\begin_layout Plain Layout
-
-	hess[i, j, k, 3, 2] := hess[i, j, k, 2, 3]
-\end_layout
-
-\begin_layout Plain Layout
-
-end
-\end_layout
-
-\begin_layout Plain Layout
-
-return hess
+\backslash
+State 
+\backslash
+ensuremath{[
+\backslash
+ensuremath{m}, 
+\backslash
+ensuremath{n}, 
+\backslash
+ensuremath{p}] 
+\backslash
+gets 
+\backslash
+operatorname{size}
+\backslash
+left(
+\backslash
+ensuremath{I}
+\backslash
+right)}
 \end_layout
 
 \begin_layout Plain Layout
 
 
 \backslash
-end{lstlisting}
+State 
+\backslash
+ensuremath{
+\backslash
+mathrm{grad} 
+\backslash
+gets 
+\backslash
+operatorname{zeros}
+\backslash
+left(
+\backslash
+ensuremath{m}, 
+\backslash
+ensuremath{n}, 
+\backslash
+ensuremath{p}, 3
+\backslash
+right)}
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+For{
+\backslash
+ensuremath{   
+\backslash
+ensuremath{
+\backslash
+ensuremath{i} 
+\backslash
+gets 
+\backslash
+operatorname{range}
+\backslash
+left(2, 
+\backslash
+ensuremath{m}-1
+\backslash
+right)},    
+\backslash
+ensuremath{
+\backslash
+ensuremath{j} 
+\backslash
+gets 
+\backslash
+operatorname{range}
+\backslash
+left(2, 
+\backslash
+ensuremath{n}-1
+\backslash
+right)},    
+\backslash
+ensuremath{
+\backslash
+ensuremath{k} 
+\backslash
+gets 
+\backslash
+operatorname{range}
+\backslash
+left(2, 
+\backslash
+ensuremath{p}-1
+\backslash
+right)}}} 
+\end_layout
+
+\begin_layout Plain Layout
+
+    
+\backslash
+State 
+\backslash
+ensuremath{
+\backslash
+mathrm{grad[i, j, k, 1]} 
+\backslash
+gets 
+\backslash
+left(
+\backslash
+ensuremath{I[i + 1, j, k]}-
+\backslash
+ensuremath{I[i - 1, j, k]}
+\backslash
+right)/2}
+\end_layout
+
+\begin_layout Plain Layout
+
+    
+\backslash
+State 
+\backslash
+ensuremath{
+\backslash
+mathrm{grad[i, j, k, 2]} 
+\backslash
+gets 
+\backslash
+left(
+\backslash
+ensuremath{I[i, j + 1, k]}-
+\backslash
+ensuremath{I[i, j - 1, k]}
+\backslash
+right)/2}
+\end_layout
+
+\begin_layout Plain Layout
+
+    
+\backslash
+State 
+\backslash
+ensuremath{
+\backslash
+mathrm{grad[i, j, k, 3]} 
+\backslash
+gets 
+\backslash
+left(
+\backslash
+ensuremath{I[i, j, k + 1]}-
+\backslash
+ensuremath{I[i, j, k - 1]}
+\backslash
+right)/2}
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+EndFor{}
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+State 
+\backslash
+Return 
+\backslash
+ensuremath{
+\backslash
+mathrm{grad}}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{algorithmic}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Tính gradient (trường hợp ba chiều)
+\begin_inset CommandInset label
+LatexCommand label
+name "alg:gradient-3d"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Float algorithm
+placement H
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{algorithmic}[1]
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+  
+\backslash
+State 
+\backslash
+ensuremath{[
+\backslash
+ensuremath{m}, 
+\backslash
+ensuremath{n}, 
+\backslash
+ensuremath{p}] 
+\backslash
+gets 
+\backslash
+operatorname{size}
+\backslash
+left(
+\backslash
+ensuremath{I}
+\backslash
+right)}
+\end_layout
+
+\begin_layout Plain Layout
+
+  
+\backslash
+State 
+\backslash
+ensuremath{
+\backslash
+mathrm{hess} 
+\backslash
+gets 
+\backslash
+operatorname{zeros}
+\backslash
+left(
+\backslash
+ensuremath{m}, 
+\backslash
+ensuremath{n}, 
+\backslash
+ensuremath{p}, 3, 3
+\backslash
+right)}
+\end_layout
+
+\begin_layout Plain Layout
+
+  
+\backslash
+For{
+\backslash
+ensuremath{   
+\backslash
+ensuremath{
+\backslash
+ensuremath{i} 
+\backslash
+gets 
+\backslash
+operatorname{range}
+\backslash
+left(2, 
+\backslash
+ensuremath{m}-1
+\backslash
+right)},    
+\backslash
+ensuremath{
+\backslash
+ensuremath{j} 
+\backslash
+gets 
+\backslash
+operatorname{range}
+\backslash
+left(2, 
+\backslash
+ensuremath{n}-1
+\backslash
+right)},    
+\backslash
+ensuremath{
+\backslash
+ensuremath{k} 
+\backslash
+gets 
+\backslash
+operatorname{range}
+\backslash
+left(2, 
+\backslash
+ensuremath{p}-1
+\backslash
+right)}}} 
+\end_layout
+
+\begin_layout Plain Layout
+
+        
+\backslash
+State 
+\backslash
+ensuremath{
+\backslash
+mathrm{hess[i, j, k, 1, 1]} 
+\backslash
+gets (
+\backslash
+ensuremath{I[i + 1, j, k]}+
+\backslash
+ensuremath{I[i - 1, j, k]})-(
+\backslash
+ensuremath{I[i, j, k]}*2)}
+\end_layout
+
+\begin_layout Plain Layout
+
+        
+\backslash
+State 
+\backslash
+ensuremath{
+\backslash
+mathrm{hess[i, j, k, 2, 2]} 
+\backslash
+gets (
+\backslash
+ensuremath{I[i, j + 1, k]}+
+\backslash
+ensuremath{I[i, j - 1, k]})-(
+\backslash
+ensuremath{I[i, j, k]}*2)}
+\end_layout
+
+\begin_layout Plain Layout
+
+        
+\backslash
+State 
+\backslash
+ensuremath{
+\backslash
+mathrm{hess[i, j, k, 3, 3]} 
+\backslash
+gets (
+\backslash
+ensuremath{I[i, j, k + 1]}+
+\backslash
+ensuremath{I[i, j, k - 1]})-(
+\backslash
+ensuremath{I[i, j, k]}*2)}
+\end_layout
+
+\begin_layout Plain Layout
+
+        
+\backslash
+State 
+\backslash
+ensuremath{
+\backslash
+mathrm{hess[i, j, k, 1, 2]} 
+\backslash
+gets (
+\backslash
+ensuremath{I[i + 1, j + 1, k]}+
+\backslash
+ensuremath{I[i - 1, j - 1, k]}-
+\backslash
+ensuremath{I[i + 1, j - 1, k]}-
+\backslash
+ensuremath{I[i - 1, j + 1, k]})/4}
+\end_layout
+
+\begin_layout Plain Layout
+
+        
+\backslash
+State 
+\backslash
+ensuremath{
+\backslash
+mathrm{hess[i, j, k, 1, 3]} 
+\backslash
+gets (
+\backslash
+ensuremath{I[i + 1, j, k + 1]}+
+\backslash
+ensuremath{I[i - 1, j, k - 1]}-
+\backslash
+ensuremath{I[i + 1, j, k - 1]}-
+\backslash
+ensuremath{I[i - 1, j, k + 1]})/4}
+\end_layout
+
+\begin_layout Plain Layout
+
+        
+\backslash
+State 
+\backslash
+ensuremath{
+\backslash
+mathrm{hess[i, j, k, 2, 3]} 
+\backslash
+gets (
+\backslash
+ensuremath{I[i, j + 1, k + 1]}+
+\backslash
+ensuremath{I[i, j - 1, k - 1]}-
+\backslash
+ensuremath{I[i, j + 1, k - 1]}-
+\backslash
+ensuremath{I[i, j - 1, k + 1]})/4}
+\end_layout
+
+\begin_layout Plain Layout
+
+  
+\backslash
+EndFor{}
+\end_layout
+
+\begin_layout Plain Layout
+
+  
+\end_layout
+
+\begin_layout Plain Layout
+
+  
+\backslash
+For{
+\backslash
+ensuremath{   
+\backslash
+ensuremath{
+\backslash
+ensuremath{i} 
+\backslash
+gets 
+\backslash
+operatorname{range}
+\backslash
+left(2, 
+\backslash
+ensuremath{m}-1
+\backslash
+right)},    
+\backslash
+ensuremath{
+\backslash
+ensuremath{j} 
+\backslash
+gets 
+\backslash
+operatorname{range}
+\backslash
+left(2, 
+\backslash
+ensuremath{n}-1
+\backslash
+right)},    
+\backslash
+ensuremath{
+\backslash
+ensuremath{k} 
+\backslash
+gets 
+\backslash
+operatorname{range}
+\backslash
+left(2, 
+\backslash
+ensuremath{p}-1
+\backslash
+right)}}} 
+\end_layout
+
+\begin_layout Plain Layout
+
+        
+\backslash
+State 
+\backslash
+ensuremath{
+\backslash
+mathrm{hess[i, j, k, 2, 1]} 
+\backslash
+gets 
+\backslash
+mathrm{hess[i, j, k, 1, 2]}}
+\end_layout
+
+\begin_layout Plain Layout
+
+        
+\backslash
+State 
+\backslash
+ensuremath{
+\backslash
+mathrm{hess[i, j, k, 3, 1]} 
+\backslash
+gets 
+\backslash
+mathrm{hess[i, j, k, 1, 3]}}
+\end_layout
+
+\begin_layout Plain Layout
+
+        
+\backslash
+State 
+\backslash
+ensuremath{
+\backslash
+mathrm{hess[i, j, k, 3, 2]} 
+\backslash
+gets 
+\backslash
+mathrm{hess[i, j, k, 2, 3]}}
+\end_layout
+
+\begin_layout Plain Layout
+
+  
+\backslash
+EndFor{}
+\end_layout
+
+\begin_layout Plain Layout
+
+  
+\backslash
+State 
+\backslash
+Return 
+\backslash
+ensuremath{
+\backslash
+mathrm{hess}}
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{algorithmic}
 \end_layout
 
 \end_inset
@@ -1484,11 +2015,48 @@ noprefix "false"
 \end_inset
 
 ).
+ Để thuận tiện cho việc trình bày, báo cáo ký hiệu thao tác 
+\begin_inset Formula $\Resize\left(I,\ratio=r\right)$
+\end_inset
+
+ là thao tác thay đổi kích thước ảnh 
+\begin_inset Formula $I$
+\end_inset
+
+ cỡ 
+\begin_inset Formula $m\times n$
+\end_inset
+
+ để thu được ảnh 
+\begin_inset Formula $I'$
+\end_inset
+
+ cỡ 
+\begin_inset Formula $\left(m\cdot r\right)\times\left(n\cdot r\right)$
+\end_inset
+
+.
 \begin_inset Float algorithm
 placement H
 wide false
 sideways false
 status collapsed
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{algorithmic}[1]
+\end_layout
+
+\end_inset
+
+
+\end_layout
 
 \begin_layout Plain Layout
 \begin_inset ERT
@@ -1498,85 +2066,272 @@ status open
 
 
 \backslash
-begingroup
+Require
+\end_layout
+
+\end_inset
+
+ Ảnh 
+\begin_inset Formula $I$
+\end_inset
+
+, chiều cao mới 
+\begin_inset Formula $h'$
+\end_inset
+
+ và chiều rộng mới 
+\begin_inset Formula $w'$
+\end_inset
+
+,
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Ensure
+\end_layout
+
+\end_inset
+
+ Ảnh đã thay đổi kích thước 
+\begin_inset Formula $I'$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+State 
+\backslash
+ensuremath{[
+\backslash
+ensuremath{h}, 
+\backslash
+ensuremath{w}] 
+\backslash
+gets 
+\backslash
+operatorname{size}
+\backslash
+left(
+\backslash
+ensuremath{I}
+\backslash
+right)}
 \end_layout
 
 \begin_layout Plain Layout
 
 
 \backslash
-ttfamily
+State 
+\backslash
+ensuremath{[
+\backslash
+ensuremath{r_h}, 
+\backslash
+ensuremath{r_w}] 
+\backslash
+gets [
+\backslash
+ensuremath{h}/
+\backslash
+ensuremath{h'}, 
+\backslash
+ensuremath{w}/
+\backslash
+ensuremath{w'}]}
 \end_layout
 
 \begin_layout Plain Layout
 
 
 \backslash
-begin{lstlisting}
-\end_layout
-
-\begin_layout Plain Layout
-
-Input: I, m', n'
-\end_layout
-
-\begin_layout Plain Layout
-
-I' := zeros(m', n')
-\end_layout
-
-\begin_layout Plain Layout
-
-rx := m / m'
-\end_layout
-
-\begin_layout Plain Layout
-
-ry := n / n'
-\end_layout
-
-\begin_layout Plain Layout
-
-for i' in 1:m', j' in 1:n'
-\end_layout
-
-\begin_layout Plain Layout
-
-	i := round(i' * rx)
-\end_layout
-
-\begin_layout Plain Layout
-
-	j := round(j' * ry)
-\end_layout
-
-\begin_layout Plain Layout
-
-	I'(i', j') := I(i, j)
-\end_layout
-
-\begin_layout Plain Layout
-
-end
-\end_layout
-
-\begin_layout Plain Layout
-
-return I'
+State 
+\backslash
+ensuremath{
+\backslash
+ensuremath{I'} 
+\backslash
+gets 
+\backslash
+operatorname{zeros}
+\backslash
+left(
+\backslash
+operatorname{eltype}
+\backslash
+left(
+\backslash
+ensuremath{I}
+\backslash
+right), 
+\backslash
+ensuremath{w'}, 
+\backslash
+ensuremath{w'}
+\backslash
+right)}
 \end_layout
 
 \begin_layout Plain Layout
 
 
 \backslash
-end{lstlisting}
+For{
+\backslash
+ensuremath{   
+\backslash
+ensuremath{
+\backslash
+ensuremath{i'} 
+\backslash
+gets 
+\backslash
+operatorname{range}
+\backslash
+left(1, 
+\backslash
+ensuremath{h'}
+\backslash
+right)},    
+\backslash
+ensuremath{
+\backslash
+ensuremath{j'} 
+\backslash
+gets 
+\backslash
+operatorname{range}
+\backslash
+left(1, 
+\backslash
+ensuremath{w'}
+\backslash
+right)}}} 
 \end_layout
 
 \begin_layout Plain Layout
 
 
 \backslash
-endgroup
+State 
+\backslash
+ensuremath{
+\backslash
+ensuremath{i} 
+\backslash
+gets 
+\backslash
+operatorname{trunc}
+\backslash
+left(
+\backslash
+mathrm{Int}, 
+\backslash
+ensuremath{r_h}*
+\backslash
+ensuremath{i'}+0.5
+\backslash
+right)}
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+State 
+\backslash
+ensuremath{
+\backslash
+ensuremath{j} 
+\backslash
+gets 
+\backslash
+operatorname{trunc}
+\backslash
+left(
+\backslash
+mathrm{Int}, 
+\backslash
+ensuremath{r_w}*
+\backslash
+ensuremath{j'}+0.5
+\backslash
+right)}
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+State 
+\backslash
+ensuremath{
+\backslash
+ensuremath{I'[i', j']} 
+\backslash
+gets 
+\backslash
+ensuremath{I[i, j]}}
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+EndFor{}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+State
+\backslash
+Return
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset Formula $I'$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{algorithmic}
 \end_layout
 
 \end_inset

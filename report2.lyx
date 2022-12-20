@@ -297,8 +297,8 @@ status open
 
 \begin_layout Standard
 \begin_inset FormulaMacro
-\newcommand{\Patch}{\operatorname{Patch}}
-{\text{Patch}}
+\newcommand{\Crop}{\operatorname{Crop}}
+{\text{Crop}}
 \end_inset
 
 
@@ -1551,7 +1551,6 @@ sideways false
 status open
 
 \begin_layout Plain Layout
-
 \begin_inset ERT
 status open
 
@@ -1918,10 +1917,6 @@ Return
 ensuremath{
 \backslash
 mathrm{hess}}
-\end_layout
-
-\begin_layout Plain Layout
-
 \end_layout
 
 \end_inset
@@ -2499,6 +2494,94 @@ name "alg:imresize-interlinear"
 
 \end_layout
 
+\begin_layout Subsection
+Cắt ảnh 
+\end_layout
+
+\begin_layout Standard
+Cho ảnh 
+\begin_inset Formula $I$
+\end_inset
+
+ kích thước 
+\begin_inset Formula $m\times n$
+\end_inset
+
+, thao tác cắt ảnh (crop) là thao tác lấy ra một trên ảnh với toạ độ 
+\begin_inset Formula $x_{1},y_{1},x_{2},y_{2}$
+\end_inset
+
+ cho trước.
+ Ảnh thu được 
+\begin_inset Formula $I'$
+\end_inset
+
+ có kích thước 
+\begin_inset Formula $\left(x_{2}-x_{1}\right)\times\left(y_{2}-y_{1}\right)$
+\end_inset
+
+ và được xác định bởi:
+\begin_inset Foot
+status collapsed
+
+\begin_layout Plain Layout
+Trong các thư viện làm việc với mảng, việc crop ảnh có thể được thực hiện
+ dễ dàng và nhanh chóng bằng thao tác 
+\begin_inset Quotes eld
+\end_inset
+
+slice
+\begin_inset Quotes erd
+\end_inset
+
+.
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula 
+\[
+I'\left(x',y'\right)=\left\{ I\left(x-x',y-y'\right),x_{1}\le x\le x_{2},y_{1}\le y\le y_{2}\right\} .
+\]
+
+\end_inset
+
+Trong báo cáo, để tiện cho việc trình bày, ký hiệu 
+\begin_inset Formula $\Crop\left(I,x,y,r\right)$
+\end_inset
+
+ là thao tác cắt ảnh 
+\begin_inset Formula $I$
+\end_inset
+
+ với 
+\begin_inset Formula $x_{1}=x-r$
+\end_inset
+
+, 
+\begin_inset Formula $x_{2}=x+r$
+\end_inset
+
+, 
+\begin_inset Formula $y_{1}=y-r$
+\end_inset
+
+, 
+\begin_inset Formula $y_{2}=y+r$
+\end_inset
+
+; đồng thời định nghĩa một thao tác 
+\begin_inset Formula $\Crop\left(I,x,y,r\right)$
+\end_inset
+
+ hợp lệ nếu như 
+\begin_inset Formula $x,y,r$
+\end_inset
+
+ thoả mãn ,
+\end_layout
+
 \begin_layout Section
 Đặc trưng của ảnh
 \end_layout
@@ -2651,7 +2734,7 @@ Những phương pháp sử dụng histogram là những phương pháp khá đ�
 Những phương pháp đối sánh ảnh sử dụng đặc trưng cạnh hoặc góc đã có quan
  tâm hơn tới những đặc trưng bậc cao
 \begin_inset Foot
-status open
+status collapsed
 
 \begin_layout Plain Layout
 Bậc cao hơn ở đây có thể hiểu tương đương với việc gần với nghĩa thông thường
@@ -3608,7 +3691,107 @@ Tìm gaussian pyramid
 \end_layout
 
 \begin_layout Standard
-Gaussian pyramid có thể được coi như một dãy của dãy các ảnh ba chiều 
+Theo tư tưởng bên trên, ta làm mờ ảnh 
+\begin_inset Formula $I'\left(x,y\right)$
+\end_inset
+
+ để thu được một dãy các ảnh 
+\begin_inset Formula 
+\[
+\mathcal{L}=\left\{ I'\left(x,y\right)\ast G\left(x,y,\sigma_{\scale}\right)\right\} _{\lambda\in\text{tập chỉ số}},
+\]
+
+\end_inset
+
+trong đó dãy 
+\begin_inset Formula $\sigma_{\lambda}$
+\end_inset
+
+ thoả mãn 
+\begin_inset Formula $\sigma_{\scale+1}=k\sigma_{\scale}$
+\end_inset
+
+, 
+\begin_inset Formula $k$
+\end_inset
+
+ là một hệ số nhân bất kỳ.
+ Giả sử chọn 
+\begin_inset Formula $k$
+\end_inset
+
+ sao cho 
+\begin_inset Formula $k$
+\end_inset
+
+ có dạng 
+\begin_inset Formula $2^{1/\numscale}$
+\end_inset
+
+, với 
+\begin_inset Formula $\numscale$
+\end_inset
+
+ là một số nguyên dương, ta có thể chia tập ảnh 
+\begin_inset Formula $\mathcal{L}$
+\end_inset
+
+ thành các 
+\emph on
+octave
+\emph default
+, mỗi octave 
+\begin_inset Formula $\mathcal{L}_{\octave}$
+\end_inset
+
+ bao gồm 
+\begin_inset Formula $\Lambda$
+\end_inset
+
+ ảnh, và các ảnh 
+\begin_inset Formula $L_{\octave,\lambda}\left(x,y\right)$
+\end_inset
+
+ được tính bởi.
+\begin_inset Formula 
+\begin{align*}
+L_{\octave,\lambda+1}\left(x,y\right) & =L_{\octave,\lambda}\left(x,y\right)\ast G\left(x,y,\sqrt{\sigma_{\octave,\scale+1}^{2}-\sigma_{\octave,\scale}^{2}}\right),\\
+L_{\octave+1,1}\left(x,y\right) & =L_{\octave,\lambda}\left(x,y\right)\ast G\left(x,y,\sqrt{\sigma_{\octave+1,1}^{2}-\sigma_{\octave,\numscale}^{2}}\right).
+\end{align*}
+
+\end_inset
+
+Tuy nhiên, vì 
+\begin_inset Formula $k=2^{1/\numscale}$
+\end_inset
+
+, ta có 
+\begin_inset Formula $\sigma_{\octave+1,\lambda}=2\sigma_{\octave,\lambda}$
+\end_inset
+
+, ta có thể tính 
+\begin_inset Formula $L_{\octave+1,1}\left(x,y\right)$
+\end_inset
+
+ bằng cách thu nhỏ 
+\begin_inset Formula $L_{\octave,\Lambda}\left(x,y\right)$
+\end_inset
+
+ với tỷ lệ 
+\begin_inset Formula $0.5$
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Lowe2004"
+literal "false"
+
+\end_inset
+
+.
+ Như vậy, dãy ảnh có thể được biểu diễn thành một Gaussian Pyramid như sau:
+ 
 \begin_inset Formula 
 \[
 \mathcal{L}=\left\{ L_{\octave,\scale}\left(x,y\right)\colon\octave=\overline{1,\numoctave},\scale=\overline{1,\numscale}\right\} 
@@ -3624,88 +3807,12 @@ trong đó
 \begin_inset Formula $\numscale$
 \end_inset
 
- là các tham số tùy chọn.
- Gọi 
-\begin_inset Formula 
-\[
-\mathcal{L}_{\octave}=\left\{ L_{\octave,\scale}\left(x,y\right)\colon\octave=\overline{1,\numoctave}\right\} 
-\]
-
-\end_inset
-
-là một octave, 
-\begin_inset Formula $\numoctave$
-\end_inset
-
- là số lượng octave tối đa.
- Mỗi octave sẽ bao gồm các ảnh 
-\begin_inset Formula $L_{\octave,\lambda}\left(x,y\right)$
-\end_inset
-
-, được gọi là các scale.
- Giả sử ta có một dãy các giá trị 
-\begin_inset Formula 
-\[
-\Sigma=\left\{ \sigma_{\octave,\scale}\right\} _{\octave=\overline{1,\numoctave},\scale=\overline{1,\numscale}},
-\]
-
-\end_inset
-
-sao cho 
-\begin_inset Formula $\sigma_{\octave+1}=2\sigma_{\octave}$
-\end_inset
-
-, mỗi scale khi đó tương đương với một tín hiệu 
-\begin_inset Formula $I\left(x\right)\ast G\left(x,\sigma_{\octave,\lambda}\right)$
-\end_inset
-
- trong trường hợp một chiều (xem 
-\begin_inset CommandInset ref
-LatexCommand formatted
-reference "sec:Ý-tưởng-sift"
-plural "false"
-caps "false"
-noprefix "false"
-
-\end_inset
-
-).
- Các ảnh 
+ là các tham số tùy chọn, đại diện cho số octave và scale trên pyramid,
+ 
 \begin_inset Formula $L_{\octave,\scale}$
 \end_inset
 
- được tính theo công thức
-\begin_inset Flex TODO Note (inline)
-status open
-
-\begin_layout Plain Layout
-Dẫn dắt sang việc tính dùng một dãy sigma và sửa nốt phần này
-\end_layout
-
-\end_inset
-
-
-\begin_inset Formula 
-\begin{align*}
-L_{\octave,\lambda+1}\left(x,y\right) & =L_{\octave,\lambda}\left(x,y\right)\ast G\left(x,y,\sqrt{\sigma_{\octave,\scale+1}^{2}-\sigma_{\octave,\scale}^{2}}\right)\\
-L_{\octave,0}\left(x,y\right) & =L_{\octave,\lambda}\left(x,y\right)\ast G\left(x,y,\sqrt{\sigma_{\octave,\scale+1}^{2}-\sigma_{\octave,\scale}^{2}}\right)
-\end{align*}
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-==============
-\end_layout
-
-\begin_layout Standard
-Gaussian pyramid 
-\begin_inset Formula $\mathcal{L}$
-\end_inset
-
- được tìm với công thức 
+ được tính sử dụng công thức 
 \begin_inset CommandInset ref
 LatexCommand eqref
 reference "eq:scale-space-01"
@@ -3735,39 +3842,22 @@ noprefix "false"
 
 \end_inset
 
-
+.
 \begin_inset Formula 
 \begin{align}
-L_{0}\left(x,y,\sigma_{0}\right) & =G\left(x,y,\sqrt{\sigma_{0}^{2}-\left(2\sigma_{a}\right)^{2}}\right)\ast\Resize\left(I,\ratio=2\right),\label{eq:scale-space-01}\\
-L_{i+1}\left(x,y,\sigma_{0}\right) & =\Resize\left(L_{i}\left(x,y,\sigma_{0}\right),\ratio=0.5\right),\label{eq:scale-space-02}\\
-L_{i}\left(x,y,\sigma_{j+1}\right) & =G\left(x,y,d\sigma_{j}\right)\ast L_{i}\left(x,y,\sigma_{j}\right),\quad j=\overline{1,S},\label{eq:scale-space-03}\\
-d\sigma_{j} & =\sqrt{\sigma_{j+1}^{2}-\sigma_{j}^{2}}=\sqrt{\left(2^{j+1}\sigma_{0}\right)^{2}-\left(2^{j}\sigma_{0}\right)^{2}},\label{eq:scale-space-dsigma}
+L_{1,1}\left(x,y\right) & =I'\left(x,y\right),\label{eq:scale-space-01}\\
+L_{\octave+1,1}\left(x,y\right) & =\Resize\left(L_{\octave,\numscale}\left(x,y\right),\ratio=0.5\right),\quad\octave=\overline{1,\numoctave-1},\label{eq:scale-space-02}\\
+L_{\octave,\scale+1}\left(x,y\right) & =G\left(x,y,\sqrt{\left(k\sigma_{\scale}\right)^{2}-\sigma_{\scale}^{2}}\right)\ast L_{\octave,\scale}\left(x,y\right),\quad\octave=\overline{1,\numoctave},\scale=\overline{1,\numscale-1}.\label{eq:scale-space-03}
 \end{align}
 
 \end_inset
 
-trong đó:
-\end_layout
-
-\begin_layout Itemize
-\begin_inset Formula $I$
+Để tiện cho việc trình bày, ký hiệu một octave là 
+\begin_inset Formula $\mathcal{L}_{\octave}=\left\{ L_{\octave,\scale}\left(x,y\right)\colon\octave=\overline{1,\numoctave}\right\} $
 \end_inset
 
- là ảnh đầu vào,
-\end_layout
-
-\begin_layout Itemize
-\begin_inset Formula $N$
-\end_inset
-
- là số bậc của gaussian pyramid,
-\end_layout
-
-\begin_layout Itemize
-\begin_inset Formula $S$
-\end_inset
-
- là số scale trong một octave, 
+.
+ Ngoài ra, trong 
 \begin_inset CommandInset citation
 LatexCommand cite
 key "Lowe2004"
@@ -3775,227 +3865,38 @@ literal "false"
 
 \end_inset
 
- chọn 
-\begin_inset Formula $S=3$
+ chỉ ra rằng, thay vì tìm 
+\begin_inset Formula $L_{1,1}$
 \end_inset
 
-,
-\end_layout
-
-\begin_layout Itemize
-\begin_inset Formula $d\sigma_{j}$
-\end_inset
-
- là độ mờ cần thiết để biến đổi từ scale trước sang scale sau trong một
- octave, được tính bằng công thức 
+ theo 
 \begin_inset CommandInset ref
 LatexCommand eqref
-reference "eq:scale-space-dsigma"
+reference "eq:scale-space-01"
 plural "false"
 caps "false"
 noprefix "false"
 
 \end_inset
 
-, 
-\end_layout
+, nếu tăng kích thước ảnh lên gấp đôi và chỉnh độ mờ ảnh (công thức , số
+ lượng keypoint tìm được tăng đáng kể.
+\begin_inset Formula 
+\begin{equation}
+L_{1,1}\left(x,y\right)=G\left(x,y,\sqrt{\sigma_{1}^{2}-\left(2\sigma_{a}\right)^{2}}\right)\ast\Resize\left(I'\left(x,y\right),\ratio=2\right),\label{eq:scale-space-04}
+\end{equation}
 
-\begin_layout Itemize
-\begin_inset Formula $\sigma_{0}$
 \end_inset
 
- là độ mờ của scale đầu, 
+trong đó 
 \begin_inset Formula $\sigma_{a}$
 \end_inset
 
- là độ mờ giả định cho ảnh đầu vào; trong 
-\begin_inset CommandInset citation
-LatexCommand cite
-key "Lowe2004"
-literal "false"
-
-\end_inset
-
-, 
-\begin_inset Formula $\sigma_{0}$
-\end_inset
-
- được chọn bằng 
-\begin_inset Formula $1.6$
-\end_inset
-
- và 
-\begin_inset Formula $\sigma_{a}$
-\end_inset
-
- được chọn là 
+ là độ mờ giả định, được chọn mặc định là 
 \begin_inset Formula $0.5$
 \end_inset
 
 .
-\end_layout
-
-\begin_layout Itemize
-Các giá trị 
-\begin_inset Formula $\sigma_{j}$
-\end_inset
-
- được tính bằng cách 
-\begin_inset Formula $\sigma_{j}=k\sigma_{j-1}$
-\end_inset
-
-, với 
-\begin_inset Formula $k$
-\end_inset
-
- được chọn bằng 
-\begin_inset Formula $2^{1/S}$
-\end_inset
-
-
-\begin_inset CommandInset citation
-LatexCommand cite
-key "Lowe2004"
-literal "false"
-
-\end_inset
-
-.
-\end_layout
-
-\begin_layout Standard
-\begin_inset Float algorithm
-wide false
-sideways false
-status open
-
-\begin_layout Plain Layout
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-begin{algorithmic}[1]
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Plain Layout
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-Require
-\end_layout
-
-\end_inset
-
- Ảnh xám 
-\begin_inset Formula $I^{\prime}\left(x,y\right)$
-\end_inset
-
- cỡ 
-\begin_inset Formula $W\times H$
-\end_inset
-
-, 
-\begin_inset Formula $\sigma_{0}$
-\end_inset
-
-, 
-\begin_inset Formula $\numscale$
-\end_inset
-
-, 
-\begin_inset Formula $\numoctave$
-\end_inset
-
-
-\end_layout
-
-\begin_layout Plain Layout
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-Ensure
-\end_layout
-
-\end_inset
-
- Gaussian pyramid 
-\begin_inset Formula $\mathcal{L}$
-\end_inset
-
-
-\end_layout
-
-\begin_layout Plain Layout
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-State
-\end_layout
-
-\end_inset
-
- 
-\begin_inset Formula $I^{\prime}=\Resize\left(I^{\prime},\ratio=2\right)\ast G\left(\right)$
-\end_inset
-
-
-\end_layout
-
-\begin_layout Plain Layout
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-end{algorithmic}
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Plain Layout
-\begin_inset Caption Standard
-
-\begin_layout Plain Layout
-Tìm scale space
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Plain Layout
-
-\end_layout
-
-\end_inset
-
-
 \end_layout
 
 \begin_layout Subsection
@@ -4039,21 +3940,35 @@ Vì các ảnh trong
 
 :
 \begin_inset Formula 
-\[
-D_{\octave}\left(x,y,\sigma_{t}\right)=L_{\octave}\left(x,y,\sigma_{t+1}\right)-L_{\octave}\left(x,y,\sigma_{t}\right),\quad t=\overline{1,S-1}.
-\]
+\begin{align*}
+D_{\octave}\left(x,y,\scale\right) & =L_{\octave}\left(x,y,\scale+1\right)-L_{\octave}\left(x,y,\scale\right)\quad t=\overline{1,S-1}.
+\end{align*}
 
 \end_inset
 
-Ảnh sai phân này có một tính chất đặc biệt, đó là 
+Ảnh sai phân này có một tính chất đặc biệt, đó là:
 \begin_inset Formula 
-\[
-G\left(x,y,k\sigma\right)-G\left(x,y,\sigma\right)\approx\left(k-1\right)\sigma^{2}\LoG.
-\]
+\begin{align*}
+G\left(x,y,k\sigma_{\octave,\scale}\right)-G\left(x,y,\sigma_{\octave,\scale}\right) & \approx\left(k-1\right)\sigma_{\octave,\scale}^{2}\LoG\left(x,y,\sigma_{\octave,\scale}\right),\\
+\iff D_{\octave}\left(x,y,\scale\right) & \approx\left(k-1\right)\sigma_{\octave,\scale}^{2}L_{\octave}\left(x,y\right)\ast\LoG\left(x,y,\sigma_{\octave,\scale}\right).
+\end{align*}
 
 \end_inset
 
-Nói cách khác, cực trị của 
+nói cách khác, 
+\begin_inset Formula $D_{\octave}\left(x,y,\scale\right)$
+\end_inset
+
+ có thể được dùng để xấp xỉ ảnh 
+\begin_inset Formula $L$
+\end_inset
+
+ sau khi đã nhân chập với hàm 
+\begin_inset Formula $\LoG$
+\end_inset
+
+.
+ Như vậy, cực trị của 
 \begin_inset Formula $D_{\octave}\left(x,y,\sigma\right)$
 \end_inset
 
@@ -4061,13 +3976,13 @@ Nói cách khác, cực trị của
 \begin_inset Formula $\LoG\left(x,y,\sigma\right)$
 \end_inset
 
-, và SIFT dùng phương thức này để giảm khối lượng tính toán.
- Đặt 
-\begin_inset Formula $\mathbf{x}=\left(x,y,t\right)$
+ và cho biết thông tin xấp xỉ của toạ độ keypoint.
+ Để thuật tiện cho việc trình bày, đặt 
+\begin_inset Formula $\mathbf{x}=\left(x,y,\scale\right)$
 \end_inset
 
  sao cho 
-\begin_inset Formula $D_{\octave}\left(\mathbf{x}\right)=D_{\octave}\left(x,y,\sigma_{t}\right)$
+\begin_inset Formula $D_{\octave}\left(\mathbf{x}\right)=D_{\octave}\left(x,y,\sigma_{\scale}\right)$
 \end_inset
 
 .
@@ -4084,15 +3999,23 @@ D_{\octave}\left(\mathbf{x}^{*}\right)\le D_{\octave}\left(\mathbf{x}^{*}+\Delta
 \end_inset
 
 Trường hợp cực đại được định nghĩa tương tự.
- Vì trong mỗi octave, ta cần so sánh ba scale liên tiếp để tìm cực trị,
- khi tìm gaussian pyramid, số scale được tính được cộng thêm ba (thay vì
- tìm ba scale, ta tìm sáu scale).
- Sau bước này, ta thu được DoG pyramid 
-\begin_inset Formula $\mathcal{D}$
+ Vì trong mỗi octave, ta cần so sánh ba scale liên tiếp để tìm cực trị.
+ Do đó, khi tìm gaussian pyramid, số scale được tính được cộng thêm ba (thay
+ vì tìm 
+\begin_inset Formula $\numscale$
 \end_inset
 
- và tập các điểm cực trị 
-\begin_inset Formula $\mathcal{X}$
+ scale, ta tìm 
+\begin_inset Formula $\numscale+3$
+\end_inset
+
+ scale).
+ Sau bước này, ta thu được DoG pyramid 
+\begin_inset Formula $\left\{ \mathcal{D}_{\octave}\right\} $
+\end_inset
+
+ và tập danh sách các điểm cực trị 
+\begin_inset Formula $\left\{ \mathcal{X}_{\octave}\right\} $
 \end_inset
 
 .
@@ -4104,7 +4027,7 @@ Localize keypoint
 
 \begin_layout Standard
 Xét điểm cực trị của 
-\begin_inset Formula $\mathbf{x}\in\mathcal{X}$
+\begin_inset Formula $\mathbf{x}\in\mathcal{X}_{\octave}$
 \end_inset
 
  bất kỳ, 
@@ -4131,17 +4054,19 @@ noprefix "false"
 
 \end_inset
 
-, trong đó 
-\begin_inset Formula $D_{\octave}\in\mathcal{D}$
-\end_inset
-
- ứng với 
-\begin_inset Formula $\mathbf{x}$
-\end_inset
-
-, số lần lặp tối đa được chọn bằng mười.
+, trong đó số lần lặp tối đa được chọn bằng mười.
  Trong quá trình này, các keypoint không đạt đủ điều kiện về độ tương phản,
- hoặc keypoint nằm trên cạnh sẽ bị lọc ra.
+ hoặc keypoint nằm trên cạnh (điều kiện 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:keypoint-on-edge"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) sẽ bị lọc ra.
  Ta thu được tập keypoint ứng cử 
 \begin_inset Formula $\mathcal{C}$
 \end_inset
@@ -4168,24 +4093,8 @@ noprefix "false"
 
 \end_inset
 
-, trong đó 
-\begin_inset Formula 
-\begin{align*}
-\Patch\left(\mathbf{x}\right) & =\Patch\left(x,y,t\right),\\
-\Patch\left(x,y,t\right) & =\left\{ \left(i,j\right),i=\overline{x-\left[\frac{\sigma_{t}}{2}\right],x+\left[\frac{\sigma_{t}}{2}\right]},j=\overline{y-\left[\frac{\sigma_{t}}{2}\right],y+\left[\frac{\sigma_{t}}{2}\right]}\right\} ,
-\end{align*}
-
-\end_inset
-
-và một 
-\begin_inset Formula $\Patch\left(\mathbf{x}\right)$
-\end_inset
-
- hợp lệ nếu 
-\begin_inset Formula $\Patch\left(\mathbf{x}\right)$
-\end_inset
-
- nằm trong phạm vi của ảnh; 
+.
+ 
 \begin_inset Formula $\DominateOrientation$
 \end_inset
 
@@ -4224,7 +4133,7 @@ noprefix "false"
 \begin_inset Float algorithm
 wide false
 sideways false
-status collapsed
+status open
 
 \begin_layout Plain Layout
 \begin_inset ERT
@@ -4276,7 +4185,7 @@ For{
 \end_inset
 
 
-\begin_inset Formula $\mathbf{x}\in\mathcal{X}$
+\begin_inset Formula $\mathbf{x}\in\mathcal{X}_{\octave}$
 \end_inset
 
 
@@ -4327,35 +4236,9 @@ For{
 \end_inset
 
 trial 
-\begin_inset Formula $=1$
+\begin_inset Formula $=1:\text{số lần lặp tối đa}$
 \end_inset
 
- tới 
-\family roman
-\series medium
-\shape up
-\size normal
-\emph off
-\bar no
-\strikeout off
-\xout off
-\uuline off
-\uwave off
-\noun off
-\color none
-số lần lặp tối đa
-\family default
-\series default
-\shape default
-\size default
-\emph default
-\bar default
-\strikeout default
-\xout default
-\uuline default
-\uwave default
-\noun default
-\color inherit
  
 \begin_inset ERT
 status open
@@ -4414,7 +4297,20 @@ State
 
 \end_inset
 
- Bỏ qua 
+ 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Continue
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Plain Layout
@@ -4646,6 +4542,30 @@ status open
 
 }
 \end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+		
+\backslash
+State
+\end_layout
+
+\end_inset
+
+ Kiểm tra
+\begin_inset Formula 
+\[
+D_{\octave}\left(\hat{\mathbf{x}}\right)=D\left(\mathbf{x}\right)+0.5\nicefrac{\partial D_{\octave}^{T}}{\partial}
+\]
 
 \end_inset
 
@@ -4924,7 +4844,7 @@ State
 \end_inset
 
  
-\begin_inset Formula $P\gets\Patch\left(\mathbf{x}\right)$
+\begin_inset Formula $P\gets\Crop\left(\mathbf{x}\right)$
 \end_inset
 
 

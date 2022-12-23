@@ -4035,7 +4035,8 @@ Xét điểm cực trị của
 \end_inset
 
  chỉ cho biết thông tin về những vị trí có thể có keypoint trên ảnh, do
- đó ta cần localize để tìm ra keypoint một cách chính xác.
+ đó ta cần xác định vị trí chính xác của một keypoint.
+ Thao tác này được gọi là localize.
  Việc tìm keypoint gồm các bước:
 \end_layout
 
@@ -4133,7 +4134,7 @@ noprefix "false"
 \begin_inset Float algorithm
 wide false
 sideways false
-status open
+status collapsed
 
 \begin_layout Plain Layout
 \begin_inset ERT
@@ -4719,7 +4720,7 @@ name "alg:candidate-coord-algorithm"
 \begin_inset Float algorithm
 wide false
 sideways false
-status open
+status collapsed
 
 \begin_layout Plain Layout
 \begin_inset ERT
@@ -5548,8 +5549,9 @@ Tính toán descriptor
 \end_layout
 
 \begin_layout Standard
-Sau khi thành công tìm ra các keypoint, ta cần một cách để so sánh chúng
- với nhau, và đó chính là descriptor.
+Sau khi thành công tìm ra các keypoint, ta cần một đại lượng để so sánh
+ chúng với nhau.
+ Đại lượng được sử dụng để đối sánh các keypoint được gọi là descriptor.
  Việc tính toán descriptor được mô tả trong 
 \begin_inset CommandInset ref
 LatexCommand formatted
@@ -5928,13 +5930,26 @@ name "alg:Tính-toán-descriptor"
 \end_layout
 
 \begin_layout Subsection
-Keypoint matching
+So sánh keypoint
 \end_layout
 
 \begin_layout Standard
-Sau khi thu được các keypoint và các descriptor, ta cần có cách để so khớp
- hai tập descriptor của hai ảnh khác nhau để tìm ra điểm chung giữa chúng.
- Phương pháp tìm ra các cặp được trình bày trong 
+Sau khi thu được các keypoint và các descriptor, ta cần tìm ra những cặp
+ keypoint tương đồng nhau giữa hai ảnh.
+ Phương pháp tìm ra các cặp là phương pháp KNN Bruteforce
+\begin_inset CommandInset citation
+LatexCommand cite
+key "FeatureMatching"
+literal "false"
+
+\end_inset
+
+ với 
+\begin_inset Formula $k=2$
+\end_inset
+
+.
+ Phương pháp được trình bày trong 
 \begin_inset CommandInset ref
 LatexCommand formatted
 reference "alg:Đối-sánh-keypoint"
@@ -5944,40 +5959,86 @@ noprefix "false"
 
 \end_inset
 
-, trong đó 
-\begin_inset Formula $T$
-\end_inset
+, trong đó:
+\end_layout
 
- là tham số khoảng cách tương đối tối đa giữa hai keypoint 
-\begin_inset Formula $k_{2a}$
-\end_inset
-
-, 
-\begin_inset Formula $k_{2b}$
-\end_inset
-
- mà có khoảng cách ngắn nhất tới keypoint 
+\begin_layout Itemize
 \begin_inset Formula $k_{1}$
 \end_inset
 
- đang được xét.
- Mặc định, ta chọn 
+ là keypoint được xét của ảnh tham chiếu
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $k_{2a}$
+\end_inset
+
+ là keypoint của ảnh đối sánh 
+\begin_inset Formula $k_{2}$
+\end_inset
+
+ mà gần với 
+\begin_inset Formula $k_{1}$
+\end_inset
+
+ nhất
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $k_{2b}$
+\end_inset
+
+ là keypoint của ảnh đối sánh 
+\begin_inset Formula $k_{2}$
+\end_inset
+
+ mà gần với 
+\begin_inset Formula $k_{1}$
+\end_inset
+
+ nhì
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $T$
+\end_inset
+
+ là ngưỡng tỉ lệ giữa 
+\begin_inset Formula $d\left(k_{2a},k_{1}\right)$
+\end_inset
+
+ và 
+\begin_inset Formula $d\left(k_{2b},k_{1}\right)$
+\end_inset
+
+, nếu tỷ lệ giữa 
+\begin_inset Formula $d\left(k_{2a},k_{1}\right)$
+\end_inset
+
+ và 
+\begin_inset Formula $d\left(k_{2b},k_{1}\right)$
+\end_inset
+
+ bé hơn 
+\begin_inset Formula $T$
+\end_inset
+
+, 
+\begin_inset Formula $\left(k_{1},k_{2a}\right)$
+\end_inset
+
+ được coi là cặp khớp nhau; mặc định 
 \begin_inset Formula $T=0.6$
 \end_inset
 
 .
- Nếu khoảng cách tương đối giữa hai keypoint bé hơn ngưỡng này, ta coi 
-\begin_inset Formula $\left(k_{1},k_{2a}\right)$
-\end_inset
-
- là một cặp khớp nhau.
 \end_layout
 
 \begin_layout Standard
 \begin_inset Float algorithm
 wide false
 sideways false
-status collapsed
+status open
 
 \begin_layout Plain Layout
 \begin_inset ERT
@@ -6534,6 +6595,14 @@ Phân tích
 \end_layout
 
 \begin_layout Subsection
+Thử nghiệm
+\end_layout
+
+\begin_layout Standard
+Những ảnh được 
+\end_layout
+
+\begin_layout Subsection
 Ưu điểm
 \end_layout
 
@@ -6622,6 +6691,29 @@ literal "false"
 \end_inset
 
 .
+ SIFT cũng gặp vấn đề trên các vật thể có lỗ (
+\begin_inset CommandInset ref
+LatexCommand formatted
+reference "fig:Tháp-Tokyo,-keypoint"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+).
+ Khi so khớp với những ảnh khác của vật thể, điều kiện của khung nền sẽ
+ ảnh hưởng tới kết quả so khớp (
+\begin_inset CommandInset ref
+LatexCommand formatted
+reference "fig:Tháp-Tokyo-match"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+).
 \end_layout
 
 \begin_layout Standard
@@ -7112,6 +7204,87 @@ Tìm kiếm cốc cà phê, cốc nhỏ hơn rất nhiều trong ảnh bên ph�
 \begin_inset CommandInset label
 LatexCommand label
 name "fig:cup-in-scene"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Float figure
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename figures/ref-tokyo-tower-keypoints.png
+	width 100text%
+	rotateAngle 90
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Tháp Tokyo, keypoint ảnh vật thể chứa cả nền.
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Tháp-Tokyo,-keypoint"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename figures/match-tokyo-tower-01.jpg
+	width 100text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Tháp Tokyo, đối sánh thất bại vì khung cảnh đằng sau khác biệt
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Tháp-Tokyo-match"
 
 \end_inset
 

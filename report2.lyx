@@ -3632,8 +3632,17 @@ noprefix "false"
 
 \end_inset
 
-, nếu tăng kích thước ảnh lên gấp đôi và chỉnh độ mờ ảnh (công thức , số
- lượng keypoint tìm được tăng đáng kể.
+, nếu tăng kích thước ảnh lên gấp đôi và chỉnh độ mờ ảnh (công thức 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:scale-space-04"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+), số lượng keypoint tìm được tăng đáng kể.
 \begin_inset Formula 
 \begin{equation}
 L_{1,1}\left(x,y\right)=G\left(x,y,\sqrt{\sigma_{1}^{2}-\left(2\sigma_{a}\right)^{2}}\right)\ast\Resize\left(I'\left(x,y\right),\ratio=2\right),\label{eq:scale-space-04}
@@ -3708,7 +3717,7 @@ G\left(x,y,k\sigma_{\octave,\scale}\right)-G\left(x,y,\sigma_{\octave,\scale}\ri
 
 \end_inset
 
-nói cách khác, 
+Nói cách khác, 
 \begin_inset Formula $D_{\octave}\left(x,y,\scale\right)$
 \end_inset
 
@@ -5390,7 +5399,7 @@ literal "false"
 .
  Việc xoay được tính toán bằng công thức 
 \begin_inset CommandInset ref
-LatexCommand ref
+LatexCommand eqref
 reference "eq:point-rotate"
 plural "false"
 caps "false"
@@ -5517,7 +5526,7 @@ noprefix "false"
 \begin_inset Formula $k_{1}$
 \end_inset
 
- là keypoint được xét của ảnh tham chiếu
+ là keypoint được xét của ảnh tham chiếu,
 \end_layout
 
 \begin_layout Itemize
@@ -5532,7 +5541,7 @@ noprefix "false"
 \begin_inset Formula $k_{1}$
 \end_inset
 
- nhất
+ nhất,
 \end_layout
 
 \begin_layout Itemize
@@ -5547,7 +5556,7 @@ noprefix "false"
 \begin_inset Formula $k_{1}$
 \end_inset
 
- nhì
+ nhì,
 \end_layout
 
 \begin_layout Itemize

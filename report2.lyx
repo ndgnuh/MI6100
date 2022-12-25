@@ -47,6 +47,7 @@ xleftmargin=2em, language=custom, tabsize=3, numbers=left}
 %% TYPOGRAPHY %%
 \usepackage{newcent}
 \usepackage[utf8]{vietnam}
+\usepackage{indentfirst}
 
 %% SIFT %%
 \def\octave{\mathrm{octave}}
@@ -57,9 +58,13 @@ xleftmargin=2em, language=custom, tabsize=3, numbers=left}
 \newrefformat{alg}{\algorithmname{} \ref{#1}}
 \newrefformat{fig}{Hình \ref{#1} trang \pageref{#1}}
 \newrefformat{sec}{Phần \ref{#1}}
+\newrefformat{subsec}{Mục \ref{#1} trang \pageref{#1}}
 \newrefformat{def}{Định nghĩa \ref{#1}}
 
 \usepackage[a4paper, top=3.5cm, bottom=3.0cm, left=3.5cm, right=2.0cm]{geometry}
+
+%% FOR LOOP
+\usepackage{tikz}
 \end_preamble
 \use_default_options true
 \begin_modules
@@ -436,7 +441,7 @@ tín hiệu
 
 \begin_layout Definition
 \begin_inset Argument 1
-status open
+status collapsed
 
 \begin_layout Plain Layout
 Ảnh số
@@ -871,151 +876,6 @@ noprefix "false"
 \[
 f_{xx}\left(x_{0}\right)=f\left(x_{0}+1\right)-2f\left(x_{0}\right)+f\left(x_{0}-1\right).
 \]
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-Khi tính toán trên máy tính, việc tính gradient và hessian của ảnh thường
- được tính toán bằng các thủ tục đã được véc tơ hoá để tối ưu tốc độ.
-\begin_inset Float algorithm
-wide false
-sideways false
-status collapsed
-
-\begin_layout Plain Layout
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-begin{lstlisting}
-\end_layout
-
-\begin_layout Plain Layout
-
-Input: I
-\end_layout
-
-\begin_layout Plain Layout
-
-m, n := size(I)
-\end_layout
-
-\begin_layout Plain Layout
-
-I := pad(I, 1)
-\end_layout
-
-\begin_layout Plain Layout
-
-dx = I[2:m, :] - I[1:m-1, :]
-\end_layout
-
-\begin_layout Plain Layout
-
-dy = I[:, 2:n] - I[:, 1:n-1]
-\end_layout
-
-\begin_layout Plain Layout
-
-G = [dx, dy] / 2
-\end_layout
-
-\begin_layout Plain Layout
-
-return G
-\end_layout
-
-\begin_layout Plain Layout
-
-
-\backslash
-end{lstlisting}
-\end_layout
-
-\end_inset
-
-
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-begin{lstlisting}
-\end_layout
-
-\begin_layout Plain Layout
-
-Input: I
-\end_layout
-
-\begin_layout Plain Layout
-
-m, n := size(I)
-\end_layout
-
-\begin_layout Plain Layout
-
-G := zeros(m, n, 2)
-\end_layout
-
-\begin_layout Plain Layout
-
-for i in 2:m-1, j in 2:n-1
-\end_layout
-
-\begin_layout Plain Layout
-
-	dx = 0.5 * (I[i+1, j] - I[i-1, j])
-\end_layout
-
-\begin_layout Plain Layout
-
-	dy = 0.5 * (I[i, j+1] - I[i, j-1])
-\end_layout
-
-\begin_layout Plain Layout
-
-	G[i-1, j-1, :] = [dx, dy]
-\end_layout
-
-\begin_layout Plain Layout
-
-end
-\end_layout
-
-\begin_layout Plain Layout
-
-return G
-\end_layout
-
-\begin_layout Plain Layout
-
-
-\backslash
-end{lstlisting}
-\end_layout
-
-\end_inset
-
-
-\begin_inset Caption Standard
-
-\begin_layout Plain Layout
-Tính gradient
-\end_layout
-
-\end_inset
-
-
-\end_layout
 
 \end_inset
 
@@ -1548,7 +1408,7 @@ name "alg:gradient-3d"
 placement H
 wide false
 sideways false
-status open
+status collapsed
 
 \begin_layout Plain Layout
 \begin_inset ERT
@@ -1981,7 +1841,8 @@ Với ảnh
 \begin_inset Formula $m'\times n'$
 \end_inset
 
- bằng một trong hai cách lấy mẫu hoặc nội suy song tuyến
+ bằng nhiều cách khác nhau.
+ Dù cách phổ biến hơn là nội suy song tuyến
 \begin_inset CommandInset citation
 LatexCommand cite
 key "Bilinear"
@@ -1989,7 +1850,15 @@ literal "false"
 
 \end_inset
 
- (
+, báo cáo sẽ trình bày cách thu nhỏ được sử dụng trong 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Lowe2004"
+literal "false"
+
+\end_inset
+
+, đó là lấy mẫu trên ảnh 
 \begin_inset CommandInset ref
 LatexCommand formatted
 reference "alg:imresize-subsample"
@@ -1999,17 +1868,7 @@ noprefix "false"
 
 \end_inset
 
- và 
-\begin_inset CommandInset ref
-LatexCommand formatted
-reference "alg:imresize-interlinear"
-plural "false"
-caps "false"
-noprefix "false"
-
-\end_inset
-
-).
+.
  Để thuận tiện cho việc trình bày, báo cáo ký hiệu thao tác 
 \begin_inset Formula $\Resize\left(I,\ratio=r\right)$
 \end_inset
@@ -2356,142 +2215,6 @@ name "alg:imresize-subsample"
 \end_inset
 
 
-\begin_inset Float algorithm
-placement H
-wide false
-sideways false
-status collapsed
-
-\begin_layout Plain Layout
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-begin{lstlisting}
-\end_layout
-
-\begin_layout Plain Layout
-
-Input: I, m', n'
-\end_layout
-
-\begin_layout Plain Layout
-
-I' := zeros(m', n')
-\end_layout
-
-\begin_layout Plain Layout
-
-rx := m / m'
-\end_layout
-
-\begin_layout Plain Layout
-
-ry := n / n'
-\end_layout
-
-\begin_layout Plain Layout
-
-for i in 1:m', j in 1:n'
-\end_layout
-
-\begin_layout Plain Layout
-
-	[i1, i2] := [floor(i' * rx), ceil(i' * rx)]
-\end_layout
-
-\begin_layout Plain Layout
-
-	[j1, j2] := [floor(j' * ry), ceil(j' * ry)]
-\end_layout
-
-\begin_layout Plain Layout
-
-	[wx, wy] := [(rx * i) - i1, (ry * j) - j1]
-\end_layout
-
-\begin_layout Plain Layout
-
-	[a, b, := [I(i1, j1), I(i2, j1),
-\end_layout
-
-\begin_layout Plain Layout
-
-	 c, d]     I(i1, j2), I(i2, j2)]
-\end_layout
-
-\begin_layout Plain Layout
-
-	pixel := ( a * (1 - wx) * (1 - wy)
-\end_layout
-
-\begin_layout Plain Layout
-
-	         + b * (1 - wy) * wx
-\end_layout
-
-\begin_layout Plain Layout
-
-	         + c * (1 - wx) * wy
-\end_layout
-
-\begin_layout Plain Layout
-
-	         + d * wy * wx)
-\end_layout
-
-\begin_layout Plain Layout
-
-	I'(i, j) = pixel
-\end_layout
-
-\begin_layout Plain Layout
-
-end
-\end_layout
-
-\begin_layout Plain Layout
-
-return I'
-\end_layout
-
-\begin_layout Plain Layout
-
-
-\backslash
-end{lstlisting}
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Plain Layout
-\begin_inset Caption Standard
-
-\begin_layout Plain Layout
-Thu nhỏ ảnh bằng cách nội suy
-\begin_inset CommandInset label
-LatexCommand label
-name "alg:imresize-interlinear"
-
-\end_inset
-
-
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\end_inset
-
-
 \end_layout
 
 \begin_layout Subsection
@@ -2522,7 +2245,7 @@ Cho ảnh
 
  và được xác định bởi:
 \begin_inset Foot
-status collapsed
+status open
 
 \begin_layout Plain Layout
 Trong các thư viện làm việc với mảng, việc crop ảnh có thể được thực hiện
@@ -2534,6 +2257,35 @@ slice
 \begin_inset Quotes erd
 \end_inset
 
+.
+ Ví dụ, trong trường hợp ảnh được biểu diễn bằng mảng 
+\begin_inset Formula $H\times W\times C$
+\end_inset
+
+., việc crop ảnh 
+\begin_inset Formula $I$
+\end_inset
+
+ với các toạ độ 
+\begin_inset Formula $x_{1},x_{2},y_{1},y_{2}$
+\end_inset
+
+ sẽ được viết trong mã nguồn là 
+\noun on
+
+\begin_inset Flex Code
+status open
+
+\begin_layout Plain Layout
+
+\noun on
+I[y1:y2, x1:x2, :]
+\end_layout
+
+\end_inset
+
+
+\noun default
 .
 \end_layout
 
@@ -2579,7 +2331,16 @@ Trong báo cáo, để tiện cho việc trình bày, ký hiệu
 \begin_inset Formula $x,y,r$
 \end_inset
 
- thoả mãn ,
+ thoả mãn 
+\begin_inset Formula 
+\begin{align*}
+x-r & >0, & x+r & \le m,\\
+y-r & >0, & y+r & \le n.
+\end{align*}
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Section
@@ -2761,15 +2522,7 @@ Những phương pháp đối sánh ảnh sử dụng miền đặc trưng quan 
 \begin_layout Itemize
 Một số hướng tiếp cận khác, như dựa trên chuyển động (Optical Flow), dựa
  trên hình dạng (biến đổi Hough tổng quát), sử dụng mô hình học máy (CNN),
- sử dụng kết hợp những phương pháp trên (FPN
-\begin_inset CommandInset citation
-LatexCommand cite
-key "FPN"
-literal "false"
-
-\end_inset
-
-)...
+ sử dụng kết hợp những phương pháp trên...
 \end_layout
 
 \begin_layout Standard
@@ -3154,27 +2907,27 @@ Trong phương pháp trên,
 \end_layout
 
 \begin_layout Enumerate
-Tiền xử lý: ảnh được chuyển về ảnh đen trắng
+Tiền xử lý: ảnh được chuyển về ảnh đen trắng;
 \end_layout
 
 \begin_layout Enumerate
-Tìm gaussian pyramid của ảnh đầu vào
+Tìm gaussian pyramid của ảnh đầu vào;
 \end_layout
 
 \begin_layout Enumerate
-Tìm cực trị của gaussian pyramid bằng difference of gaussian pyramid
+Tìm cực trị của gaussian pyramid bằng difference of gaussian pyramid;
 \end_layout
 
 \begin_layout Enumerate
-Localize các cực trị để thu được các keypoint, gắn orientation cho keypoint
+Localize các cực trị để thu được các keypoint, gắn orientation cho keypoint;
 \end_layout
 
 \begin_layout Enumerate
-Tính toán các descriptor ứng với mỗi keypoint
+Tính toán các descriptor ứng với mỗi keypoint;
 \end_layout
 
 \begin_layout Enumerate
-Sử dụng các descriptor để đối sánh ảnh
+Sử dụng các descriptor để đối sánh ảnh.
 \end_layout
 
 \begin_layout Standard
@@ -3270,10 +3023,10 @@ State
 \end_inset
 
  
-\begin_inset Formula $\mathcal{L}\gets\left\{ L_{\octave}\left(x,y,\sigma_{j}\right)\colon\octave=\overline{1,\varOmega},j=\overline{1,S}\right\} =\left\{ \mathcal{L}_{\octave}\right\} $
+\begin_inset Formula $\mathcal{L}\gets$
 \end_inset
 
- là gaussian pyramid của 
+ Tìm scale space của 
 \begin_inset Formula $I'$
 \end_inset
 
@@ -3346,8 +3099,8 @@ State
 \begin_inset Formula $\mathcal{D}\gets$
 \end_inset
 
- descriptor của mỗi 
-\begin_inset Formula $K\in\mathcal{K}$
+ descriptor của mỗi keypoint trong 
+\begin_inset Formula $\mathcal{K}$
 \end_inset
 
 .
@@ -3467,7 +3220,7 @@ noprefix "false"
 placement H
 wide false
 sideways false
-status open
+status collapsed
 
 \begin_layout Plain Layout
 \begin_inset ERT
@@ -3794,7 +3547,7 @@ literal "false"
  
 \begin_inset Formula 
 \[
-\mathcal{L}=\left\{ L_{\octave,\scale}\left(x,y\right)\colon\octave=\overline{1,\numoctave},\scale=\overline{1,\numscale}\right\} 
+\mathcal{L}=\left\{ L_{\octave,\scale}\left(x,y\right)\colon\octave=\overline{1,\numoctave},\scale=\overline{1,\numscale}\right\} ,
 \]
 
 \end_inset
@@ -4720,7 +4473,7 @@ name "alg:candidate-coord-algorithm"
 \begin_inset Float algorithm
 wide false
 sideways false
-status collapsed
+status open
 
 \begin_layout Plain Layout
 \begin_inset ERT
@@ -4774,27 +4527,11 @@ State
 \end_inset
 
  
-\begin_inset Formula $\mathbf{R}_{\octave}=\Magnitude\left(\mathcal{L}_{\octave}\right)$
+\begin_inset Formula $\mathbf{R}_{\octave},\mathbf{\Phi}_{\octave}\gets$
 \end_inset
 
-
-\end_layout
-
-\begin_layout Plain Layout
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-State
-\end_layout
-
-\end_inset
-
- 
-\begin_inset Formula $\mathbf{\Phi}_{\octave}=\Orientation\left(\mathcal{L}_{\octave}\right)$
+ độ lớn và hướng của gradient của 
+\begin_inset Formula $\mathcal{L}_{\octave}$
 \end_inset
 
 
@@ -4814,7 +4551,7 @@ For{
 \end_inset
 
 
-\begin_inset Formula $\mathbf{x}\in\mathcal{C}_{\octave}$
+\begin_inset Formula $\mathbf{x}\gets\left(x,y,\scale\right)\in\mathcal{C}_{\octave}$
 \end_inset
 
 
@@ -4845,7 +4582,27 @@ State
 \end_inset
 
  
-\begin_inset Formula $P\gets\Crop\left(\mathbf{x}\right)$
+\begin_inset Formula $\mathbf{R_{\octave}}\left[\mathbf{x}\right]\gets\Crop\left(\mathbf{R}_{\octave},x,y,\sigma_{\scale}\right)$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+	
+\backslash
+State
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset Formula $\mathbf{\Phi}_{\octave}\left[\mathbf{x}\right]\gets\Crop\left(\mathbf{\Phi}_{\octave},x,y,\sigma_{\scale}\right)$
 \end_inset
 
 
@@ -4865,7 +4622,7 @@ If{
 \end_inset
 
  
-\begin_inset Formula $P$
+\begin_inset Formula $\mathbf{R_{\octave}}\left[\mathbf{x}\right],\mathbf{\Phi}_{\octave}\left[\mathbf{x}\right]$
 \end_inset
 
  không hợp lệ 
@@ -4930,7 +4687,7 @@ State
 \end_inset
 
  
-\begin_inset Formula $H\gets\Histogram\left(\mathbf{\Phi}_{\octave}\left[P\right],\weights=\mathbf{R_{\octave}}\left[P\right]\right)$
+\begin_inset Formula $H\gets\Histogram\left(\mathbf{\Phi}_{\octave}\left[\mathbf{x}\right],\weights=\mathbf{R_{\octave}}\left[\mathbf{x}\right]\right)$
 \end_inset
 
 
@@ -5552,381 +5309,175 @@ Tính toán descriptor
 Sau khi thành công tìm ra các keypoint, ta cần một đại lượng để so sánh
  chúng với nhau.
  Đại lượng được sử dụng để đối sánh các keypoint được gọi là descriptor.
- Việc tính toán descriptor được mô tả trong 
+\end_layout
+
+\begin_layout Standard
+Xét một keypoint bất kỳ 
+\begin_inset Formula $K$
+\end_inset
+
+ tại octave 
+\begin_inset Formula $\octave$
+\end_inset
+
+, 
+\begin_inset Formula $K$
+\end_inset
+
+ có toạ độ 
+\begin_inset Formula $\left(x_{0},y_{0},\scale\right)$
+\end_inset
+
+ và góc chủ đạo 
+\begin_inset Formula $\phi$
+\end_inset
+
+, thực hiện tìm tập điểm 
+\begin_inset Formula $X=\left\{ \left(x,y\right)\colon\left|x-x_{0}\right|\le r,\left|y-y_{0}\right|\le r\right\} $
+\end_inset
+
+ với 
+\begin_inset Formula 
+\begin{equation}
+r=4\sqrt{2}\cdot\frac{1.5\sigma_{\scale}}{2^{\octave-1}}.\label{eq:descriptor-patch-radius}
+\end{equation}
+
+\end_inset
+
+Bán kính 
 \begin_inset CommandInset ref
-LatexCommand formatted
-reference "alg:Tính-toán-descriptor"
+LatexCommand eqref
+reference "eq:descriptor-patch-radius"
 plural "false"
 caps "false"
 noprefix "false"
 
 \end_inset
 
+ được 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Lowe2004"
+literal "false"
+
+\end_inset
+
+ được chọn sao cho vùng xung quanh 
+\begin_inset Formula $\left(x_{0},y_{0}\right)$
+\end_inset
+
+ sẽ có 
+\begin_inset Formula $16\times16$
+\end_inset
+
+ điểm ảnh.
+ Sau đó, với góc chủ đạo 
+\begin_inset Formula $\phi$
+\end_inset
+
+, ta thực hiện xoay những điểm trong 
+\begin_inset Formula $X$
+\end_inset
+
+ với tâm xoay là 
+\begin_inset Formula $\left(x_{0},y_{0}\right)$
+\end_inset
+
+ để thu được tập điểm 
+\begin_inset Formula $X'=\left\{ \left(x',y'\right)\right\} $
+\end_inset
+
 .
-\begin_inset Float algorithm
-wide false
-sideways false
-status collapsed
+ Việc xoay được tính toán bằng công thức 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:point-rotate"
+plural "false"
+caps "false"
+noprefix "false"
 
-\begin_layout Plain Layout
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-begin{algorithmic}[1]
-\end_layout
-
-\begin_layout Plain Layout
-
-	
-\backslash
-Require Danh sách keypoint 
-\backslash
-(
-\backslash
-mathcal{K}
-\backslash
-), Gauss pyramid 
-\backslash
-(
-\backslash
-mathcal{L}
-\backslash
-), chỉ số octave 
-\backslash
-(
-\backslash
-omega
-\backslash
-).
-\end_layout
-
-\begin_layout Plain Layout
-
-	
-\backslash
-Ensure Danh sách descriptor 
-\backslash
-(D
-\backslash
-) tương ứng.
-\end_layout
-
-\begin_layout Plain Layout
-
-	
-\backslash
-State 
-\backslash
-(
-\backslash
-mathbf{R} 
-\backslash
-gets 
-\backslash
-Func[L']{Magnitude}
-\backslash
-)
-\end_layout
-
-\begin_layout Plain Layout
-
-	
-\backslash
-State 
-\backslash
-(
-\backslash
-mathbf{
-\backslash
-Phi} 
-\backslash
-gets 
-\backslash
-Func[L']{Orientation}
-\backslash
-)
-\end_layout
-
-\begin_layout Plain Layout
-
-	
-\backslash
-State 
-\backslash
-(
-\backslash
-mathcal{D} 
-\backslash
-gets 
-\backslash
-emptyset
-\backslash
-)
-\end_layout
-
-\begin_layout Plain Layout
-
-	
-\backslash
-State 
-\backslash
-(
-\backslash
-varepsilon
-\backslash
-gets0.5
-\backslash
-cdot2^{
-\backslash
-omega}
-\backslash
-)
-\end_layout
-
-\begin_layout Plain Layout
-
-	
-\backslash
-ForAll{
-\backslash
-(K
-\backslash
-in
-\backslash
-mathcal{K}
-\backslash
-)}
-\end_layout
-
-\begin_layout Plain Layout
-
-		
-\backslash
-State 
-\backslash
-(s,y,x
-\backslash
-gets 
-\backslash
-Func[K]{Coord}
-\backslash
-)
-\end_layout
-
-\begin_layout Plain Layout
-
-		
-\backslash
-State 
-\backslash
-(p
-\backslash
-gets6
-\backslash
-cdot
-\backslash
-frac{
-\backslash
-sigma
-\backslash
-left(K
-\backslash
-right)
-\backslash
-cdot
-\backslash
-sqrt{2}}{
-\backslash
-varepsilon}
-\backslash
-)
-\end_layout
-
-\begin_layout Plain Layout
-
-		
-\backslash
-State 
-\backslash
-(
-\backslash
-mathbf{R}_{K} 
-\backslash
-gets [r_{s,i,j}]
-\backslash
-), 
-\backslash
-(i=
-\backslash
-overline{y-p,y+p}
-\backslash
-), 
-\backslash
-(j=
-\backslash
-overline{x-p,x+p}
-\backslash
-)
-\end_layout
-
-\begin_layout Plain Layout
-
-		
-\backslash
-State 
-\backslash
-(
-\backslash
-mathbf{
-\backslash
-Phi}_{K} 
-\backslash
-gets [
-\backslash
-phi_{s,i,j}]
-\backslash
-), 
-\backslash
-(i=
-\backslash
-overline{y-p,y+p}
-\backslash
-), 
-\backslash
-(j=
-\backslash
-overline{x-p,x+p}
-\backslash
-)
-\end_layout
-
-\begin_layout Plain Layout
-
-		
-\backslash
-State 
-\backslash
-(
-\backslash
-mathrm{mask} 
-\backslash
-gets 
-\backslash
-operatorname{Outlier}
-\backslash
-left(
-\backslash
-mathbf{R}_{K}
-\backslash
-right)
-\backslash
-)
-\end_layout
-
-\begin_layout Plain Layout
-
-		
-\backslash
-State 
-\backslash
-(D_{K} 
-\backslash
-gets 
-\backslash
-operatorname{Histogram}
-\backslash
-left(
-\backslash
-mathbf{
-\backslash
-Phi}_{K} 
-\backslash
-cdot 
-\backslash
-mathrm{mask} 
-\backslash
-right)
-\backslash
-)
-\end_layout
-
-\begin_layout Plain Layout
-
-		
-\backslash
-State Thêm 
-\backslash
-(D
-\backslash
-) vào 
-\backslash
-(
-\backslash
-mathcal{D}
-\backslash
-).
-\end_layout
-
-\begin_layout Plain Layout
-
-	
-\backslash
-EndFor
-\end_layout
-
-\begin_layout Plain Layout
-
-	
-\backslash
-State 
-\backslash
-Return 
-\backslash
-(
-\backslash
-mathcal{D}
-\backslash
-)
-\end_layout
-
-\begin_layout Plain Layout
+\end_inset
 
 
-\backslash
-end{algorithmic}
-\end_layout
+\begin_inset CommandInset citation
+LatexCommand cite
+key "PointRotate1"
+literal "false"
+
+\end_inset
+
+.
+\begin_inset Formula 
+\begin{equation}
+\left[\begin{array}{c}
+x'\\
+y'
+\end{array}\right]=\left[\begin{array}{cc}
+\cos\left(\phi\right) & -\sin\left(\phi\right)\\
+\sin\left(\phi\right) & \cos\left(\phi\right)
+\end{array}\right]\left(\left[\begin{array}{c}
+x\\
+y
+\end{array}\right]-\left[\begin{array}{c}
+x_{0}\\
+y_{0}
+\end{array}\right]\right)+\left[\begin{array}{c}
+x_{0}\\
+y_{0}
+\end{array}\right].\label{eq:point-rotate}
+\end{equation}
 
 \end_inset
 
 
 \end_layout
 
-\begin_layout Plain Layout
-\begin_inset Caption Standard
-
-\begin_layout Plain Layout
-Tính toán descriptor của keypoint
-\begin_inset CommandInset label
-LatexCommand label
-name "alg:Tính-toán-descriptor"
-
+\begin_layout Standard
+Sau khi tìm ra 
+\begin_inset Formula $X'$
 \end_inset
 
-
-\end_layout
-
+, ta chia 
+\begin_inset Formula $X'$
 \end_inset
 
-
-\end_layout
-
+ thành các mảnh 
+\begin_inset Formula $X_{i}'$
 \end_inset
 
+ có kích thước 
+\begin_inset Formula $4\times4$
+\end_inset
 
+.
+ Sử dụng 
+\begin_inset Formula $\mathbf{\Phi}_{\octave}$
+\end_inset
+
+ thu được ở bước localize keypoint, tạo ra các histogram 
+\begin_inset Formula $H_{i}$
+\end_inset
+
+ trên tập 
+\begin_inset Formula $\left\{ \mathbf{\Phi}_{\octave}\left[x,y\right]\colon\left(x,y\right)\in X'_{i}\right\} $
+\end_inset
+
+, mỗi histogram có tám bin đại diện cho các góc phần tám.
+ Nếu biểu diễn histogram này như một véc tơ, ta sẽ có véc tơ 
+\begin_inset Formula $8$
+\end_inset
+
+ chiều.
+ Để tính ra descriptor của keypoint, ta nối các véc tơ ứng với các 
+\begin_inset Formula $H_{i}$
+\end_inset
+
+ vào nhau.
+ Như vậy, với mỗi keypoint, ta thu được một descriptor nằm trong 
+\begin_inset Formula $\mathbb{R}^{128}$
+\end_inset
+
+.
 \end_layout
 
 \begin_layout Subsection
@@ -6038,7 +5589,7 @@ noprefix "false"
 \begin_inset Float algorithm
 wide false
 sideways false
-status open
+status collapsed
 
 \begin_layout Plain Layout
 \begin_inset ERT
@@ -6591,7 +6142,7 @@ name "alg:Đối-sánh-keypoint"
 \end_layout
 
 \begin_layout Section
-Phân tích
+Thử nghiệm và phân tích
 \end_layout
 
 \begin_layout Subsection
@@ -6599,7 +6150,257 @@ Thử nghiệm
 \end_layout
 
 \begin_layout Standard
-Những ảnh được 
+Những thử nghiệm dưới đây được thực hiện với phiên bản cài đặt SIFT của
+ thư viện OpenCV, hàm đối sánh được cài đặt theo 
+\begin_inset CommandInset ref
+LatexCommand formatted
+reference "alg:Đối-sánh-keypoint"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ Ảnh tham chiếu được thu nhỏ về cỡ tối đa 
+\begin_inset Formula $512\times512$
+\end_inset
+
+ (thumbnail)
+\begin_inset Foot
+status collapsed
+
+\begin_layout Plain Layout
+Thao tác này chỉ giới hạn kích thước ảnh, không phóng to ảnh lên, nếu một
+ ảnh kích thước 
+\begin_inset Formula $128\times128$
+\end_inset
+
+, việc thumbnail không làm cho kích thước ảnh tnăg lên 
+\begin_inset Formula $512\times512$
+\end_inset
+
+.
+\end_layout
+
+\end_inset
+
+.
+ Lý do cho việc thu nhỏ được giải thích trong 
+\begin_inset CommandInset ref
+LatexCommand formatted
+reference "subsec:sift-downside"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ Ảnh truy vấn cũng được thu nhỏ về kích thước tối đa 
+\begin_inset Formula $1024\times1024$
+\end_inset
+
+.
+ Danh sách các ảnh tham chiếu được trình bày trong 
+\begin_inset CommandInset ref
+LatexCommand formatted
+reference "fig:Các-ảnh-tham-chiếu"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ Ảnh được coi là tìm thấy nếu như số lượng keypoint đối sánh thành công
+ lớn hơn mười.
+ Những chi tiết nhỏ khác được trình bày ở mỗi thử nghiệm.
+ Hai thử nghiệm đầu được dùng để minh hoạ chủ yếu ưu điểm của SIFT, còn
+ ba thử nghiệm sau cho các nhược điểm.
+ Do đó, các kết quả thí nghiệm sẽ được trình bày ở phần tương ứng.
+ Những khiếm khuyết thể hiện ra trong hai thí nghiệm đầu cũng sẽ được trình
+ bày ở phần nhược điểm.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Float figure
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename assets/refs/box.png
+	width 30text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Bìa hộp
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset space \hfill{}
+\end_inset
+
+
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename assets/refs/cup.jpg
+	lyxscale 10
+	width 30text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Cốc cafe
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset space \hfill{}
+\end_inset
+
+
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename assets/refs/hust.png
+	lyxscale 10
+	width 30text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Logo Đại học Bách khoa Hà Nội
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:ref-logo-hust"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename assets/refs/tokyo_tower.jpg
+	lyxscale 10
+	width 100text%
+	rotateAngle 90
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Tháp Tokyo
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Các ảnh tham chiếu
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Các-ảnh-tham-chiếu"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Subsection
@@ -6607,14 +6408,62 @@ Những ảnh được
 \end_layout
 
 \begin_layout Standard
-Vì SIFT tìm kiếm điểm ảnh trên nhiều scale khác nhau, các keypoint tìm được
- bởi SIFT ít bị ảnh hưởng bởi tỉ lệ của vật thể trong ảnh.
- Ngoài ra, cách tìm keypoint của SIFT có một số đặc trưng khiến cho keypoint
- không bị ảnh hưởng bởi độ sáng cũng như góc xoay của vật thể.
+Những ưu điểm của SIFT thể hiện chủ yếu trong hai thử nghiệm đầu tiên.
+ Kết quả đầu tiên (
+\begin_inset CommandInset ref
+LatexCommand formatted
+reference "fig:result-box-in-scene"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) là một ví dụ phổ biến của OpenCV.
+ 
+\begin_inset Float figure
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename assets/results/box@box_in_scene.jpg
+	width 100text%
+
+\end_inset
+
+
 \end_layout
 
-\begin_layout Standard
-Đầu tiên, trong bước localize keypoint, điều kiện lọc bỏ keypoint 
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Tìm sự xuất hiện của chiếc hộp trong ảnh, hộp bị chê lấp và xoay, ảnh mẫu.
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:result-box-in-scene"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+Bìa hộp đã bị che lấp một chút, đồng thời có một sự thay đổi nhẹ ở góc nhìn.
+ Vì SIFT tìm kiếm điểm ảnh trên nhiều scale khác nhau, các keypoint tìm
+ được bởi SIFT ít bị ảnh hưởng bởi tỉ lệ của vật thể trong ảnh.
+ Ngoài ra, cách tìm keypoint của SIFT có một số đặc trưng khiến cho keypoint
+ không bị ảnh hưởng bởi độ sáng cũng như góc xoay của vật thể.
+ Đầu tiên, trong bước localize keypoint, điều kiện lọc bỏ keypoint 
 \begin_inset CommandInset ref
 LatexCommand formatted
 reference "eq:keypoint-on-edge"
@@ -6634,7 +6483,7 @@ noprefix "false"
  một đặc trưng vốn không ảnh hưởng bởi góc xoay (
 \begin_inset CommandInset ref
 LatexCommand formatted
-reference "fig:box-in-scene"
+reference "fig:result-box-in-scene"
 plural "false"
 caps "false"
 noprefix "false"
@@ -6642,43 +6491,475 @@ noprefix "false"
 \end_inset
 
 ).
+ Những tính chất này đồng thời khiến cho phương pháp có thể xử lý được những
+ thay đổi nhỏ trong góc nhìn.
 \end_layout
 
 \begin_layout Standard
-Đối với ảnh hưởng về độ sáng, trong khi tìm descriptor cũng như tìm góc
- chủ đạo, SIFT bỏ qua độ lớn của gradient, khiến cho ảnh hưởng của độ sáng
- lên keypoint tìm được không cao (
+Tiếp đó là những ví dụ về chiếc cốc cà phê.
+ Cốc nằm bên phải trong ảnh truy vấn, bị xoay ngược 
+\begin_inset Formula $180$
+\end_inset
+
+ độ và nằm trong nhiều vật thể khác.
+ Ảnh truy vấn bị thay đổi độ sáng và độ tương phản sử dụng 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "ImageEnhance"
+literal "false"
+
+\end_inset
+
+.
+ Các cặp giá trị tỉ lệ tương phản 
+\begin_inset Formula $c$
+\end_inset
+
+ và tỉ lệ độ sáng 
+\begin_inset Formula $b$
+\end_inset
+
+ được chú thích trong mỗi hình của 
 \begin_inset CommandInset ref
 LatexCommand formatted
-reference "fig:cup-in-scene"
+reference "fig:result-cup-in-scene"
 plural "false"
 caps "false"
 noprefix "false"
 
 \end_inset
 
+.
+ Giá trị 
+\begin_inset Formula $c$
+\end_inset
+
+ cao có nghĩa ảnh sẽ có độ tương phản cao và ngược lại.
+ Giá trị 
+\begin_inset Formula $b$
+\end_inset
+
+ được hiểu tương tự.
+ Trong đa số trường hợp, chiếc cốc được tìm thành công với số lượng keypoint
+ đối sánh được đều vào khoảng 
+\begin_inset Formula $30$
+\end_inset
+
+, chí có một trường hợp thất bại khi ảnh rất tối (
+\begin_inset Formula $b=0.2$
+\end_inset
+
 ).
+ Thí nghiệm này thể hiện tính vững của SIFT trước những ảnh hưởng về điều
+ kiện sáng.
+ Trong khi tìm descriptor cũng như tìm góc chủ đạo, SIFT bỏ qua độ lớn của
+ gradient, khiến cho ảnh hưởng của độ sáng việc đối sánh không cao.
+ Ngoài ra, thí nghiệm cũng cho thấy rõ hơn tính bất biến với sự xoay của
+ SIFT.
+ 
+\begin_inset Float figure
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\align center
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+foreach 
+\backslash
+VarB/
+\backslash
+VarC in {1.0/0.5,1.0/1.5,0.5/1.0,1.5/1.0,0.2/1.0,0.5/0.5,1.5/1.5,0.5/1.5,1.5/0.5} {
+\end_layout
+
+\begin_layout Plain Layout
+
+	
+\backslash
+hfill
+\end_layout
+
+\begin_layout Plain Layout
+
+	
+\backslash
+subfloat[$c=
+\backslash
+VarC$, $b=
+\backslash
+VarB$]{
+\end_layout
+
+\begin_layout Plain Layout
+
+		
+\backslash
+includegraphics[width=0.30
+\backslash
+textwidth]{assets/results-1024x1024/cup@cup-in-scene-c
+\backslash
+VarC-b
+\backslash
+VarB.jpg}
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+subfloat[{Ảnh truy vấn gốc}]{
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+includegraphics[width=0.30
+\backslash
+textwidth]{assets/results-1024x1024/cup@cup-in-scene}
+\end_layout
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Tìm kiếm cốc cà phê
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:result-cup-in-scene"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Subsection
 Nhược điểm
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:sift-downside"
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
-SIFT không được thiết kế để xử lý việc thay đổi góc nhìn, do đó, ví dụ với
- ..., SIFT đối sánh thành công với nhiều keypoint.
- Khi thay đổi viewpoint đi khoảng 30 độ, số lượng keypoint match thành công
- ít hơn (
+Nhược điểm đầu tiên của SIFT là tốn nhiều tài nguyên tính toán.
+ Khi chạy thử nghiệm, ta biết trước ảnh nào cần đối sánh với ảnh nào, do
+ đó quá trình chạy thử nghiệm không tốn nhiều thời gian.
+ Trong ngữ cảnh ứng dụng thực tế, một ảnh truy vấn sẽ được đối sánh với
+ tất cả ảnh trong cơ sở dữ liệu.
+ Nếu ảnh truy vấn lớn, việc tìm ra scale space và cực trị của scale space
+ sẽ tốn kém hơn.
+ Đồng thời, nếu tạo ra quá nhiều keypoint, quá trình đối sánh cũng bị tăng
+ khối lượng tính toán.
+ Chính vì nhược điểm này, kích thước của ảnh bị giới hạn lại như đã trình
+ bày.
+ Ta cũng có thể xử lý vấn đề này bằng cách sử dụng những bộ dò khác nhanh
+ thay cho việc dò trên scale space của SIFT, đồng thời giữ nguyên bước tính
+ toán descriptor.
+ Tuy nhiên tính bất biến với tỷ lệ có thể bị phá vỡ nếu làm vậy.
+\end_layout
+
+\begin_layout Standard
+Những điểm khác của SIFT thể hiện chủ yếu ở ba thí nghiệm sau.
+ Kết quả thứ ba đối sánh trên logo của Đại học Bách khoa Hà Nội.
+ Ảnh truy vấn được thử nghiệm thêm với thumbnail cỡ 
+\begin_inset Formula $512\times512$
+\end_inset
+
+ và thumbnail 
+\begin_inset Formula $4096\times4096$
+\end_inset
+
+.
+ Mặc dù cặp ảnh đầu vào giữ nguyên, việc thu nhỏ kích thước ảnh truy vấn
+ ảnh hưởng tới kết quả đối sánh (
 \begin_inset CommandInset ref
 LatexCommand formatted
-reference "fig:sift-affine-no-match"
+reference "fig:result-hust-logo"
 plural "false"
 caps "false"
 noprefix "false"
 
 \end_inset
 
-), và khi thay đổi viewpoint đi 60 độ, vật thể không thể được nhận dạng.
+).
+ Từ thử nghiệm này có thể rút ra một yếu điểm khác của SIFT, đó là kết quả
+ tốt yêu cầu kích thước vật thể trong của ảnh truy vấn đủ lớn.
+ Khi vật thể trong ảnh truy vấn nhỏ, số lượng keypoint đối sánh thành công
+ sẽ giảm đi và vật thể khó được phát hiện hơn.
+ Trong trường hợp này thuật toán không tìm ra vật thể mặc dù kích thước
+ vật đủ lớn để phát hiện đối với mắt người và góc nhìn không bị thay đổi
+ nhiều (
+\begin_inset CommandInset ref
+LatexCommand formatted
+reference "fig:result-hust-logo-512-fail"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+).
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset space \hfill{}
+\end_inset
+
+
+\begin_inset Float figure
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename assets/results-1024x1024/hust@hust-01.jpg
+	width 45text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Ảnh nghiêng, 
+\begin_inset Formula $1024\times1024$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset space \hfill{}
+\end_inset
+
+
+\begin_inset Float figure
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename assets/results-512x512/hust@hust-02.jpg
+	width 45text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Ảnh chính diện, 
+\begin_inset Formula $512\times512$
+\end_inset
+
+
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:result-hust-logo-512-fail"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset space \hfill{}
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset space \hfill{}
+\end_inset
+
+
+\begin_inset Float figure
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename assets/results-4096x4096/hust@hust-01.jpg
+	width 45text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Ảnh nghiêng, 
+\begin_inset Formula $4096\times4096$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset space \hfill{}
+\end_inset
+
+
+\begin_inset Float figure
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename assets/results-4096x4096/hust@hust-02.jpg
+	width 45text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Ảnh chính diện, 
+\begin_inset Formula $4096\times4096$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset space \hfill{}
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Đối sánh trên logo Đại học Bách khoa Hà Nội
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:result-hust-logo"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Một nhược điểm khác của SIFT là không được thiết kế để xử lý việc thay đổi
+ góc nhìn.
+ Thí nghiệm số bốn quay lại việc tìm chiếc cốc, tuy nhiên ở hai góc nhìn
+ khác.
+ Góc nhìn vật thể trong ảnh truy vấn lệch dần khỏi ảnh tham chiếu (
+\begin_inset CommandInset ref
+LatexCommand formatted
+reference "fig:result-cup-viewpoint"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+).
+ Lượng keypoint đối sánh thành công cũng giảm dần theo sự chênh lệch góc
+ nhìn.
  Để khắc phục nhược điểm này, một số phương pháp khác ra đời dựa trên tinh
  thần của SIFT, nhưng thay vì chỉ tìm keypoint trên nhiều octave/scale khác
  nhau, các phương pháp này tìm keypoint trên nhiều viewpoint, ví dụ như
@@ -6691,44 +6972,6 @@ literal "false"
 \end_inset
 
 .
- SIFT cũng gặp vấn đề trên các vật thể có lỗ (
-\begin_inset CommandInset ref
-LatexCommand formatted
-reference "fig:Tháp-Tokyo,-keypoint"
-plural "false"
-caps "false"
-noprefix "false"
-
-\end_inset
-
-).
- Khi so khớp với những ảnh khác của vật thể, điều kiện của khung nền sẽ
- ảnh hưởng tới kết quả so khớp (
-\begin_inset CommandInset ref
-LatexCommand formatted
-reference "fig:Tháp-Tokyo-match"
-plural "false"
-caps "false"
-noprefix "false"
-
-\end_inset
-
-).
-\end_layout
-
-\begin_layout Standard
-Ngoài ra, việc tính toán gaussian pyramid và tìm cực trị của DoG pyramid
- tốn nhiều tài nguyên tính toán.
- Một số thuật toán khác như FREAK
-\begin_inset CommandInset citation
-LatexCommand cite
-key "FREAK"
-literal "false"
-
-\end_inset
-
-đã được phát triển để khắc phục nhược điểm này, trong khi vẫn giữ được các
- thuộc tính như scale invariant và rotate invariant.
 \begin_inset Float figure
 wide false
 sideways false
@@ -6744,7 +6987,7 @@ status open
 \begin_layout Plain Layout
 \align center
 \begin_inset Graphics
-	filename figures/cup-vp-match1.png
+	filename assets/results-1024x1024/cup@cup-view-point-1.jpg
 	display false
 	width 45text%
 
@@ -6776,7 +7019,7 @@ status open
 \begin_layout Plain Layout
 \align center
 \begin_inset Graphics
-	filename figures/cup-vp-match2.png
+	filename assets/results-1024x1024/cup@cup-view-point-2.jpg
 	display false
 	width 45text%
 
@@ -6806,10 +7049,10 @@ Viewpoint thay đổi nhiều
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Số lượng keypoint ít dần khi viewpoint lệch khỏi ảnh train
+Số lượng keypoint ít dần khi góc nhìn lệch khỏi ảnh tham chiếu
 \begin_inset CommandInset label
 LatexCommand label
-name "fig:sift-affine-no-match"
+name "fig:result-cup-viewpoint"
 
 \end_inset
 
@@ -6824,6 +7067,40 @@ name "fig:sift-affine-no-match"
 \end_inset
 
 
+\end_layout
+
+\begin_layout Standard
+Thử nghiệm cuối cùng được thực hiện trên ảnh của tháp Tokyo, mặc dù đây
+ có vẻ là một trường hợp dễ, không có một keypoint nào được đối sánh thành
+ công (
+\begin_inset CommandInset ref
+LatexCommand formatted
+reference "fig:Tháp-Tokyo-match"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+).
+ Khi vẽ minh hoạ các keypoint của vật lên ảnh tham chiếu (
+\begin_inset CommandInset ref
+LatexCommand formatted
+reference "fig:Tháp-Tokyo,-keypoint"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+), ta thấy những keypoint thường nằm trên các góc và phạm vi của keypoint
+ thường chứa nền ảnh.
+ Từ cách dò keypoint và tính descriptor của SIFT, ta thấy cả descriptor
+ và keypoint đều trên thông tin về một vùng địa phương của ảnh.
+ Khi vật có lỗ hổng và ta thay đổi phông nền của ảnh, những thông tin địa
+ phương này cũng bị thay đổi theo.
+ Như vậy SIFT có vấn đề khi đối sánh những vật thể có nhiều lỗ, sự thay
+ đổi phông nền sẽ ảnh hưởng rất lớn tới kết quả đối sánh.
 \begin_inset Float figure
 wide false
 sideways false
@@ -6832,8 +7109,7 @@ status collapsed
 \begin_layout Plain Layout
 \align center
 \begin_inset Graphics
-	filename figures/box-in-scene-match.png
-	display false
+	filename assets/results/tokyo_tower@tokyo-tower.jpg
 	width 100text%
 
 \end_inset
@@ -6845,365 +7121,10 @@ status collapsed
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Cuốn sách trong cảnh, cuốn sách bị chê lấp và xoay, ảnh mẫu.
+Tháp Tokyo, đối sánh thất bại
 \begin_inset CommandInset label
 LatexCommand label
-name "fig:box-in-scene"
-
-\end_inset
-
-
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\end_inset
-
-
-\begin_inset Float figure
-wide false
-sideways false
-status collapsed
-
-\begin_layout Plain Layout
-\align center
-\begin_inset Float figure
-wide false
-sideways false
-status collapsed
-
-\begin_layout Plain Layout
-\align center
-\begin_inset Graphics
-	filename figures/cup-in-scene-match.png
-	width 45text%
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Plain Layout
-\begin_inset Caption Standard
-
-\begin_layout Plain Layout
-Trường hợp độ sáng bình thường
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\end_inset
-
-
-\begin_inset Float figure
-wide false
-sideways false
-status collapsed
-
-\begin_layout Plain Layout
-\align center
-\begin_inset Graphics
-	filename figures/cup-in-scene-match-lighten.png
-	width 45text%
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Plain Layout
-\begin_inset Caption Standard
-
-\begin_layout Plain Layout
-Trường hợp độ sáng cao
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Plain Layout
-\align center
-\begin_inset Float figure
-wide false
-sideways false
-status collapsed
-
-\begin_layout Plain Layout
-\align center
-\begin_inset Graphics
-	filename figures/cup-in-scene-match-darken.png
-	width 45text%
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Plain Layout
-\begin_inset Caption Standard
-
-\begin_layout Plain Layout
-Trường hợp độ sáng thấp
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\end_inset
-
-
-\begin_inset Float figure
-wide false
-sideways false
-status collapsed
-
-\begin_layout Plain Layout
-\align center
-\begin_inset Graphics
-	filename figures/cup-in-scene-match-very-darken.png
-	width 45text%
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Plain Layout
-\begin_inset Caption Standard
-
-\begin_layout Plain Layout
-Trường hợp độ sáng rất thấp
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Plain Layout
-\align center
-\begin_inset Float figure
-wide false
-sideways false
-status collapsed
-
-\begin_layout Plain Layout
-\align center
-\begin_inset Graphics
-	filename figures/cup-in-scene-match-low-contrast.png
-	width 45text%
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Plain Layout
-\begin_inset Caption Standard
-
-\begin_layout Plain Layout
-Trường hợp độ tương phản thấp
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\end_inset
-
-
-\begin_inset Float figure
-wide false
-sideways false
-status collapsed
-
-\begin_layout Plain Layout
-\align center
-\begin_inset Graphics
-	filename figures/cup-in-scene-match-high-contrast.png
-	width 45text%
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Plain Layout
-\begin_inset Caption Standard
-
-\begin_layout Plain Layout
-Trường hợp độ tương phản cao
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Plain Layout
-\align center
-\begin_inset Float figure
-wide false
-sideways false
-status collapsed
-
-\begin_layout Plain Layout
-\align center
-\begin_inset Graphics
-	filename figures/cup-in-scene-match-low-brn-contrast.png
-	width 45text%
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Plain Layout
-\begin_inset Caption Standard
-
-\begin_layout Plain Layout
-Trường hợp độ tương phản và độ sáng thấp
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\end_inset
-
-
-\begin_inset Float figure
-wide false
-sideways false
-status collapsed
-
-\begin_layout Plain Layout
-\align center
-\begin_inset Graphics
-	filename figures/cup-in-scene-match-high-brn-contrast.png
-	width 45text%
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Plain Layout
-\begin_inset Caption Standard
-
-\begin_layout Plain Layout
-Trường hợp độ tương phản và độ sáng cao
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Plain Layout
-\align center
-\begin_inset Float figure
-wide false
-sideways false
-status collapsed
-
-\begin_layout Plain Layout
-\align center
-\begin_inset Graphics
-	filename figures/cup-in-scene-match-high-brn-low-contrast.png
-	width 45text%
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Plain Layout
-\begin_inset Caption Standard
-
-\begin_layout Plain Layout
-Trường hợp độ tương phản thấp và độ sáng cao
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\end_inset
-
-
-\begin_inset Float figure
-wide false
-sideways false
-status collapsed
-
-\begin_layout Plain Layout
-\align center
-\begin_inset Graphics
-	filename figures/cup-in-scene-match-low-brn-high-contrast.png
-	width 45text%
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Plain Layout
-\begin_inset Caption Standard
-
-\begin_layout Plain Layout
-Trường hợp độ tương phản cao và độ sáng thấp
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\end_inset
-
-
-\begin_inset Caption Standard
-
-\begin_layout Plain Layout
-Tìm kiếm cốc cà phê, cốc nhỏ hơn rất nhiều trong ảnh bên phải và bị xoay
- 180 độ, xem xét ở nhiều mức điều kiện sáng và tương phản khác nhau.
-\begin_inset CommandInset label
-LatexCommand label
-name "fig:cup-in-scene"
+name "fig:Tháp-Tokyo-match"
 
 \end_inset
 
@@ -7254,51 +7175,100 @@ name "fig:Tháp-Tokyo,-keypoint"
 
 \end_layout
 
-\begin_layout Plain Layout
+\end_inset
 
+ Nhược điểm với phông nền như trên đồng thời chỉ ra một vấn đề khác với
+ SIFT, đó là nó không quan tâm tới thông tin bối cảnh mà chỉ quan tâm những
+ thông tin địa phương.
+ Điều này dẫn đến những trường hợp dương tính giả (đối sánh thành công nhưng
+ hai keypoint đối sánh được là của hai vật thể khác nhau) do trên hai ảnh
+ có những 
+\begin_inset Quotes eld
+\end_inset
+
+mảnh vá
+\begin_inset Quotes erd
+\end_inset
+
+ giống nhau.
+ Ta có thể quan sát được hiện tượng này trong cả những trường hợp đối sánh
+ thất bại (
+\begin_inset CommandInset ref
+LatexCommand formatted
+reference "fig:result-hust-logo-512-fail"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) và đối sánh thành công (
+\begin_inset CommandInset ref
+LatexCommand formatted
+reference "fig:result-box-in-scene"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+); trong đó những điểm dương tính giả xuất hiện ở những phần ảnh có góc
+ nhọn.
+ Những vấn đề trên đều là những vấn đề rất khó giải quyết và mới chỉ được
+ (cố gắng) giải quyết gần đây bởi những cơ chế hiện đại và phức tạp hơn
+\begin_inset CommandInset citation
+LatexCommand cite
+key "VisionTransformer,SpatialTransformer"
+literal "false"
+
+\end_inset
+
+.
 \end_layout
 
-\end_inset
-
-
-\begin_inset Float figure
-wide false
-sideways false
-status open
-
-\begin_layout Plain Layout
-\align center
-\begin_inset Graphics
-	filename figures/match-tokyo-tower-01.jpg
-	width 100text%
-
-\end_inset
-
-
+\begin_layout Chapter
+Kết luận & lời cảm ơn
 \end_layout
 
-\begin_layout Plain Layout
-\begin_inset Caption Standard
-
-\begin_layout Plain Layout
-Tháp Tokyo, đối sánh thất bại vì khung cảnh đằng sau khác biệt
-\begin_inset CommandInset label
-LatexCommand label
-name "fig:Tháp-Tokyo-match"
+\begin_layout Standard
+Báo cáo đã trình bày sơ lược về bài toán đối sánh ảnh cùng với một phương
+ pháp xử lý rất kinh điển cho bài toán–SIFT.
+ SIFT là một trong những phương pháp cổ điển đầu tiên với tính chính xác
+ cao mà có thể ứng dụng trong thực tế.
+ SIFT cũng có thể được linh hoạt dùng kết hợp với các bộ dò đặc trưng ở
+ dạng điểm khác như bộ dò góc Harris.
+ Mặc dù có nhiều nhược điểm, bộ dò SIFT có ảnh hưởng lớn tới những mô hình
+ được đưa ra sau này, ví dụ như 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "DCNConv"
+literal "false"
 
 \end_inset
 
+ hay 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "FPN"
+literal "false"
 
+\end_inset
+
+.
 \end_layout
 
+\begin_layout Standard
+Báo cáo này được thực hiện dưới sự hướng dẫn của TS.
+\begin_inset space ~
 \end_inset
 
-
-\end_layout
-
+Vương Mai Phương và TS.
+\begin_inset space ~
 \end_inset
 
-
+Nguyễn Phương Thuỳ.
+ Em xin cảm ơn hai cô đã nhiệt tình chỉ dẫn, góp ý và phản biện để giúp
+ báo cáo này hoàn thiện hơn.
 \end_layout
 
 \begin_layout Standard

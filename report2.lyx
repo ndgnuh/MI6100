@@ -357,6 +357,9 @@ status open
 \end_inset
 
 
+\end_layout
+
+\begin_layout Standard
 \begin_inset FormulaMacro
 \newcommand{\LoG}{\nabla^{2}G}
 \end_inset
@@ -1449,7 +1452,7 @@ name "alg:gradient-3d"
 placement H
 wide false
 sideways false
-status collapsed
+status open
 
 \begin_layout Plain Layout
 \begin_inset ERT
@@ -2810,7 +2813,7 @@ status open
 placement H
 wide false
 sideways false
-status collapsed
+status open
 
 \begin_layout Plain Layout
 \align center
@@ -2857,7 +2860,7 @@ name "fig:1d-blob-01"
 \begin_inset Float figure
 wide false
 sideways false
-status collapsed
+status open
 
 \begin_layout Plain Layout
 \align center
@@ -2904,7 +2907,7 @@ name "fig:1d-blob-02"
 \begin_inset Float figure
 wide false
 sideways false
-status collapsed
+status open
 
 \begin_layout Plain Layout
 \align center

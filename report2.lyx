@@ -65,6 +65,11 @@ xleftmargin=2em, language=custom, tabsize=3, numbers=left}
 
 %% FOR LOOP
 \usepackage{tikz}
+
+
+%%
+\def\definitionname{Định nghĩa}
+\def\remark{Nhận xét}
 \end_preamble
 \use_default_options true
 \begin_modules
@@ -352,6 +357,9 @@ status open
 \end_inset
 
 
+\end_layout
+
+\begin_layout Standard
 \begin_inset FormulaMacro
 \newcommand{\LoG}{\nabla^{2}G}
 \end_inset
@@ -462,7 +470,7 @@ Ký hiệu
 \begin_inset Formula $I$
 \end_inset
 
- là một ảnh xạ
+ là một ánh xạ
 \begin_inset Formula 
 \begin{align}
 I & {}\colon\overline{1,W}\times\overline{1,H}\times\overline{1,C}\to\mathbb{R},\nonumber \\
@@ -659,16 +667,7 @@ noprefix "false"
 \end_layout
 
 \end_deeper
-\begin_layout Definition
-\begin_inset Argument 1
-status collapsed
-
-\begin_layout Plain Layout
-Ảnh đặc trưng
-\end_layout
-
-\end_inset
-
+\begin_layout Standard
 Trong một số trường hợp, ảnh 
 \begin_inset Formula $I$
 \end_inset
@@ -780,7 +779,7 @@ noprefix "false"
  và 
 \begin_inset CommandInset ref
 LatexCommand formatted
-reference "eq:diff-grad"
+reference "eq:diff-hess"
 plural "false"
 caps "false"
 noprefix "false"
@@ -876,6 +875,51 @@ noprefix "false"
 \[
 f_{xx}\left(x_{0}\right)=f\left(x_{0}+1\right)-2f\left(x_{0}\right)+f\left(x_{0}-1\right).
 \]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Như vậy, gradient 
+\begin_inset Formula $\mathbf{G}_{I}\left(\mathbf{x}\right)\in\mathbb{R}^{d}$
+\end_inset
+
+ và hessian 
+\begin_inset Formula $\mathbf{H}_{I}\left(\mathbf{x}\right)\in\mathbb{R}^{d\times d}$
+\end_inset
+
+ của một ảnh được xác định bởi 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:image-grad"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ và 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:image-hessian"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+, trong đó 
+\begin_inset Formula $d$
+\end_inset
+
+ là số chiều của ảnh.
+\begin_inset Formula 
+\begin{align}
+\left[\mathbf{G}_{I}\left(\mathbf{x}\right)\right]_{i} & =\left[\frac{\partial I}{\partial\mathbf{x}_{i}}\left(\mathbf{x}\right)\right]_{d},\quad i=\overline{1,d},\label{eq:image-grad}\\
+\left[\mathbf{H}_{I}\left(\mathbf{x}\right)\right]_{i,j} & =\left[\frac{\partial I}{\partial\mathbf{x}_{i}\partial\mathbf{x}_{j}}\left(\mathbf{x}\right)\right]_{d\times d},\quad i=\overline{1,d},j=\overline{1,d}.\label{eq:image-hessian}
+\end{align}
 
 \end_inset
 
@@ -1408,7 +1452,7 @@ name "alg:gradient-3d"
 placement H
 wide false
 sideways false
-status collapsed
+status open
 
 \begin_layout Plain Layout
 \begin_inset ERT
@@ -1842,15 +1886,8 @@ Với ảnh
 \end_inset
 
  bằng nhiều cách khác nhau.
- Dù cách phổ biến hơn là nội suy song tuyến
-\begin_inset CommandInset citation
-LatexCommand cite
-key "Bilinear"
-literal "false"
-
-\end_inset
-
-, báo cáo sẽ trình bày cách thu nhỏ được sử dụng trong 
+ Dù cách phổ biến hơn là nội suy song tuyến, báo cáo sẽ trình bày cách thu
+ nhỏ được sử dụng trong 
 \begin_inset CommandInset citation
 LatexCommand cite
 key "Lowe2004"
@@ -2217,6 +2254,57 @@ name "alg:imresize-subsample"
 
 \end_layout
 
+\begin_layout Example
+Cho ảnh xám cỡ 
+\begin_inset Formula $3\times4$
+\end_inset
+
+
+\begin_inset Formula 
+\[
+I=\left[\begin{array}{cccc}
+1 & 4 & 7 & 10\\
+2 & 5 & 8 & 11\\
+3 & 6 & 9 & 12
+\end{array}\right],
+\]
+
+\end_inset
+
+dùng 
+\begin_inset CommandInset ref
+LatexCommand formatted
+reference "alg:imresize-subsample"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ để thay đổi kích thước ảnh thành 
+\begin_inset Formula $4\times6$
+\end_inset
+
+, ta thu được ảnh 
+\begin_inset Formula $I'$
+\end_inset
+
+: 
+\begin_inset Formula 
+\[
+I'=\left[\begin{array}{cccccc}
+1 & 1 & 4 & 7 & 7 & 10\\
+2 & 2 & 5 & 8 & 8 & 11\\
+2 & 2 & 5 & 8 & 8 & 11\\
+3 & 3 & 6 & 9 & 9 & 12
+\end{array}\right].
+\]
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Subsection
 Cắt ảnh 
 \end_layout
@@ -2230,7 +2318,7 @@ Cho ảnh
 \begin_inset Formula $m\times n$
 \end_inset
 
-, thao tác cắt ảnh (crop) là thao tác lấy ra một trên ảnh với toạ độ 
+, thao tác cắt ảnh là thao tác lấy ra một trên ảnh với toạ độ 
 \begin_inset Formula $x_{1},y_{1},x_{2},y_{2}$
 \end_inset
 
@@ -2386,15 +2474,7 @@ Cạnh.
 \end_layout
 
 \begin_layout Description
-Điểm
-\begin_inset space ~
-\end_inset
-
-đặc
-\begin_inset space ~
-\end_inset
-
-trưng/góc.
+Góc.
  Các điểm đặc trưng là những đặc trưng có dạng điểm ở trong ảnh.
  Chúng còn được gọi là góc vì những thuật toán sơ khai để tìm điểm đặc trưng
  sẽ phát hiện cạnh trước, sau đó phát hiện sự thay đổi đột ngột trong hướng
@@ -2405,27 +2485,7 @@ trưng/góc.
 \end_layout
 
 \begin_layout Description
-Miền
-\begin_inset space ~
-\end_inset
-
-đặc
-\begin_inset space ~
-\end_inset
-
-trưng/khối
-\begin_inset space ~
-\end_inset
-
-(region
-\begin_inset space ~
-\end_inset
-
-of
-\begin_inset space ~
-\end_inset
-
-interest/blob).
+Miền.
  Miền đặc trưng là đặc trưng giống với điểm đặc trưng, nhưng thay vì cung
  cấp thông tin về một trên ảnh, miền đặc trưng cung cấp thông tin mang tính
  cấu trúc về một miền ở trong ảnh.
@@ -2488,7 +2548,15 @@ Những phương pháp sử dụng histogram là những phương pháp khá đ�
  hợp ảnh của hai vật thể không liên quan tới nhau nhưng cùng histogram.
  Phương pháp này không quan tâm tới những đặc trưng mang tính địa phương
  của ảnh.
- Ví dụ: Histogram Intersection.
+ Ví dụ: Histogram Intersection
+\begin_inset CommandInset citation
+LatexCommand cite
+key "HistBasedImageMatching"
+literal "false"
+
+\end_inset
+
+.
 \end_layout
 
 \begin_layout Itemize
@@ -2509,25 +2577,49 @@ Bậc cao hơn ở đây có thể hiểu tương đương với việc gần v�
  Cạnh chỉ chạy dọc theo ảnh của vật thể và không có sự phân biệt giữa các
  đoạn của cánh.
  Đặc trưng góc thì không phải lúc nào cũng xuất hiện trong ảnh của vật thể.
- Ví dụ: Canny Edge Detector, Harris Corner Detector.
+ Ví dụ: Canny Edge Detector, Harris Corner Detector
+\begin_inset CommandInset citation
+LatexCommand cite
+key "CannyEdgeDetector,Harris1988ACC"
+literal "false"
+
+\end_inset
+
+.
 \end_layout
 
 \begin_layout Itemize
 Những phương pháp đối sánh ảnh sử dụng miền đặc trưng quan tâm tới một đặc
  trưng bậc cao hơn và thể hiện tốt hơn các đặc trưng của vật thể, vì chúng
  quan tâm tới tính địa phương của ảnh.
- Ví dụ: Scale Invariant Feature Transform (SIFT), Laplace of Gaussian.
+ Ví dụ: Biến đổi Đặc trưng Bất biến Tỷ lệ, Laplace of Gaussian
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Lowe2004"
+literal "false"
+
+\end_inset
+
+.
 \end_layout
 
 \begin_layout Itemize
 Một số hướng tiếp cận khác, như dựa trên chuyển động (Optical Flow), dựa
  trên hình dạng (biến đổi Hough tổng quát), sử dụng mô hình học máy (CNN),
- sử dụng kết hợp những phương pháp trên...
+ sử dụng kết hợp những phương pháp trên
+\begin_inset CommandInset citation
+LatexCommand cite
+key "SpatialTransformer,VisionTransformer,FPN"
+literal "false"
+
+\end_inset
+
+...
 \end_layout
 
 \begin_layout Standard
 Báo cáo này sẽ trình bày chi tiết về một thuật toán đối sánh sử dụng miền
- đặc trưng mang tên Scale Invariant Feature Transform (SIFT).
+ đặc trưng mang tên Biến đổi Đặc trưng Bất biến Tỷ lệ (viết tắt là SIFT).
  Đây là một phương pháp cổ điển và ổn định với góc quay, tỉ lệ, độ sáng
  và độ tương phản của ảnh.
  SIFT, sẽ phát hiện các miền đặc trưng trên ảnh, được gọi là keypoint.
@@ -2537,7 +2629,7 @@ Báo cáo này sẽ trình bày chi tiết về một thuật toán đối sánh
 \end_layout
 
 \begin_layout Chapter
-Scale Invariant Feature Transform
+Biến đổi Đặc trưng Bất biến Tỷ lệ
 \end_layout
 
 \begin_layout Section
@@ -2552,7 +2644,30 @@ name "sec:Ý-tưởng-sift"
 \end_layout
 
 \begin_layout Standard
-Trong trường hợp một chiều, việc phát hiện blob được thực hiện bằng cách
+\begin_inset Flex TODO Note (inline)
+status collapsed
+
+\begin_layout Plain Layout
+Nối tiếp ý phần này, định nghĩa keypoint
+\end_layout
+
+\end_inset
+
+SIFT là một phương pháp dựa trên đặc trưng miền.
+ SIFT tìm các đặc trưng miền, được gọi là keypoint trong tài liệu gốc 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Lowe2004"
+literal "false"
+
+\end_inset
+
+.
+ Mỗi keypoint của SIFT là một miền với toạ độ, độ lớn và một góc chủ đạo.
+\end_layout
+
+\begin_layout Standard
+Trong trường hợp một chiều, việc phát hiện miền được thực hiện bằng cách
  tích chập tín hiệu 
 \begin_inset Formula $I$
 \end_inset
@@ -2571,7 +2686,7 @@ Trong trường hợp một chiều, việc phát hiện blob được thực hi
 \begin_inset Formula $I\left(x\right)\ast L\left(\sigma\right)$
 \end_inset
 
- sẽ tương ứng với tâm của blob.
+ sẽ tương ứng với tâm của miền.
  
 \begin_inset CommandInset ref
 LatexCommand formatted
@@ -2582,8 +2697,8 @@ noprefix "false"
 
 \end_inset
 
- minh họa việc dùng LoG để phát hiện blob.
- Blob trong 
+ minh họa việc dùng LoG để phát hiện miền.
+ Miền trong 
 \begin_inset CommandInset ref
 LatexCommand formatted
 reference "fig:1d-blob-01"
@@ -2597,7 +2712,7 @@ noprefix "false"
 \begin_inset Formula $\sigma=0.325$
 \end_inset
 
-, nhưng với blob kích thước 
+, nhưng với miền kích thước 
 \begin_inset Formula $1.6$
 \end_inset
 
@@ -2620,11 +2735,11 @@ Tham số
 \begin_inset Formula $\sigma$
 \end_inset
 
- có tương quan dương với độ lớn của blob, do đó ta có thể dùng 
+ có tương quan dương với độ lớn của miền, do đó ta có thể dùng 
 \begin_inset Formula $\sigma$
 \end_inset
 
- để xác định kích thước của blob.
+ để xác định kích thước của miền.
 \end_layout
 
 \begin_layout Itemize
@@ -2657,11 +2772,11 @@ Cực trị của
 \begin_inset Formula $\LoG\left(x,\sigma\right)$
 \end_inset
 
- tương ứng với tâm và độ lớn của một blob.
+ tương ứng với tâm và độ lớn của một miền.
 \end_layout
 
 \begin_layout Standard
-Từ những tính chất trên, việc tìm blob trong trường hợp một chiều có thể
+Từ những tính chất trên, việc tìm miền trong trường hợp một chiều có thể
  được mô tả như sau:
 \end_layout
 
@@ -2674,7 +2789,7 @@ Tìm
 \begin_inset Formula $\sigma\in\left\{ \sigma_{1},\sigma_{2},\ldots,\sigma_{n}\right\} $
 \end_inset
 
-m
+
 \end_layout
 
 \begin_layout Enumerate
@@ -2698,7 +2813,7 @@ status open
 placement H
 wide false
 sideways false
-status collapsed
+status open
 
 \begin_layout Plain Layout
 \align center
@@ -2716,7 +2831,7 @@ status collapsed
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Blob với độ rộng 
+Miền với độ rộng 
 \begin_inset Formula $0.8$
 \end_inset
 
@@ -2745,7 +2860,7 @@ name "fig:1d-blob-01"
 \begin_inset Float figure
 wide false
 sideways false
-status collapsed
+status open
 
 \begin_layout Plain Layout
 \align center
@@ -2763,7 +2878,7 @@ status collapsed
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Blob với độ rộng 
+Miền với độ rộng 
 \begin_inset Formula $1.6$
 \end_inset
 
@@ -2792,7 +2907,7 @@ name "fig:1d-blob-02"
 \begin_inset Float figure
 wide false
 sideways false
-status collapsed
+status open
 
 \begin_layout Plain Layout
 \align center
@@ -2810,7 +2925,7 @@ status collapsed
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Blob với độ rộng 
+Miền với độ rộng 
 \begin_inset Formula $1.6$
 \end_inset
 
@@ -2842,7 +2957,7 @@ name "fig:1d-blob-03"
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Phát hiện blob với Laplacian of Gaussian
+Phát hiện miền với Laplacian of Gaussian
 \begin_inset CommandInset label
 LatexCommand label
 name "fig:1d-blob"
@@ -2919,7 +3034,7 @@ Tìm cực trị của gaussian pyramid bằng difference of gaussian pyramid;
 \end_layout
 
 \begin_layout Enumerate
-Localize các cực trị để thu được các keypoint, gắn orientation cho keypoint;
+Định vị các cực trị để thu được các keypoint, gắn orientation cho keypoint;
 \end_layout
 
 \begin_layout Enumerate
@@ -2945,15 +3060,15 @@ noprefix "false"
 \begin_inset Formula $\varOmega$
 \end_inset
 
- là số lượng octave, 
+ là số lượng quãng, 
 \begin_inset Formula $\omega$
 \end_inset
 
- là chỉ số octave, 
+ là chỉ số quãng, 
 \begin_inset Formula $S$
 \end_inset
 
- là số lượng scale trong mỗi octave.
+ là số lượng thang trong mỗi quãng.
  Khi ứng dụng thực tế, các bước từ đầu cho tới khi tìm ra descriptor được
  thực hiện trên các ảnh tham chiếu trước.
  Các descriptor của ảnh tham chiếu được lưu vào cơ sở dữ liệu.
@@ -3026,7 +3141,7 @@ State
 \begin_inset Formula $\mathcal{L}\gets$
 \end_inset
 
- Tìm scale space của 
+ Tìm không gian tỷ lệ của 
 \begin_inset Formula $I'$
 \end_inset
 
@@ -3074,7 +3189,7 @@ State
 \begin_inset Formula $\mathcal{K}\gets$
 \end_inset
 
- localize và tìm góc chủ đạo của các điểm 
+ định vị và tìm góc chủ đạo của các điểm 
 \begin_inset Formula $\mathbf{x}\in\mathcal{X}$
 \end_inset
 
@@ -3184,6 +3299,19 @@ Tiền xử lý
 \end_layout
 
 \begin_layout Standard
+\begin_inset Flex TODO Note (inline)
+status open
+
+\begin_layout Plain Layout
+Nêu rõ input output
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
 Ảnh đầu vào đầu tiên được chuyển thành sang thang độ xám sử dụng công thức
 \begin_inset Formula 
 \[
@@ -3193,15 +3321,7 @@ Tiền xử lý
 \end_inset
 
 trong đó red, green, blue là giá trị sáng của kênh màu tương ứng tại một
- ví trí của ảnh
-\begin_inset CommandInset citation
-LatexCommand cite
-key "RGB2Gray"
-literal "false"
-
-\end_inset
-
-.
+ ví trí của ảnh.
  Quy trình chi tiết được trình bày trong 
 \begin_inset CommandInset ref
 LatexCommand formatted
@@ -3220,7 +3340,7 @@ noprefix "false"
 placement H
 wide false
 sideways false
-status collapsed
+status open
 
 \begin_layout Plain Layout
 \begin_inset ERT
@@ -3255,7 +3375,7 @@ Require
 \begin_inset Formula $I\left(x,y,c\right)$
 \end_inset
 
- kích thước
+ kích thước 
 \begin_inset Formula $W\times H$
 \end_inset
 
@@ -3279,28 +3399,8 @@ Ensure
 \begin_inset Formula $I'\left(x,y\right)$
 \end_inset
 
- kích thước
+ kích thước 
 \begin_inset Formula $W\times H$
-\end_inset
-
-
-\end_layout
-
-\begin_layout Plain Layout
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-State
-\end_layout
-
-\end_inset
-
- 
-\begin_inset Formula $I'\left(x,y\right)=\left\{ 0,x\in\overline{1,W},y\in\overline{1,H}\right\} $
 \end_inset
 
 
@@ -3491,9 +3591,9 @@ trong đó dãy
 
  thành các 
 \emph on
-octave
+quãng
 \emph default
-, mỗi octave 
+, mỗi quãng 
 \begin_inset Formula $\mathcal{L}_{\octave}$
 \end_inset
 
@@ -3560,8 +3660,7 @@ trong đó
 \begin_inset Formula $\numscale$
 \end_inset
 
- là các tham số tùy chọn, đại diện cho số octave và scale trên pyramid,
- 
+ là các tham số tùy chọn, đại diện cho số quãng và thang trên pyramid, 
 \begin_inset Formula $L_{\octave,\scale}$
 \end_inset
 
@@ -3605,7 +3704,7 @@ L_{\octave,\scale+1}\left(x,y\right) & =G\left(x,y,\sqrt{\left(k\sigma_{\scale}\
 
 \end_inset
 
-Để tiện cho việc trình bày, ký hiệu một octave là 
+Để tiện cho việc trình bày, ký hiệu một quãng là 
 \begin_inset Formula $\mathcal{L}_{\octave}=\left\{ L_{\octave,\scale}\left(x,y\right)\colon\octave=\overline{1,\numoctave}\right\} $
 \end_inset
 
@@ -3662,7 +3761,7 @@ trong đó
 \end_layout
 
 \begin_layout Subsection
-Tìm cực trị của scale space
+Tìm cực trị của không gian tỷ lệ
 \end_layout
 
 \begin_layout Standard
@@ -3683,7 +3782,7 @@ Vì các ảnh trong
 \end_inset
 
 .
- Để tìm cực trị của scale space, ta tìm cực trị của 
+ Để tìm cực trị của không gian tỷ lệ, ta tìm cực trị của 
 \begin_inset Formula $L_{\octave}\left(x,y,\scale\right)$
 \end_inset
 
@@ -3703,7 +3802,7 @@ Vì các ảnh trong
 :
 \begin_inset Formula 
 \begin{align*}
-D_{\octave}\left(x,y,\scale\right) & =L_{\octave}\left(x,y,\scale+1\right)-L_{\octave}\left(x,y,\scale\right)\quad t=\overline{1,S-1}.
+D_{\octave}\left(x,y,\scale\right) & =L_{\octave}\left(x,y,\scale+1\right)-L_{\octave}\left(x,y,\scale\right).
 \end{align*}
 
 \end_inset
@@ -3761,17 +3860,17 @@ D_{\octave}\left(\mathbf{x}^{*}\right)\le D_{\octave}\left(\mathbf{x}^{*}+\Delta
 \end_inset
 
 Trường hợp cực đại được định nghĩa tương tự.
- Vì trong mỗi octave, ta cần so sánh ba scale liên tiếp để tìm cực trị.
- Do đó, khi tìm gaussian pyramid, số scale được tính được cộng thêm ba (thay
+ Vì trong mỗi quãng, ta cần so sánh ba thang liên tiếp để tìm cực trị.
+ Do đó, khi tìm gaussian pyramid, số thang được tính được cộng thêm ba (thay
  vì tìm 
 \begin_inset Formula $\numscale$
 \end_inset
 
- scale, ta tìm 
+ thang, ta tìm 
 \begin_inset Formula $\numscale+3$
 \end_inset
 
- scale).
+ thang).
  Sau bước này, ta thu được DoG pyramid 
 \begin_inset Formula $\left\{ \mathcal{D}_{\octave}\right\} $
 \end_inset
@@ -3784,7 +3883,7 @@ Trường hợp cực đại được định nghĩa tương tự.
 \end_layout
 
 \begin_layout Subsection
-Localize keypoint
+Định vị keypoint
 \end_layout
 
 \begin_layout Standard
@@ -3798,7 +3897,7 @@ Xét điểm cực trị của
 
  chỉ cho biết thông tin về những vị trí có thể có keypoint trên ảnh, do
  đó ta cần xác định vị trí chính xác của một keypoint.
- Thao tác này được gọi là localize.
+ Thao tác này được gọi là định vị.
  Việc tìm keypoint gồm các bước:
 \end_layout
 
@@ -5325,7 +5424,7 @@ Xét một keypoint bất kỳ
 \begin_inset Formula $K$
 \end_inset
 
- tại octave 
+ tại quãng 
 \begin_inset Formula $\octave$
 \end_inset
 
@@ -5407,14 +5506,6 @@ noprefix "false"
 
 \end_inset
 
-
-\begin_inset CommandInset citation
-LatexCommand cite
-key "PointRotate1"
-literal "false"
-
-\end_inset
-
 .
 \begin_inset Formula 
 \begin{equation}
@@ -5463,7 +5554,7 @@ Sau khi tìm ra
 \begin_inset Formula $\mathbf{\Phi}_{\octave}$
 \end_inset
 
- thu được ở bước localize keypoint, tạo ra các histogram 
+ thu được ở bước định vị keypoint, tạo ra các histogram 
 \begin_inset Formula $H_{i}$
 \end_inset
 
@@ -6468,11 +6559,11 @@ name "fig:result-box-in-scene"
 \end_inset
 
 Bìa hộp đã bị che lấp một chút, đồng thời có một sự thay đổi nhẹ ở góc nhìn.
- Vì SIFT tìm kiếm điểm ảnh trên nhiều scale khác nhau, các keypoint tìm
+ Vì SIFT tìm kiếm điểm ảnh trên nhiều thang khác nhau, các keypoint tìm
  được bởi SIFT ít bị ảnh hưởng bởi tỉ lệ của vật thể trong ảnh.
  Ngoài ra, cách tìm keypoint của SIFT có một số đặc trưng khiến cho keypoint
  không bị ảnh hưởng bởi độ sáng cũng như góc xoay của vật thể.
- Đầu tiên, trong bước localize keypoint, điều kiện lọc bỏ keypoint 
+ Đầu tiên, trong bước định vị keypoint, điều kiện lọc bỏ keypoint 
 \begin_inset CommandInset ref
 LatexCommand formatted
 reference "eq:keypoint-on-edge"
@@ -6511,11 +6602,51 @@ Tiếp đó là những ví dụ về chiếc cốc cà phê.
 \end_inset
 
  độ và nằm trong nhiều vật thể khác.
- Ảnh truy vấn bị thay đổi độ sáng và độ tương phản sử dụng 
-\begin_inset CommandInset citation
-LatexCommand cite
-key "ImageEnhance"
-literal "false"
+ Ảnh truy vấn bị thay đổi độ sáng và độ tương phản dựa trên các tham số
+ thay đổi 
+\begin_inset Formula $b$
+\end_inset
+
+ và 
+\begin_inset Formula $c$
+\end_inset
+
+ (ứng với độ sáng và độ tương phản)
+\begin_inset Foot
+status collapsed
+
+\begin_layout Plain Layout
+Việc thay đổi độ sáng và độ tương phản sử dụng 
+\begin_inset Flex URL
+status open
+
+\begin_layout Plain Layout
+
+https://pillow.readthedocs.io/en/stable/reference/ImageEnhance.html
+\end_layout
+
+\end_inset
+
+, trong đó 
+\begin_inset Formula $b$
+\end_inset
+
+ và 
+\begin_inset Formula $c$
+\end_inset
+
+ là đầu vào của hàm 
+\begin_inset Flex Code
+status open
+
+\begin_layout Plain Layout
+enhance
+\end_layout
+
+\end_inset
+
+.
+\end_layout
 
 \end_inset
 
@@ -6696,15 +6827,15 @@ Nhược điểm đầu tiên của SIFT là tốn nhiều tài nguyên tính to
  đó quá trình chạy thử nghiệm không tốn nhiều thời gian.
  Trong ngữ cảnh ứng dụng thực tế, một ảnh truy vấn sẽ được đối sánh với
  tất cả ảnh trong cơ sở dữ liệu.
- Nếu ảnh truy vấn lớn, việc tìm ra scale space và cực trị của scale space
- sẽ tốn kém hơn.
+ Nếu ảnh truy vấn lớn, việc tìm ra không gian tỷ lệ và cực trị của không
+ gian tỷ lệ sẽ tốn kém hơn.
  Đồng thời, nếu tạo ra quá nhiều keypoint, quá trình đối sánh cũng bị tăng
  khối lượng tính toán.
  Chính vì nhược điểm này, kích thước của ảnh bị giới hạn lại như đã trình
  bày.
  Ta cũng có thể xử lý vấn đề này bằng cách sử dụng những bộ dò khác nhanh
- thay cho việc dò trên scale space của SIFT, đồng thời giữ nguyên bước tính
- toán descriptor.
+ thay cho việc dò trên không gian tỷ lệ của SIFT, đồng thời giữ nguyên bước
+ tính toán descriptor.
  Tuy nhiên tính bất biến với tỷ lệ có thể bị phá vỡ nếu làm vậy.
 \end_layout
 
@@ -6970,7 +7101,7 @@ noprefix "false"
  Lượng keypoint đối sánh thành công cũng giảm dần theo sự chênh lệch góc
  nhìn.
  Để khắc phục nhược điểm này, một số phương pháp khác ra đời dựa trên tinh
- thần của SIFT, nhưng thay vì chỉ tìm keypoint trên nhiều octave/scale khác
+ thần của SIFT, nhưng thay vì chỉ tìm keypoint trên nhiều quãng/thang khác
  nhau, các phương pháp này tìm keypoint trên nhiều viewpoint, ví dụ như
  ASIFT
 \begin_inset CommandInset citation
@@ -7236,7 +7367,7 @@ literal "false"
 \end_layout
 
 \begin_layout Chapter
-Kết luận & lời cảm ơn
+Kết luận
 \end_layout
 
 \begin_layout Standard
@@ -7285,7 +7416,7 @@ Nguyễn Phương Thuỳ.
 LatexCommand bibtex
 btprint "btPrintCited"
 bibfiles "refs"
-options "plain"
+options "plain_vi"
 
 \end_inset
 

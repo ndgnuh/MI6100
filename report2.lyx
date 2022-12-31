@@ -69,7 +69,8 @@ xleftmargin=2em, language=custom, tabsize=3, numbers=left}
 
 %%
 \def\definitionname{Định nghĩa}
-\def\remark{Nhận xét}
+\def\remarkname{Nhận xét}
+\def\examplename{Ví dụ}
 \end_preamble
 \use_default_options true
 \begin_modules
@@ -205,7 +206,7 @@ status open
 
 \begin_layout Standard
 \begin_inset FormulaMacro
-\newcommand{\scale}{\lambda}
+\newcommand{\scale}{t}
 \end_inset
 
 
@@ -229,7 +230,7 @@ status open
 
 \begin_layout Standard
 \begin_inset FormulaMacro
-\newcommand{\numscale}{\varLambda}
+\newcommand{\numscale}{T}
 \end_inset
 
 
@@ -2644,15 +2645,6 @@ name "sec:Ý-tưởng-sift"
 \end_layout
 
 \begin_layout Standard
-\begin_inset Flex TODO Note (inline)
-status collapsed
-
-\begin_layout Plain Layout
-Nối tiếp ý phần này, định nghĩa keypoint
-\end_layout
-
-\end_inset
-
 SIFT là một phương pháp dựa trên đặc trưng miền.
  SIFT tìm các đặc trưng miền, được gọi là keypoint trong tài liệu gốc 
 \begin_inset CommandInset citation
@@ -2664,6 +2656,8 @@ literal "false"
 
 .
  Mỗi keypoint của SIFT là một miền với toạ độ, độ lớn và một góc chủ đạo.
+ Để hiểu được ý tưởng của SIFT, trước hết ta xem xét việc phát hiện miền
+ trong trường hợp một chiều.
 \end_layout
 
 \begin_layout Standard
@@ -2778,34 +2772,11 @@ Cực trị của
 \begin_layout Standard
 Từ những tính chất trên, việc tìm miền trong trường hợp một chiều có thể
  được mô tả như sau:
-\end_layout
-
-\begin_layout Enumerate
-Tìm 
-\begin_inset Formula $I\left(x\right)\ast\LoG\left(x,\sigma\right)$
-\end_inset
-
- với 
-\begin_inset Formula $\sigma\in\left\{ \sigma_{1},\sigma_{2},\ldots,\sigma_{n}\right\} $
-\end_inset
-
-
-\end_layout
-
-\begin_layout Enumerate
-Tìm 
-\begin_inset Formula $\left(x^{*},\sigma^{*}\right)=\argmax\left\{ I\left(x\right)*\LoG\left(x,\sigma_{i}\right)\colon i=\overline{1,n}\right\} $
-\end_inset
-
-.
-\end_layout
-
-\begin_layout Standard
 \begin_inset Float figure
 placement H
 wide false
 sideways false
-status open
+status collapsed
 
 \begin_layout Plain Layout
 \align center
@@ -3009,15 +2980,80 @@ name "fig:1d-blob"
 
 \end_layout
 
+\begin_layout Enumerate
+Tìm 
+\begin_inset Formula $I\left(x\right)\ast\LoG\left(x,\sigma\right)$
+\end_inset
+
+ với 
+\begin_inset Formula $\sigma\in\left\{ \sigma_{1},\sigma_{2},\ldots,\sigma_{n}\right\} $
+\end_inset
+
+;
+\end_layout
+
+\begin_layout Enumerate
+Tìm 
+\begin_inset Formula $\left(x^{*},\sigma^{*}\right)=\argmax\left\{ I\left(x\right)*\LoG\left(x,\sigma_{i}\right)\colon i=\overline{1,n}\right\} $
+\end_inset
+
+;
+\end_layout
+
 \begin_layout Standard
-Trong phương pháp trên, 
+trong đó, tập 
 \begin_inset Formula $\left\{ \sigma_{1},\sigma_{2},\ldots,\sigma_{n}\right\} $
 \end_inset
 
- được gọi là không gian tỷ lệ của ảnh.
- SIFT tận dụng ý tưởng này trên không gian hai chiều để phát hiện các keypoint,
- đồng thời đưa ra một số lượng hóa thông minh khác để khắc phục những ảnh
- hưởng từ việc xoay ảnh, góc nhìn và độ sáng.
+ được gọi là các tỷ lệ, và 
+\begin_inset Formula $\left\{ I\left(x\right)\ast\LoG\left(x,\sigma_{i}\right)\right\} $
+\end_inset
+
+ là không gian tỷ lệ.
+\end_layout
+
+\begin_layout Standard
+SIFT mở rộng ý tưởng này lên trường hợp hai chiều, tìm kiếm không gian tỷ
+ lệ để phát hiện các keypoint của một ảnh 
+\begin_inset Formula $I$
+\end_inset
+
+.
+ Không gian tỷ lệ của SIFT được cấu trúc ở dạng một 
+\begin_inset Flex Emph
+status open
+
+\begin_layout Plain Layout
+tháp gauss
+\end_layout
+
+\end_inset
+
+ bao gồm 
+\begin_inset Formula $\numoctave$
+\end_inset
+
+ quãng, mỗi quãng gồm ảnh ở 
+\begin_inset Formula $\numscale$
+\end_inset
+
+ thang (tỷ lệ), trong đó các ảnh ở quãng liền sau có kích thước bằng một
+ nửa các ảnh của quãng liền trước, mỗi quãng ứng với một lần gấp đôi các
+ giá trị 
+\begin_inset Formula $\sigma$
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Lowe2004"
+literal "false"
+
+\end_inset
+
+.
+ Ngoài ra, SIFT cũng đưa ra số lượng hóa thông minh khác để khắc phục những
+ ảnh hưởng từ việc xoay ảnh, góc nhìn và độ sáng.
  Quy trình bộ dò SIFT, một cách tổng quát diễn ra như sau:
 \end_layout
 
@@ -3026,11 +3062,11 @@ Tiền xử lý: ảnh được chuyển về ảnh đen trắng;
 \end_layout
 
 \begin_layout Enumerate
-Tìm gaussian pyramid của ảnh đầu vào;
+Tìm tháp gauss của ảnh đầu vào;
 \end_layout
 
 \begin_layout Enumerate
-Tìm cực trị của gaussian pyramid bằng difference of gaussian pyramid;
+Tìm cực trị của tháp gauss bằng tháp sai phân gauss;
 \end_layout
 
 \begin_layout Enumerate
@@ -3056,19 +3092,7 @@ noprefix "false"
 
 \end_inset
 
-, trong đó 
-\begin_inset Formula $\varOmega$
-\end_inset
-
- là số lượng quãng, 
-\begin_inset Formula $\omega$
-\end_inset
-
- là chỉ số quãng, 
-\begin_inset Formula $S$
-\end_inset
-
- là số lượng thang trong mỗi quãng.
+.
  Khi ứng dụng thực tế, các bước từ đầu cho tới khi tìm ra descriptor được
  thực hiện trên các ảnh tham chiếu trước.
  Các descriptor của ảnh tham chiếu được lưu vào cơ sở dữ liệu.
@@ -3298,17 +3322,32 @@ name "sec:sift-detail"
 Tiền xử lý
 \end_layout
 
-\begin_layout Standard
-\begin_inset Flex TODO Note (inline)
-status open
-
-\begin_layout Plain Layout
-Nêu rõ input output
-\end_layout
-
+\begin_layout Description
+Đầu
+\begin_inset space ~
 \end_inset
 
+vào: Ảnh 
+\begin_inset Formula $I$
+\end_inset
 
+ cỡ 
+\begin_inset Formula $m\times n$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Description
+Đầu
+\begin_inset space ~
+\end_inset
+
+ra: Ảnh 
+\begin_inset Formula $I'$
+\end_inset
+
+ cùng cỡ sau khi tiền xử lý.
 \end_layout
 
 \begin_layout Standard
@@ -3540,111 +3579,35 @@ name "alg:Tiền-xử-lý"
 \end_layout
 
 \begin_layout Subsection
-Tìm gaussian pyramid
+Tìm tháp gauss
+\end_layout
+
+\begin_layout Description
+Đầu
+\begin_inset space ~
+\end_inset
+
+vào: Ảnh 
+\begin_inset Formula $I'$
+\end_inset
+
+ đã tiền xử lý.
+\end_layout
+
+\begin_layout Description
+Đầu
+\begin_inset space ~
+\end_inset
+
+ra: Không gian tỷ lệ của ảnh 
+\begin_inset Formula $I'$
+\end_inset
+
+, biểu diễn dưới dạng tháp gauss.
 \end_layout
 
 \begin_layout Standard
-Theo tư tưởng bên trên, ta làm mờ ảnh 
-\begin_inset Formula $I'\left(x,y\right)$
-\end_inset
-
- để thu được một dãy các ảnh 
-\begin_inset Formula 
-\[
-\mathcal{L}=\left\{ I'\left(x,y\right)\ast G\left(x,y,\sigma_{\scale}\right)\right\} _{\lambda\in\text{tập chỉ số}},
-\]
-
-\end_inset
-
-trong đó dãy 
-\begin_inset Formula $\sigma_{\lambda}$
-\end_inset
-
- thoả mãn 
-\begin_inset Formula $\sigma_{\scale+1}=k\sigma_{\scale}$
-\end_inset
-
-, 
-\begin_inset Formula $k$
-\end_inset
-
- là một hệ số nhân bất kỳ.
- Giả sử chọn 
-\begin_inset Formula $k$
-\end_inset
-
- sao cho 
-\begin_inset Formula $k$
-\end_inset
-
- có dạng 
-\begin_inset Formula $2^{1/\numscale}$
-\end_inset
-
-, với 
-\begin_inset Formula $\numscale$
-\end_inset
-
- là một số nguyên dương, ta có thể chia tập ảnh 
-\begin_inset Formula $\mathcal{L}$
-\end_inset
-
- thành các 
-\emph on
-quãng
-\emph default
-, mỗi quãng 
-\begin_inset Formula $\mathcal{L}_{\octave}$
-\end_inset
-
- bao gồm 
-\begin_inset Formula $\Lambda$
-\end_inset
-
- ảnh, và các ảnh 
-\begin_inset Formula $L_{\octave,\lambda}\left(x,y\right)$
-\end_inset
-
- được tính bởi.
-\begin_inset Formula 
-\begin{align*}
-L_{\octave,\lambda+1}\left(x,y\right) & =L_{\octave,\lambda}\left(x,y\right)\ast G\left(x,y,\sqrt{\sigma_{\octave,\scale+1}^{2}-\sigma_{\octave,\scale}^{2}}\right),\\
-L_{\octave+1,1}\left(x,y\right) & =L_{\octave,\lambda}\left(x,y\right)\ast G\left(x,y,\sqrt{\sigma_{\octave+1,1}^{2}-\sigma_{\octave,\numscale}^{2}}\right).
-\end{align*}
-
-\end_inset
-
-Tuy nhiên, vì 
-\begin_inset Formula $k=2^{1/\numscale}$
-\end_inset
-
-, ta có 
-\begin_inset Formula $\sigma_{\octave+1,\lambda}=2\sigma_{\octave,\lambda}$
-\end_inset
-
-, ta có thể tính 
-\begin_inset Formula $L_{\octave+1,1}\left(x,y\right)$
-\end_inset
-
- bằng cách thu nhỏ 
-\begin_inset Formula $L_{\octave,\Lambda}\left(x,y\right)$
-\end_inset
-
- với tỷ lệ 
-\begin_inset Formula $0.5$
-\end_inset
-
-
-\begin_inset CommandInset citation
-LatexCommand cite
-key "Lowe2004"
-literal "false"
-
-\end_inset
-
-.
- Như vậy, dãy ảnh có thể được biểu diễn thành một Gaussian Pyramid như sau:
- 
+Ký hiệu các ảnh trong tháp gauss như sau: 
 \begin_inset Formula 
 \[
 \mathcal{L}=\left\{ L_{\octave,\scale}\left(x,y\right)\colon\octave=\overline{1,\numoctave},\scale=\overline{1,\numscale}\right\} ,
@@ -3653,14 +3616,15 @@ literal "false"
 \end_inset
 
 trong đó 
-\begin_inset Formula $\numoctave$
+\begin_inset Formula $\octave$
 \end_inset
 
- và 
-\begin_inset Formula $\numscale$
+ là chỉ số quãng, 
+\begin_inset Formula $\scale$
 \end_inset
 
- là các tham số tùy chọn, đại diện cho số quãng và thang trên pyramid, 
+ là chỉ số thang.
+ 
 \begin_inset Formula $L_{\octave,\scale}$
 \end_inset
 
@@ -3764,6 +3728,46 @@ trong đó
 Tìm cực trị của không gian tỷ lệ
 \end_layout
 
+\begin_layout Description
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+Đầu vào:
+\end_layout
+
+\end_inset
+
+ Tháp gauss của ảnh 
+\begin_inset Formula $I$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Description
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+Đầu ra:
+\end_layout
+
+\end_inset
+
+ Danh sách điểm cực trị trong mỗi quãng 
+\begin_inset Formula $\octave$
+\end_inset
+
+, tháp sai phân gauss 
+\begin_inset Formula $\mathcal{D}$
+\end_inset
+
+.
+\end_layout
+
 \begin_layout Standard
 Vì các ảnh trong 
 \begin_inset Formula $\mathcal{L}_{\octave}$
@@ -3795,7 +3799,7 @@ Vì các ảnh trong
 \begin_inset Formula $\octave$
 \end_inset
 
- bất kỳ, ta có các ảnh sai phân Gauss của bậc 
+ bất kỳ, ta có các ảnh sai phân Gauss của quãng 
 \begin_inset Formula $\octave$
 \end_inset
 
@@ -3861,8 +3865,8 @@ D_{\octave}\left(\mathbf{x}^{*}\right)\le D_{\octave}\left(\mathbf{x}^{*}+\Delta
 
 Trường hợp cực đại được định nghĩa tương tự.
  Vì trong mỗi quãng, ta cần so sánh ba thang liên tiếp để tìm cực trị.
- Do đó, khi tìm gaussian pyramid, số thang được tính được cộng thêm ba (thay
- vì tìm 
+ Do đó, khi tìm tháp gauss, số thang được tính được cộng thêm ba (thay vì
+ tìm 
 \begin_inset Formula $\numscale$
 \end_inset
 
@@ -3871,7 +3875,7 @@ Trường hợp cực đại được định nghĩa tương tự.
 \end_inset
 
  thang).
- Sau bước này, ta thu được DoG pyramid 
+ Sau bước này, ta thu được tháp sai phân gauss 
 \begin_inset Formula $\left\{ \mathcal{D}_{\octave}\right\} $
 \end_inset
 
@@ -3884,6 +3888,46 @@ Trường hợp cực đại được định nghĩa tương tự.
 
 \begin_layout Subsection
 Định vị keypoint
+\end_layout
+
+\begin_layout Description
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+Đầu vào:
+\end_layout
+
+\end_inset
+
+ Tháp sai phân gauss 
+\begin_inset Formula $\left\{ \mathcal{D}_{\octave}\right\} $
+\end_inset
+
+, danh sánh cực trị 
+\begin_inset Formula $\left\{ \mathcal{X}_{\octave}\right\} $
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Description
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+Đầu ra:
+\end_layout
+
+\end_inset
+
+ Danh sách keypoint 
+\begin_inset Formula $\mathcal{K}$
+\end_inset
+
+ với toạ độ và góc chủ đạo.
 \end_layout
 
 \begin_layout Standard
@@ -5413,14 +5457,51 @@ name "alg:histogram-peaks"
 Tính toán descriptor 
 \end_layout
 
+\begin_layout Description
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+Đầu vào:
+\end_layout
+
+\end_inset
+
+ Danh sách keypoint 
+\begin_inset Formula $\mathcal{K}$
+\end_inset
+
+, tháp gauss của ảnh 
+\begin_inset Formula $I'$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Description
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+Đầu ra:
+\end_layout
+
+\end_inset
+
+ Tập descriptor tương ứng với mỗi keypoint 
+\begin_inset Formula $\mathcal{K}$
+\end_inset
+
+.
+\end_layout
+
 \begin_layout Standard
 Sau khi thành công tìm ra các keypoint, ta cần một đại lượng để so sánh
  chúng với nhau.
  Đại lượng được sử dụng để đối sánh các keypoint được gọi là descriptor.
-\end_layout
-
-\begin_layout Standard
-Xét một keypoint bất kỳ 
+ Xét một keypoint bất kỳ 
 \begin_inset Formula $K$
 \end_inset
 
@@ -5584,18 +5665,66 @@ Sau khi tìm ra
 So sánh keypoint
 \end_layout
 
-\begin_layout Standard
-Sau khi thu được các keypoint và các descriptor, ta cần tìm ra những cặp
- keypoint tương đồng nhau giữa hai ảnh.
- Phương pháp tìm ra các cặp là phương pháp KNN Bruteforce
-\begin_inset CommandInset citation
-LatexCommand cite
-key "FeatureMatching"
-literal "false"
+\begin_layout Description
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+Đầu vào:
+\end_layout
 
 \end_inset
 
+ Tập descriptor 
+\begin_inset Formula $\mathcal{D}_{1}$
+\end_inset
+
+, 
+\begin_inset Formula $\mathcal{D}_{2}$
+\end_inset
+
+, tập keypoint 
+\begin_inset Formula $\mathcal{K}_{1}$
+\end_inset
+
+, 
+\begin_inset Formula $\mathcal{K}_{2}$
+\end_inset
+
+ của hai ảnh tương ứng.
+\end_layout
+
+\begin_layout Description
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+Đầu ra:
+\end_layout
+
+\end_inset
+
+ Danh sách các cặp keypoint đối sánh thành công 
+\begin_inset Formula $\left\{ \left(k_{1},k_{2}\right)\right\} $
+\end_inset
+
  với 
+\begin_inset Formula $k_{1}\in\mathcal{K}_{1}$
+\end_inset
+
+ và 
+\begin_inset Formula $k_{2}\in\mathcal{K}_{2}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Sau khi thu được các keypoint và các descriptor, ta cần tìm ra những cặp
+ keypoint tương đồng nhau giữa hai ảnh.
+ Phương pháp tìm ra các cặp là phương pháp KNN Bruteforce với 
 \begin_inset Formula $k=2$
 \end_inset
 

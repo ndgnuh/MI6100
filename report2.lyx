@@ -668,31 +668,6 @@ noprefix "false"
 \end_layout
 
 \end_deeper
-\begin_layout Standard
-Trong một số trường hợp, ảnh 
-\begin_inset Formula $I$
-\end_inset
-
- không phải ảnh theo nghĩa thông thường để có thể được nhìn bởi mắt người,
- ta gọi 
-\begin_inset Formula $I$
-\end_inset
-
- là một ảnh đặc trưng.
- Số kênh của ảnh đặc trưng có thể không nằm trong những giá trị được nêu
- trong 
-\begin_inset CommandInset ref
-LatexCommand formatted
-reference "def:ảnh số"
-plural "false"
-caps "false"
-noprefix "false"
-
-\end_inset
-
-.
-\end_layout
-
 \begin_layout Section
 Thao tác trên ảnh
 \begin_inset CommandInset label

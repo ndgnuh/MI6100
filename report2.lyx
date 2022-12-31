@@ -3045,7 +3045,7 @@ Tìm cực trị của tháp gauss bằng tháp sai phân gauss;
 \end_layout
 
 \begin_layout Enumerate
-Định vị các cực trị để thu được các keypoint, gắn orientation cho keypoint;
+Định vị các cực trị để thu được các keypoint, tìm góc chủ đạo cho keypoint;
 \end_layout
 
 \begin_layout Enumerate
@@ -3956,7 +3956,7 @@ noprefix "false"
 \end_layout
 
 \begin_layout Enumerate
-Tìm orientation của mỗi ứng cử keypoint 
+Tìm góc chủ đạo của mỗi ứng cử keypoint 
 \begin_inset Formula $K$
 \end_inset
 
@@ -4014,7 +4014,7 @@ noprefix "false"
 \begin_inset Float algorithm
 wide false
 sideways false
-status collapsed
+status open
 
 \begin_layout Plain Layout
 \begin_inset ERT
@@ -4284,7 +4284,7 @@ State
 \end_inset
 
  
-\begin_inset Formula $\mathbf{x}\gets\mathbf{x}+\hat{\mathbf{x}}$
+\begin_inset Formula $\mathbf{x}_{i+1}\gets\left\lfloor \mathbf{x}_{i}+\hat{\mathbf{x}}\right\rfloor $
 \end_inset
 
 
@@ -4445,7 +4445,7 @@ State
  Kiểm tra
 \begin_inset Formula 
 \[
-D_{\octave}\left(\hat{\mathbf{x}}\right)=D\left(\mathbf{x}\right)+0.5\nicefrac{\partial D_{\octave}^{T}}{\partial}
+D_{\octave}\left(\hat{\mathbf{x}}\right)=D\left(\mathbf{x}\right)+0.5\nicefrac{\partial D_{\octave}^{T}}{\partial\mathbf{x}}>0.05
 \]
 
 \end_inset
@@ -4597,10 +4597,13 @@ name "alg:candidate-coord-algorithm"
 \end_inset
 
 
+\end_layout
+
+\begin_layout Standard
 \begin_inset Float algorithm
 wide false
 sideways false
-status open
+status collapsed
 
 \begin_layout Plain Layout
 \begin_inset ERT
@@ -4984,10 +4987,13 @@ name "alg:keypoint-orienatation"
 \end_inset
 
 
+\end_layout
+
+\begin_layout Standard
 \begin_inset Float algorithm
 wide false
 sideways false
-status collapsed
+status open
 
 \begin_layout Plain Layout
 \begin_inset ERT
@@ -5408,7 +5414,7 @@ end{algorithmic}
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Tìm peak của histogram 
+Tìm các định của histogram 
 \begin_inset CommandInset label
 LatexCommand label
 name "alg:histogram-peaks"
@@ -5840,7 +5846,7 @@ Require
 \begin_inset Formula $\mathcal{D}_{2}$
 \end_inset
 
- là tập keypoint, descriptor tương ứng của ảnh một và ảnh ha
+ là tập keypoint, descriptor tương ứng của ảnh một và ảnh hai
 \end_layout
 
 \begin_layout Plain Layout
@@ -6431,7 +6437,7 @@ noprefix "false"
 \begin_inset Float figure
 wide false
 sideways false
-status collapsed
+status open
 
 \begin_layout Plain Layout
 \begin_inset Float figure
@@ -6492,7 +6498,7 @@ status open
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Cốc cafe
+Cốc cà phê
 \end_layout
 
 \end_inset

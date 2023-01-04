@@ -731,7 +731,11 @@ noprefix "false"
 \end_inset
 
 .
- Để đơn giản hoá, những chỉ số không liên quan sẽ được lược bớt.
+ Xét 
+\begin_inset Formula $f\left(x,y\right)=\left\{ I\left(\ldots,x,y,\ldots\right),x,y\text{ trong tập chỉ số}\right\} $
+\end_inset
+
+, ta có:
 \begin_inset Formula 
 \begin{align}
 \frac{\partial f}{\partial x}\left(x_{0}\right)=f_{x}\left(x_{0}\right) & =\frac{f\left(x_{0}+h\right)-f\left(x_{0}-h\right)}{2h},\label{eq:diff-grad}\\
@@ -858,7 +862,11 @@ f_{xx}\left(x_{0}\right)=f\left(x_{0}+1\right)-2f\left(x_{0}\right)+f\left(x_{0}
 \end_layout
 
 \begin_layout Standard
-Như vậy, gradient 
+Xét 
+\begin_inset Formula $\mathbf{x}$
+\end_inset
+
+ là chỉ số điểm ảnh, gradient 
 \begin_inset Formula $\mathbf{G}_{I}\left(\mathbf{x}\right)\in\mathbb{R}^{d}$
 \end_inset
 
@@ -1428,7 +1436,7 @@ name "alg:gradient-3d"
 placement H
 wide false
 sideways false
-status open
+status collapsed
 
 \begin_layout Plain Layout
 \begin_inset ERT
@@ -4244,7 +4252,7 @@ State
 \end_inset
 
  
-\begin_inset Formula $\mathbf{g}\gets\frac{\partial D_{\octave}\left(\mathbf{x}\right)}{\partial\mathbf{x}}\left(\mathbf{x}\right)$
+\begin_inset Formula $\mathbf{g}\gets\frac{\partial D_{\octave}}{\partial\mathbf{x}}\left(\mathbf{x}\right)$
 \end_inset
 
 
@@ -6481,7 +6489,7 @@ Bìa hộp
 \begin_inset Float figure
 wide false
 sideways false
-status open
+status collapsed
 
 \begin_layout Plain Layout
 \begin_inset Graphics
@@ -6993,7 +7001,7 @@ noprefix "false"
 \begin_inset Float figure
 wide false
 sideways false
-status open
+status collapsed
 
 \begin_layout Plain Layout
 \begin_inset space \hfill{}
@@ -7222,6 +7230,9 @@ literal "false"
 \end_inset
 
 .
+\end_layout
+
+\begin_layout Standard
 \begin_inset Float figure
 wide false
 sideways false
